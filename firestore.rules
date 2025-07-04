@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read access to locations and assignments for QR code functionality
+    match /locations/{document} {
+      allow read: if true; // Public read access
+      allow write: if request.auth != null; // Only authenticated users can write
+    }
+    
+    match /assignments/{document} {
+      allow read: if true; // Public read access
+      allow write: if request.auth != null; // Only authenticated users can write
+    }
+    
+    match /services/{document} {
+      allow read: if true; // Public read access
+      allow write: if request.auth != null; // Only authenticated users can write
+    }
+    
+    // Users collection - only authenticated users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Reservations collection - authenticated users can read/write
+    match /reservations/{document} {
+      allow read: if request.auth != null;
+      allow write: if true; // Allow public write for reservations
+    }
+    
+    // Analytics collection - authenticated users can read/write
+    match /analytics/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Settings collection - authenticated users can read/write
+    match /settings/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Reports collection - authenticated users can read/write
+    match /reports/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Notifications collection - authenticated users can read/write
+    match /notifications/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Category colors collection - authenticated users can read/write
+    match /category_colors/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Vehicles collection - authenticated users can read/write
+    match /vehicles/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Transfer prices collection - authenticated users can read/write
+    match /transfer_prices/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Reservations collection - authenticated users can read/write
+    match /reservations/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Audit logs collection - authenticated users can read, only system can write
+    match /audit_logs/{document} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Default rule - deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

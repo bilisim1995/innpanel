@@ -1,0 +1,212 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { getVehicles, VehicleData } from "@/lib/vehicles";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Clock,
+  Route,
+  Info,
+  Car,
+  Camera,
+} from "lucide-react";
+import { ImageUpload } from "@/components/ui/image-upload";
+
+interface MotorToursProps {
+  selectedPayments: Array<{id: string, amount: string}>;
+  onPaymentChange: (id: string, checked: boolean) => void;
+  onPaymentAmountChange: (id: string, amount: string) => void;
+  categoryDetails: any;
+  onCategoryDetailsChange: (details: any) => void;
+}
+
+const PAYMENT_OPTIONS = [
+  { id: "cash", label: "Tur başlangıcında ödeme (nakit/kart)" },
+  { id: "online", label: "Sanal POS ile ödeme" },
+  { id: "partial", label: "Ön ödeme" },
+];
+
+export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountChange, categoryDetails, onCategoryDetailsChange }: MotorToursProps) {
+  const [routeDetails, setRouteDetails] = useState(categoryDetails?.routeDetails || {
+    vehicleId: "",
+    startPoint: "",
+    endPoint: "",
+    distance: "",
+    duration: "",
+  });
+  const [tourDetails, setTourDetails] = useState(categoryDetails?.tourDetails || "");
+  const [difficulty, setDifficulty] = useState(categoryDetails?.difficulty || "");
+  const [minAge, setMinAge] = useState(categoryDetails?.minAge || "");
+  const [photos, setPhotos] = useState<Array<string | null>>(categoryDetails?.photos || [null, null, null]);
+  const [vehicles, setVehicles] = useState<VehicleData[]>([]);
+
+  // Update category details when data changes
+  useEffect(() => {
+    onCategoryDetailsChange({
+      routeDetails,
+      tourDetails,
+      difficulty,
+      minAge,
+      photos,
+    });
+  }, [routeDetails, tourDetails, difficulty, minAge, photos, onCategoryDetailsChange]);
+
+  // Load vehicles
+  useEffect(() => {
+    const loadVehicles = async () => {
+      const vehiclesData = await getVehicles();
+      setVehicles(vehiclesData.filter(v => v.isActive));
+    };
+    
+    loadVehicles();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium flex items-center gap-2">
+        <Route className="h-5 w-5" />
+        Motorlu Tur Detayları
+      </h3>
+
+      <div>
+        <Label className="flex items-center gap-2">
+          <Route className="h-4 w-4" />
+          Rota Bilgileri
+        </Label>
+        <div className="space-y-2 mt-2">
+          <Label>Araç Tipi</Label>
+          <Select 
+            value={routeDetails.vehicleId} 
+            onValueChange={(value) => {
+              setRouteDetails({...routeDetails, vehicleId: value});
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Araç tipi seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              {vehicles.map((vehicle) => (
+                <SelectItem key={vehicle.id} value={vehicle.id!}>
+                  {vehicle.vehicleTypeName} ({vehicle.maxPassengerCapacity} kişi)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mt-2">
+          <div>
+            <Label>Başlangıç Noktası</Label>
+            <Input 
+              placeholder="Örn: Otel Önü"
+              value={routeDetails.startPoint}
+              onChange={(e) => {
+                setRouteDetails({...routeDetails, startPoint: e.target.value});
+              }}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Bitiş Noktası</Label>
+            <Input 
+              placeholder="Örn: Şehir Merkezi"
+              value={routeDetails.endPoint}
+              onChange={(e) => {
+                setRouteDetails({...routeDetails, endPoint: e.target.value});
+              }}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Mesafe (km)</Label>
+            <Input 
+              type="number"
+              value={routeDetails.distance}
+              onChange={(e) => {
+                setRouteDetails({...routeDetails, distance: e.target.value});
+              }}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Süre (dakika)</Label>
+            <Input 
+              type="number"
+              min="1"
+              value={routeDetails.duration}
+              onChange={(e) => {
+                setRouteDetails({...routeDetails, duration: e.target.value});
+              }}
+              className="mt-1.5"
+              placeholder="Örn: 120"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <Label className="flex items-center gap-2">
+          <Info className="h-4 w-4" />
+          Tur Detayları
+        </Label>
+        <div className="space-y-4 mt-2">
+          <Textarea 
+            placeholder="Tur güzergahı ve duraklar hakkında bilgi..."
+            value={tourDetails}
+            onChange={(e) => setTourDetails(e.target.value)}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Zorluk Seviyesi</Label>
+              <Select value={difficulty} onValueChange={(value) => setDifficulty(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seçiniz" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="easy">Kolay</SelectItem>
+                  <SelectItem value="medium">Orta</SelectItem>
+                  <SelectItem value="hard">Zor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Minimum Katılımcı Yaşı</Label>
+              <Input 
+                type="number" 
+                min="0" 
+                className="mt-1.5"
+                value={minAge}
+                onChange={(e) => setMinAge(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <Label className="flex items-center gap-2">
+          <Camera className="h-4 w-4" />
+          Fotoğraf Galerisi
+        </Label>
+        <div className="grid grid-cols-3 gap-4 mt-1.5">
+          {photos.map((photo, index) => (
+            <ImageUpload
+              key={index}
+              value={photo}
+              onChange={(value) => {
+                const newPhotos = [...photos];
+                newPhotos[index] = value;
+                setPhotos(newPhotos);
+              }}
+              folder="hizmetler"
+              aspectRatio="square"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
