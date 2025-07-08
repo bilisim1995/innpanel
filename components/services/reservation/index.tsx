@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { ReservationHeader } from "./ReservationHeader";
 import { ReservationCalendar } from "./ReservationCalendar";
 import { ReservationDetails } from "./ReservationDetails";
-import { ReservationCustomerInfo } from "./ReservationCustomerInfo";
 import { ReservationSuccess } from "./ReservationSuccess";
 import { useReservationState } from "./hooks/useReservationState";
 
@@ -107,22 +105,22 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-        <DialogTitle>
-          <VisuallyHidden.Root>Rezervasyon Yap</VisuallyHidden.Root>
-        </DialogTitle>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
         
-        <div className="absolute right-4 top-4 z-50">
+        <div className="sticky top-0 z-50 flex items-center justify-between p-4 bg-white border-b">
+           <h2 className="text-lg font-bold text-red-600" style={{ fontFamily: 'inherit' }}>
+            Rezervasyon Yap
+          </h2>
           <Button 
             onClick={onClose}
-            className="p-2 rounded-lg bg-white hover:bg-gray-100 transition-colors shadow-md border border-gray-200"
-            variant="ghost"
+            variant="outline"
+            size="icon"
           >
-            <X className="h-6 w-6 text-gray-500" />
+            <X className="h-4 w-4" />
           </Button>
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
           {/* Header */}
           <ReservationHeader assignment={assignment} themeColor={themeColor} />
 
@@ -183,9 +181,6 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
               onVisitorNoteChange={setVisitorNote}
             />
           </div>
-
-          {/* İletişim Bilgileri */}
-          {/* <ReservationContact assignment={assignment} /> */}
         </div>
         
         {/* Success Modal with Confetti */}

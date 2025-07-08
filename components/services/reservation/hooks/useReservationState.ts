@@ -4,11 +4,23 @@ import { getDisplayCategoryColors } from "../../../services-display/utils/catego
 import { saveReservation } from "@/lib/reservations";
 import { useToast } from "@/hooks/use-toast";
 
+interface VehicleInSlot {
+  vehicleId: string | null;
+  price: number;
+  quota: number;
+  count: number;
+}
+
+interface SelectedVehicle extends VehicleInSlot {
+    vehicle: VehicleData;
+}
+
+
 export function useReservationState(isOpen: boolean, assignment: any) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<Array<{id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number}>>([]);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number, vehiclePrices?: Array<{vehicleId: string, price: number}>} | null>(null);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<Array<{id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]}>>([]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]} | null>(null);
   const [personCount, setPersonCount] = useState<number>(1);
   const [vehicleCount, setVehicleCount] = useState<number>(1);
   const [routeId, setRouteId] = useState<string | null>(null);
@@ -24,7 +36,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   const [assignedVehicles, setAssignedVehicles] = useState<VehicleData[]>([]);
   const [filteredVehicles, setFilteredVehicles] = useState<VehicleData[]>([]);
   const [personCountForTransfer, setPersonCountForTransfer] = useState<number>(1);
-  const [selectedVehicles, setSelectedVehicles] = useState<Array<{vehicleId: string, vehicle: VehicleData, count: number}>>([]);
+  const [selectedVehicles, setSelectedVehicles] = useState<SelectedVehicle[]>([]);
   const [customerName, setCustomerName] = useState<string>("");
   const [customerSurname, setCustomerSurname] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
@@ -242,7 +254,10 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       const end = new Date(range.endDate);
       
       if (date >= start && date <= end) {
-        return range.timeSlots || [];
+        // Sort the time slots by start time before returning
+        return (range.timeSlots || []).sort((a: {startTime: string}, b: {startTime: string}) => 
+          a.startTime.localeCompare(b.startTime)
+        );
       }
     }
     return [];
@@ -252,7 +267,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     if (date && availableDates.some(d => d.toDateString() === date.toDateString())) {
       setSelectedDate(date);
       
-      // Load available time slots for this date
+      // Load and sort available time slots for this date
       const timeSlots = getTimeSlotsForDate(date);
       setAvailableTimeSlots(timeSlots);
       
@@ -272,7 +287,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     }
   };
 
-  const handleTimeSlotSelect = (timeSlot: {id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number, vehiclePrices?: Array<{vehicleId: string, price: number}>}) => {
+  const handleTimeSlotSelect = (timeSlot: {id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]}) => {
     setSelectedTimeSlot(timeSlot);
     
     // Reset person count when time slot changes
@@ -295,11 +310,11 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       setSelectedVehicles([]);
       
       // If this time slot has vehicle prices, update the filtered vehicles
-      if (timeSlot.vehiclePrices && timeSlot.vehiclePrices.length > 0) {
+      if (timeSlot.vehicles && timeSlot.vehicles.length > 0) {
         // Filter assigned vehicles to only include those in the time slot's vehiclePrices
-        const vehicleIds = timeSlot.vehiclePrices.map(vp => vp.vehicleId);
-        const filteredVehicles = assignedVehicles.filter(v => vehicleIds.includes(v.id!));
-        setFilteredVehicles(filteredVehicles);
+        const vehicleIds = timeSlot.vehicles.map(vp => vp.vehicleId);
+        const filtered = assignedVehicles.filter(v => vehicleIds.includes(v.id!));
+        setFilteredVehicles(filtered);
       }
       
       // Reset vehicle selection for transfer
@@ -336,14 +351,18 @@ export function useReservationState(isOpen: boolean, assignment: any) {
 
   const handleVehicleSelect = (vehicleId: string) => {
     const vehicle = filteredVehicles.find(v => v.id === vehicleId);
-    setSelectedVehicle(vehicle || null);
     
     // For transfer category, add to selected vehicles array
-    if (assignment?.serviceCategory === "transfer" && vehicle) {
-      const existingIndex = selectedVehicles.findIndex(sv => sv.vehicleId === vehicleId);
-      if (existingIndex === -1) {
-        setSelectedVehicles(prev => [...prev, { vehicleId, vehicle, count: 1 }]);
-      }
+    if (assignment?.serviceCategory === "transfer" && vehicle && selectedTimeSlot?.vehicles) {
+        const vehicleDataInSlot = selectedTimeSlot.vehicles.find(v => v.vehicleId === vehicleId);
+        if (!vehicleDataInSlot) return;
+
+        const existingIndex = selectedVehicles.findIndex(sv => sv.vehicleId === vehicleId);
+        if (existingIndex === -1) {
+            setSelectedVehicles(prev => [...prev, { ...vehicleDataInSlot, vehicle, count: 1 }]);
+        }
+    } else {
+        setSelectedVehicle(vehicle || null);
     }
   };
 
@@ -379,25 +398,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       return basePrice * vehicleCount;
     } else if (assignment?.serviceCategory === "transfer") {
       // For transfer, calculate based on selected vehicles and their prices
-      let total = 0;
-      
-      if (selectedVehicles.length > 0 && selectedTimeSlot.vehiclePrices) {
-        selectedVehicles.forEach(sv => {
-          // Find the price for this vehicle type
-          const vehiclePrice = selectedTimeSlot.vehiclePrices?.find((vp: {vehicleId: string, price: number}) => vp.vehicleId === sv.vehicleId);
-          if (vehiclePrice) {
-            total += vehiclePrice.price * sv.count;
-          } else {
-            // Fallback to base price if vehicle price not found
-            total += selectedTimeSlot.price * sv.count;
-          }
-        });
-      } else {
-        // Fallback if no vehicles selected
-        total = selectedTimeSlot.price;
-      }
-      
-      return total;
+      return selectedVehicles.reduce((total, sv) => total + (sv.price * sv.count), 0);
     } else {
       // Get base price without commission
       const basePrice = displayPrices[selectedTimeSlot.id] || selectedTimeSlot.price;
@@ -540,6 +541,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
           vehicleTypeName: sv.vehicle.vehicleTypeName,
           maxPassengerCapacity: sv.vehicle.maxPassengerCapacity,
           count: sv.count,
+          price: sv.price
         }));
       } else {
         reservationData.personCount = personCount;

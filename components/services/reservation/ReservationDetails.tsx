@@ -7,17 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { 
   Clock, 
   Users, 
   Car, 
   CreditCard, 
-  Settings, 
   Calendar,
-  MapPin,
-  Banknote,
   Plus,
   Minus,
   X
@@ -144,12 +141,12 @@ export function ReservationDetails({
                   Bu tarih için müsait saat bulunmuyor
                 </p>
               ) : (
-                <div className={`grid gap-3 ${availableTimeSlots.length > 3 ? 'max-h-80 overflow-y-auto pr-2' : ''}`}>
+                <div className="grid gap-2 max-h-[15rem] overflow-y-auto pr-2">
                   {availableTimeSlots.map((slot) => (
                     <div
                       key={slot.id}
                       onClick={() => handleTimeSlotSelect(slot)}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md ${
+                      className={`p-3 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md ${
                         selectedTimeSlot?.id === slot.id
                           ? 'border-current shadow-lg'
                           : 'border-gray-200 hover:border-gray-300'
@@ -161,26 +158,26 @@ export function ReservationDetails({
                     >
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                          <div 
-                            className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                           <div 
+                            className="w-8 h-8 rounded-md flex items-center justify-center text-white"
                             style={{ backgroundColor: themeColor }}
                           >
-                            <Clock className="w-5 h-5" />
+                            <Clock className="w-4 h-4" />
                           </div>
                           <div>
-                            <p className="font-bold text-lg" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                            <p className="font-bold text-md" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
                               {slot.startTime} - {slot.endTime}
                             </p>
                             {slot.quota && (
-                              <p className="text-sm text-gray-600">
+                              <p className="text-xs text-gray-600">
                                 Kalan kontenjan: {slot.quota}
                               </p>
                             )}
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-xl" style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                            {displayPrices[slot.id] || slot.price} ₺
+                         <div className="text-right">
+                          <p className="font-bold text-lg" style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                           {assignment.serviceCategory === 'transfer' ? 'Araç Seçin' : `${displayPrices[slot.id] || slot.price} ₺`}
                           </p>
                         </div>
                       </div>
@@ -294,21 +291,17 @@ export function ReservationDetails({
                     <div className="space-y-2">
                       <Label>Uygun Araçlar ({personCountForTransfer} kişi için)</Label>
                       <div className="space-y-2">
-                        {filteredVehicles.length === 0 && selectedTimeSlot.vehiclePrices?.length === 0 ? (
-                          <p className="text-gray-600 text-sm">
-                            {personCountForTransfer} kişi için uygun araç bulunamadı
-                          </p>
-                        ) : selectedTimeSlot.vehiclePrices ? (
-                          // Show vehicles with their specific prices from the time slot
-                          selectedTimeSlot.vehiclePrices.map((vehiclePrice: { vehicleId: string; price: number }) => {
-                            const vehicle = filteredVehicles.find(v => v.id === vehiclePrice.vehicleId);
+                        {selectedTimeSlot.vehicles && selectedTimeSlot.vehicles.length > 0 ? (
+                          selectedTimeSlot.vehicles.map((vehicleSlot: any) => {
+                            const vehicle = assignedVehicles.find(v => v.id === vehicleSlot.vehicleId);
                             if (!vehicle) return null;
-                            
+                            const isSelected = selectedVehicles.some(sv => sv.vehicleId === vehicle.id);
+
                             return (
                               <div
                                 key={vehicle.id}
-                                className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                                onClick={() => handleVehicleSelect(vehicle.id!)}
+                                className={`p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : ''}`}
+                                onClick={() => !isSelected && handleVehicleSelect(vehicle.id!)}
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-3">
@@ -321,39 +314,16 @@ export function ReservationDetails({
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <p className="font-bold" style={{ color: themeColor }}>{vehiclePrice.price} ₺</p>
-                                    <Button size="sm" variant="outline">
-                                      Seç
-                                    </Button>
+                                    <p className="font-bold" style={{ color: themeColor }}>{vehicleSlot.price} ₺</p>
+                                    {!isSelected && <Button size="sm" variant="outline">Seç</Button>}
+                                    {isSelected && <Badge variant="secondary">Seçildi</Badge>}
                                   </div>
                                 </div>
                               </div>
                             );
                           })
                         ) : (
-                          // Fallback to regular vehicle selection without specific prices
-                          filteredVehicles.map((vehicle) => (
-                            <div
-                              key={vehicle.id}
-                              className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                              onClick={() => handleVehicleSelect(vehicle.id!)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <Car className="w-5 h-5 text-gray-600" />
-                                  <div>
-                                    <p className="font-medium">{vehicle.vehicleTypeName}</p>
-                                    <p className="text-sm text-gray-600">
-                                      Maksimum {vehicle.maxPassengerCapacity} kişi
-                                    </p>
-                                  </div>
-                                </div>
-                                <Button size="sm" variant="outline">
-                                  Seç
-                                </Button>
-                              </div>
-                            </div>
-                          ))
+                           <p className="text-gray-600 text-sm">Bu saat dilimi için uygun araç bulunamadı.</p>
                         )}
                       </div>
                     </div>
@@ -371,7 +341,7 @@ export function ReservationDetails({
                                   <div>
                                     <p className="font-medium">{sv.vehicle.vehicleTypeName}</p>
                                     <p className="text-sm text-gray-600">
-                                      {sv.vehicle.maxPassengerCapacity} kişi kapasiteli
+                                      {sv.price} ₺ / adet
                                     </p>
                                   </div>
                                 </div>
@@ -380,7 +350,7 @@ export function ReservationDetails({
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      onClick={() => handleVehicleCountChangeForTransfer(sv.vehicleId, sv.count - 1)}
+                                      onClick={() => handleVehicleCountChangeForTransfer(sv.vehicleId!, sv.count - 1)}
                                       disabled={sv.count <= 1}
                                     >
                                       <Minus className="w-3 h-3" />
@@ -389,7 +359,7 @@ export function ReservationDetails({
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      onClick={() => handleVehicleCountChangeForTransfer(sv.vehicleId, sv.count + 1)}
+                                      onClick={() => handleVehicleCountChangeForTransfer(sv.vehicleId!, sv.count + 1)}
                                     >
                                       <Plus className="w-3 h-3" />
                                     </Button>
@@ -397,7 +367,7 @@ export function ReservationDetails({
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => removeVehicleFromSelection(sv.vehicleId)}
+                                    onClick={() => removeVehicleFromSelection(sv.vehicleId!)}
                                     className="text-red-600 hover:text-red-700"
                                   >
                                     <X className="w-4 h-4" />
@@ -466,14 +436,23 @@ export function ReservationDetails({
               <CardContent className="space-y-4">
                 {/* Fiyat Özeti */}
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Birim Fiyat:</span>
-                    <span className="font-bold">
-                      {assignment.serviceCategory === "transfer" && selectedVehicles.length > 0 && selectedTimeSlot.vehiclePrices
-                        ? "Araç bazlı fiyatlandırma"
-                        : `${selectedTimeSlot.price} ₺`}
-                    </span>
-                  </div>
+                   {assignment.serviceCategory === "transfer" && selectedVehicles.length > 0 && (
+                        <div className="space-y-2">
+                          {selectedVehicles.map(sv => (
+                            <div key={sv.vehicleId} className="flex justify-between items-center text-sm">
+                              <span>{sv.vehicle.vehicleTypeName} ({sv.count} adet)</span>
+                              <span className="font-medium">{sv.price * sv.count} ₺</span>
+                            </div>
+                          ))}
+                        </div>
+                    )}
+                  
+                  {assignment.serviceCategory !== "transfer" && (
+                    <div className="flex justify-between items-center">
+                        <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Birim Fiyat:</span>
+                        <span className="font-bold">{`${selectedTimeSlot.price} ₺`}</span>
+                    </div>
+                  )}
                   
                   {assignment.serviceCategory === "motor-tours" && (
                     <div className="flex justify-between items-center">
