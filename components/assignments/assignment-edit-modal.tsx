@@ -461,23 +461,6 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                                                 </CardContent>
                                               </Card>
                                             ))}
-                                             <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
-                                                <div className="flex items-center gap-2 mb-2"><Users className="h-4 w-4 text-green-600" /><span className="text-sm font-medium text-green-800">Transfer Özeti</span></div>
-                                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                                                    <span className="text-green-700">Toplam Kontenjan:</span>
-                                                    <span className="font-medium text-green-800">{(slot.vehicles || []).reduce((sum, v) => sum + (v.quota || 0), 0)}</span>
-                                                    <span className="text-green-700">Ortalama Fiyat:</span>
-                                                    <span className="font-medium text-green-800">
-                                                        {
-                                                            (() => {
-                                                                const total = (slot.vehicles || []).reduce((sum, v) => sum + v.price, 0);
-                                                                const count = (slot.vehicles || []).length;
-                                                                return count > 0 ? (total / count).toFixed(2) : '0.00';
-                                                            })()
-                                                        } ₺
-                                                    </span>
-                                                </div>
-                                            </div>
                                           </div>
                                         ) : <div className="text-center py-6 border-2 border-dashed rounded-lg"><Car className="h-8 w-8 mx-auto mb-2 text-gray-400" /><p className="text-sm text-muted-foreground">Henüz araç eklenmemiş.</p></div>}
                                       </div>
