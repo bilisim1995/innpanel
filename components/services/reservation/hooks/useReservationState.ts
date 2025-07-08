@@ -28,6 +28,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   const [customerName, setCustomerName] = useState<string>("");
   const [customerSurname, setCustomerSurname] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
+  const [visitorNote, setVisitorNote] = useState<string>("");
   const [customerErrors, setCustomerErrors] = useState<{[key: string]: string}>({});
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
   const [successData, setSuccessData] = useState<{
@@ -69,6 +70,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       setCustomerName("");
       setCustomerSurname("");
       setCustomerPhone("");
+      setVisitorNote("");
       setCustomerErrors({});
       setIsSuccessModalOpen(false);
       setIsSubmitting(false);
@@ -498,6 +500,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
         customerName: customerName.trim(),
         customerSurname: customerSurname.trim(),
         customerPhone: customerPhone.trim(),
+        visitorNote: visitorNote.trim(),
         
         // Reservation Details
         reservationDate: selectedDate,
@@ -599,6 +602,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     customerName,
     customerSurname,
     customerPhone,
+    visitorNote,
     customerErrors,
     isSuccessModalOpen,
     successData,
@@ -623,6 +627,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     setCustomerName,
     setCustomerSurname,
     setCustomerPhone,
+    setVisitorNote,
     setIsSuccessModalOpen
   };
 }

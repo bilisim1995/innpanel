@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Edit, Trash2, Eye, Search, Calendar, Users, Car, CreditCard, Phone, User, MapPin, Building2, Clock } from "lucide-react";
+import { Edit, Trash2, Eye, Search, Calendar, Users, Car, CreditCard, Phone, User, MapPin, Building2, Clock, MessageSquare } from "lucide-react";
 import { ReservationEditModal } from "@/components/reservations/reservation-edit-modal";
 
 export default function ReservationsPage() {
@@ -432,6 +432,12 @@ export default function ReservationsPage() {
                     <p className="text-sm text-muted-foreground">Rezervasyon No</p>
                     <p className="font-mono font-medium">{viewingReservation.id?.substring(0, 8).toUpperCase()}</p>
                   </div>
+                  {viewingReservation.visitorNote && (
+                    <div className="md:col-span-3">
+                      <p className="text-sm text-muted-foreground">Ziyaretçi Notu</p>
+                      <p className="font-medium whitespace-pre-wrap">{viewingReservation.visitorNote}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

@@ -20,7 +20,8 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  MessageSquare
 } from "lucide-react";
 
 interface ReservationEditModalProps {
@@ -38,7 +39,7 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
     customerSurname: "",
     customerPhone: "",
     status: "pending" as "pending" | "confirmed" | "cancelled" | "completed",
-    notes: "",
+    visitorNote: "",
   });
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
@@ -51,7 +52,7 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
         customerSurname: reservation.customerSurname,
         customerPhone: reservation.customerPhone,
         status: reservation.status,
-        notes: (reservation as any).notes || "",
+        visitorNote: reservation.visitorNote || "",
       });
       setErrors({});
     }
@@ -88,7 +89,6 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
         customerSurname: formData.customerSurname.trim(),
         customerPhone: formData.customerPhone.trim(),
         status: formData.status,
-        ...(formData.notes && { notes: formData.notes }),
       };
 
       await updateReservation(reservation.id, updateData);
@@ -271,6 +271,18 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
                   </p>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="visitorNote" className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Ziyaretçi Notu
+                </Label>
+                <Textarea
+                  id="visitorNote"
+                  value={formData.visitorNote}
+                  disabled
+                  rows={3}
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -316,17 +328,6 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
                     </SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notlar</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Rezervasyon ile ilgili notlar..."
-                  rows={3}
-                />
               </div>
             </CardContent>
           </Card>

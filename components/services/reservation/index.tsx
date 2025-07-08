@@ -42,6 +42,7 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
     customerName,
     customerSurname,
     customerPhone,
+    visitorNote,
     isSuccessModalOpen,
     successData,
     customerErrors,
@@ -66,7 +67,8 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
     setIsSuccessModalOpen,
     setCustomerName,
     setCustomerSurname,
-    setCustomerPhone
+    setCustomerPhone,
+    setVisitorNote
   } = useReservationState(isOpen, assignment);
 
   // Get theme color for styling
@@ -173,10 +175,12 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
               customerName={customerName}
               customerSurname={customerSurname}
               customerPhone={customerPhone}
+              visitorNote={visitorNote}
               customerErrors={customerErrors}
               onCustomerNameChange={setCustomerName}
               onCustomerSurnameChange={setCustomerSurname}
               onCustomerPhoneChange={setCustomerPhone}
+              onVisitorNoteChange={setVisitorNote}
             />
           </div>
 

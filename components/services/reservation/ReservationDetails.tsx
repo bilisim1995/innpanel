@@ -61,10 +61,12 @@ interface ReservationDetailsProps {
   customerName: string;
   customerSurname: string;
   customerPhone: string;
+  visitorNote: string;
   customerErrors: {[key: string]: string};
   onCustomerNameChange: (value: string) => void;
   onCustomerSurnameChange: (value: string) => void;
   onCustomerPhoneChange: (value: string) => void;
+  onVisitorNoteChange: (value: string) => void;
 }
 
 export function ReservationDetails({
@@ -105,10 +107,12 @@ export function ReservationDetails({
   customerName,
   customerSurname,
   customerPhone,
+  visitorNote,
   customerErrors,
   onCustomerNameChange,
   onCustomerSurnameChange,
-  onCustomerPhoneChange
+  onCustomerPhoneChange,
+  onVisitorNoteChange
 }: ReservationDetailsProps) {
 
   return (
@@ -553,9 +557,11 @@ export function ReservationDetails({
               customerName={customerName}
               customerSurname={customerSurname}
               customerPhone={customerPhone}
+              visitorNote={visitorNote}
               onCustomerNameChange={onCustomerNameChange}
               onCustomerSurnameChange={onCustomerSurnameChange}
               onCustomerPhoneChange={onCustomerPhoneChange}
+              onVisitorNoteChange={onVisitorNoteChange}
               themeColor={themeColor}
               errors={customerErrors}
             />

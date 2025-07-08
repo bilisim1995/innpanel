@@ -17,6 +17,7 @@ export interface ReservationData {
   customerName: string;
   customerSurname: string;
   customerPhone: string;
+  visitorNote?: string;
   
   // Reservation Details
   reservationDate: Date;

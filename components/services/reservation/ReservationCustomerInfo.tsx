@@ -3,15 +3,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Phone, AlertCircle } from "lucide-react";
+import { User, Phone, AlertCircle, MessageSquare } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ReservationCustomerInfoProps {
   customerName: string;
   customerSurname: string;
   customerPhone: string;
+  visitorNote: string;
   onCustomerNameChange: (value: string) => void;
   onCustomerSurnameChange: (value: string) => void;
   onCustomerPhoneChange: (value: string) => void;
+  onVisitorNoteChange: (value: string) => void;
   themeColor: string;
   errors: {[key: string]: string};
 }
@@ -20,9 +23,11 @@ export function ReservationCustomerInfo({
   customerName,
   customerSurname,
   customerPhone,
+  visitorNote,
   onCustomerNameChange,
   onCustomerSurnameChange,
   onCustomerPhoneChange,
+  onVisitorNoteChange,
   themeColor,
   errors
 }: ReservationCustomerInfoProps) {
@@ -95,6 +100,18 @@ export function ReservationCustomerInfo({
           <p className="text-xs text-muted-foreground">
             Rezervasyon onayı ve bilgilendirme için kullanılacaktır
           </p>
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="visitorNote" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Ziyaretçi Notu
+            </Label>
+            <Textarea
+                id="visitorNote"
+                value={visitorNote}
+                onChange={(e) => onVisitorNoteChange(e.target.value)}
+                placeholder="Eklemek istediğiniz notlar..."
+            />
         </div>
       </CardContent>
     </Card>
