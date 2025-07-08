@@ -45,6 +45,7 @@ interface VehicleInSlot {
   quota: number;
 }
 
+
 interface TimeSlot {
   id: string;
   startTime: string;
