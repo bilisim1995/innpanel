@@ -36,11 +36,13 @@ export interface AssignmentData {
         startTime: string;
         endTime: string;
         price: number;
+        currency: 'TL' | 'USD' | 'EUR';
         vehiclePrices?: Array<{
           vehicleId: string;
           vehicleTypeName: string;
           maxPassengerCapacity: number;
           price: number;
+          currency: 'TL' | 'USD' | 'EUR';
         }>;
         quota?: number;
         vehicleId?: string | null;

@@ -42,6 +42,7 @@ interface VehicleInSlot {
   vehicleId: string | null;
   count: number;
   price: number;
+  currency: 'TL' | 'USD' | 'EUR';
   quota: number;
 }
 
@@ -51,6 +52,7 @@ interface TimeSlot {
   startTime: string;
   endTime: string;
   price: number; // For non-transfer services
+  currency: 'TL' | 'USD' | 'EUR'; // For non-transfer services
   quota?: number; // For non-transfer services
   vehicleId?: string | null; // For motor-tours
   vehicleCount?: number | null; // For motor-tours
@@ -136,6 +138,14 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
         ...range,
         startDate: new Date(range.startDate),
         endDate: new Date(range.endDate),
+        timeSlots: (range.timeSlots || []).map(slot => ({
+          ...slot,
+          currency: slot.currency || 'TL',
+          vehicles: (slot.vehicles || []).map(v => ({
+            ...v,
+            currency: v.currency || 'TL'
+          }))
+        }))
       }));
 
       setBasicData({
@@ -225,6 +235,7 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
       startTime: "09:00",
       endTime: "10:00",
       price: 0,
+      currency: 'TL',
       quota: 10,
       vehicles: [],
     };
@@ -276,6 +287,9 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
   };
 
   if (!assignment) return null;
+
+  const isBalloonCategory = assignment.serviceCategory.includes("balloon");
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -407,18 +421,75 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                               <div className="space-y-2">
                                 {range.timeSlots.map((slot) => (
                                   <div key={slot.id} className="p-3 border rounded-lg bg-muted/30 space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-                                      <div className="space-y-1"><Label className="text-xs">Başlangıç</Label><Input type="time" value={slot.startTime} onChange={(e) => updateTimeSlot(range.id, slot.id, 'startTime', e.target.value)} /></div>
-                                      <div className="space-y-1"><Label className="text-xs">Bitiş</Label><Input type="time" value={slot.endTime} onChange={(e) => updateTimeSlot(range.id, slot.id, 'endTime', e.target.value)} /></div>
+                                    <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+                                      <div className="space-y-1"><Label className="text-xs">Başlangıç</Label><Input className="h-9" type="time" value={slot.startTime} onChange={(e) => updateTimeSlot(range.id, slot.id, 'startTime', e.target.value)} /></div>
+                                      <div className="space-y-1"><Label className="text-xs">Bitiş</Label><Input className="h-9" type="time" value={slot.endTime} onChange={(e) => updateTimeSlot(range.id, slot.id, 'endTime', e.target.value)} /></div>
                                       
                                       {assignment.serviceCategory !== "transfer" && (
                                         <>
-                                          <div className="space-y-1"><Label className="text-xs">Fiyat (₺)</Label><Input type="number" min="0" value={slot.price} onChange={(e) => updateTimeSlot(range.id, slot.id, 'price', parseFloat(e.target.value) || 0)} /></div>
-                                          <div className="space-y-1"><Label className="text-xs">Kontenjan</Label><Input type="number" min="0" value={slot.quota || ''} onChange={(e) => updateTimeSlot(range.id, slot.id, 'quota', parseInt(e.target.value) || undefined)} /></div>
-                                        </>
+                                            {isBalloonCategory ? (
+                                              <div className="col-span-2 space-y-1">
+                                                <Label className="text-xs">Fiyat</Label>
+                                                <div className="grid grid-cols-5 gap-2">
+                                                  <Input
+                                                    className="h-9 col-span-3"
+                                                    type="number"
+                                                    min="0"
+                                                    value={slot.price}
+                                                    onChange={(e) =>
+                                                      updateTimeSlot(range.id, slot.id, "price", parseFloat(e.target.value) || 0)
+                                                    }
+                                                  />
+                                                  <div className="col-span-2">
+                                                    <Select
+                                                      value={slot.currency}
+                                                      onValueChange={(v) =>
+                                                        updateTimeSlot(range.id, slot.id, "currency", v)
+                                                      }
+                                                    >
+                                                      <SelectTrigger className="h-9 w-full">
+                                                        <SelectValue placeholder="Birim" />
+                                                      </SelectTrigger>
+                                                      <SelectContent>
+                                                        <SelectItem value="TL">TL</SelectItem>
+                                                        <SelectItem value="USD">USD</SelectItem>
+                                                        <SelectItem value="EUR">EUR</SelectItem>
+                                                      </SelectContent>
+                                                    </Select>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              <div className="col-span-2 space-y-1">
+                                                <Label className="text-xs">Fiyat (TL)</Label>
+                                                <Input
+                                                  className="h-9"
+                                                  type="number"
+                                                  min="0"
+                                                  value={slot.price}
+                                                  onChange={(e) =>
+                                                    updateTimeSlot(range.id, slot.id, "price", parseFloat(e.target.value) || 0)
+                                                  }
+                                                />
+                                              </div>
+                                            )}
+                                            <div className="space-y-1">
+                                              <Label className="text-xs">Kontenjan</Label>
+                                              <Input
+                                                className="h-9"
+                                                type="number"
+                                                min="0"
+                                                value={slot.quota || ""}
+                                                onChange={(e) =>
+                                                  updateTimeSlot(range.id, slot.id, "quota", parseInt(e.target.value) || undefined)
+                                                }
+                                              />
+                                            </div>
+                                          </>
+
                                       )}
                                       
-                                      {assignment.serviceCategory === "transfer" && <div className="col-span-2"></div>}
+                                      {assignment.serviceCategory === "transfer" && <div className="col-span-3"></div>}
                                       
                                       <div className="flex justify-end"><Button variant="ghost" size="icon" onClick={() => removeTimeSlot(range.id, slot.id)}><Trash2 className="h-4 w-4 text-red-500" /></Button></div>
                                     </div>
@@ -427,23 +498,23 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                                       <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                           <Label className="text-sm font-medium flex items-center gap-2"><Car className="h-4 w-4" />Transfer Araçları</Label>
-                                          <Button variant="outline" size="sm" onClick={() => updateTimeSlot(range.id, slot.id, 'vehicles', [...(slot.vehicles || []), { vehicleId: null, count: 1, price: 0, quota: 10 }])}><Plus className="h-3 w-3 mr-1" />Araç Ekle</Button>
+                                          <Button variant="outline" size="sm" onClick={() => updateTimeSlot(range.id, slot.id, 'vehicles', [...(slot.vehicles || []), { vehicleId: null, count: 1, price: 0, currency: 'TL', quota: 10 }])}><Plus className="h-3 w-3 mr-1" />Araç Ekle</Button>
                                         </div>
                                         {(slot.vehicles || []).length > 0 ? (
                                           <div className="space-y-3">
                                             {(slot.vehicles || []).map((vehicle, vIndex) => (
                                               <Card key={vIndex} className="border-2 border-dashed">
                                                 <CardContent className="p-3">
-                                                  <div className="grid grid-cols-12 gap-x-4 items-end">
-                                                      <div className="col-span-5 space-y-1">
+                                                  <div className="grid grid-cols-12 gap-x-3 items-end">
+                                                      <div className="col-span-4 space-y-1">
                                                           <Label className="text-xs">Araç Tipi</Label>
                                                           <Select value={vehicle.vehicleId || 'none'} onValueChange={(val) => updateVehicleInSlot(range.id, slot.id, vIndex, 'vehicleId', val === 'none' ? null : val)}>
-                                                              <SelectTrigger><SelectValue placeholder="Araç tipi seçin" /></SelectTrigger>
+                                                              <SelectTrigger className="h-9"><SelectValue placeholder="Araç tipi seçin" /></SelectTrigger>
                                                               <SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id!}>{v.vehicleTypeName} (Max: {v.maxPassengerCapacity})</SelectItem>)}</SelectContent>
                                                           </Select>
                                                       </div>
-                                                      <div className="col-span-2 space-y-1">
-                                                          <Label className="text-xs">Fiyat (₺)</Label>
+                                                      <div className="col-span-3 space-y-1">
+                                                          <Label className="text-xs">Fiyat (TL)</Label>
                                                           <Input type="number" min="0" value={vehicle.price} onChange={(e) => updateVehicleInSlot(range.id, slot.id, vIndex, 'price', parseFloat(e.target.value) || 0)} className="h-9"/>
                                                       </div>
                                                       <div className="col-span-2 space-y-1">
