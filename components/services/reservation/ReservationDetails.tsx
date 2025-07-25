@@ -39,6 +39,8 @@ interface ReservationDetailsProps {
   assignedVehicles: any[];
   themeColor: string;
   buttonStyle: any;
+  selectedCurrency: 'TL' | 'USD' | 'EUR';
+  onCurrencyChange: (currency: 'TL' | 'USD' | 'EUR') => void;
   handleTimeSlotSelect: (timeSlot: any) => void;
   handlePersonCountChange: (value: string) => void;
   handlePersonCountForTransferChange: (value: string) => void;
@@ -85,6 +87,8 @@ export function ReservationDetails({
   assignedVehicles,
   themeColor,
   buttonStyle,
+  selectedCurrency,
+  onCurrencyChange,
   handleTimeSlotSelect,
   handlePersonCountChange,
   handlePersonCountForTransferChange,
@@ -111,6 +115,20 @@ export function ReservationDetails({
   onCustomerPhoneChange,
   onVisitorNoteChange
 }: ReservationDetailsProps) {
+  
+  const isBalloonCategory = assignment.serviceCategory.includes("balloon");
+
+  const getCurrencySymbol = (currency: 'TL' | 'USD' | 'EUR') => {
+    switch (currency) {
+      case 'USD':
+        return '$';
+      case 'EUR':
+        return '€';
+      case 'TL':
+      default:
+        return '₺';
+    }
+  };
 
   return (
     <>
@@ -125,6 +143,129 @@ export function ReservationDetails({
         </Card>
       ) : (
         <div className="space-y-6">
+          {/* Kişi/Araç Sayısı Seçimi - Moved Up */}
+          <Card>
+            <CardHeader>
+              <CardTitle 
+                className="flex items-center gap-2 text-lg"
+                style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
+              >
+                {assignment.serviceCategory === "motor-tours" || assignment.serviceCategory === "transfer" ? (
+                  <Car className="h-5 w-5" />
+                ) : (
+                  <Users className="h-5 w-5" />
+                )}
+                {assignment.serviceCategory === "motor-tours" ? "Araç Seçimi" :
+                 assignment.serviceCategory === "transfer" ? "Transfer Detayları" :
+                 "Kişi Sayısı & Kur Seçimi"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Motor Tours - Araç Seçimi */}
+              {assignment.serviceCategory === "motor-tours" && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleVehicleCountChange((vehicleCount - 1).toString())}
+                      disabled={vehicleCount <= 1}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <span className="font-bold text-lg w-12 text-center">{vehicleCount}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleVehicleCountChange((vehicleCount + 1).toString())}
+                      disabled={!selectedTimeSlot || vehicleCount >= (selectedTimeSlot.vehicleCount || 10)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {selectedTimeSlot &&
+                    <p className="text-sm text-gray-600">
+                      Maksimum {selectedTimeSlot.vehicleCount || 10} araç seçebilirsiniz
+                    </p>
+                  }
+                </div>
+              )}
+
+              {/* Transfer - Kişi Sayısı ve Araç Seçimi */}
+              {assignment.serviceCategory === "transfer" && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePersonCountForTransferChange((personCountForTransfer - 1).toString())}
+                      disabled={personCountForTransfer <= 1}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <span className="font-bold text-lg w-12 text-center">{personCountForTransfer}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePersonCountForTransferChange((personCountForTransfer + 1).toString())}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Diğer Kategoriler - Kişi Sayısı */}
+              {assignment.serviceCategory !== "motor-tours" && assignment.serviceCategory !== "transfer" && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePersonCountChange((personCount - 1).toString())}
+                        disabled={personCount <= 1}
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                      <span className="font-bold text-lg w-12 text-center">{personCount}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePersonCountChange((personCount + 1).toString())}
+                        disabled={!selectedTimeSlot || personCount >= (selectedTimeSlot.quota || assignment.serviceDetails?.quota || 999)}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    {isBalloonCategory && (
+                       <div className="flex items-center gap-2">
+                         <span className="text-lg font-semibold text-gray-600 w-5 text-center">{getCurrencySymbol(selectedCurrency)}</span>
+                         <Select value={selectedCurrency} onValueChange={onCurrencyChange}>
+                           <SelectTrigger className="w-[120px]">
+                             <SelectValue />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="TL">₺ Türk Lirası</SelectItem>
+                             <SelectItem value="USD">$ Dolar</SelectItem>
+                             <SelectItem value="EUR">€ Euro</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
+                    )}
+                  </div>
+
+                  {selectedTimeSlot &&
+                    <p className="text-sm text-gray-600 mt-2">
+                      Maksimum {selectedTimeSlot.quota || assignment.serviceDetails?.quota || 999} kişi
+                    </p>
+                  }
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle 
@@ -176,9 +317,9 @@ export function ReservationDetails({
                           </div>
                         </div>
                          <div className="text-right">
-                          <p className="font-bold text-lg" style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                           {assignment.serviceCategory === 'transfer' ? 'Araç Seçin' : `${displayPrices[slot.id] || slot.price} ₺`}
-                          </p>
+                           <p className="font-bold text-lg" style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                              {`${displayPrices[slot.id] || slot.price} ${getCurrencySymbol(slot.currency || 'TL')}`}
+                            </p>
                         </div>
                       </div>
                     </div>
@@ -188,238 +329,120 @@ export function ReservationDetails({
             </CardContent>
           </Card>
 
-          {/* Kişi/Araç Sayısı Seçimi */}
-          {selectedTimeSlot && (
+          {/* Transfer - Araç Seçimi */}
+          {selectedTimeSlot && assignment.serviceCategory === 'transfer' && (
             <Card>
               <CardHeader>
-                <CardTitle 
+                <CardTitle
                   className="flex items-center gap-2 text-lg"
                   style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
                 >
-                  {assignment.serviceCategory === "motor-tours" || assignment.serviceCategory === "transfer" ? (
-                    <Car className="h-5 w-5" />
-                  ) : (
-                    <Users className="h-5 w-5" />
-                  )}
-                  {assignment.serviceCategory === "motor-tours" ? "Araç Seçimi" :
-                   assignment.serviceCategory === "transfer" ? "Transfer Detayları" :
-                   "Kişi Sayısı"}
+                  <Car className="h-5 w-5" />
+                  Uygun Araçlar ({personCountForTransfer} kişi için)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Motor Tours - Araç Seçimi */}
-                {assignment.serviceCategory === "motor-tours" && (
-                  <div className="space-y-4">
-                    {selectedTimeSlot.vehicleId && (
-                      <div className="space-y-2">
-                        <Label>Atanmış Araç</Label>
-                        <div className="p-3 border rounded-lg bg-gray-50">
-                          {(() => {
-                            const vehicle = assignedVehicles.find(v => v.id === selectedTimeSlot.vehicleId);
-                            return vehicle ? (
-                              <div className="flex items-center gap-3">
-                                <Car className="w-5 h-5 text-gray-600" />
-                                <div>
-                                  <p className="font-medium">{vehicle.vehicleTypeName}</p>
-                                  <p className="text-sm text-gray-600">
-                                    Maksimum {vehicle.maxPassengerCapacity} kişi
-                                  </p>
-                                </div>
-                              </div>
-                            ) : (
-                              <p className="text-gray-600">Araç bilgisi bulunamadı</p>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <Label>Araç Sayısı</Label>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleVehicleCountChange((vehicleCount - 1).toString())}
-                          disabled={vehicleCount <= 1}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <span className="font-bold text-lg w-12 text-center">{vehicleCount}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleVehicleCountChange((vehicleCount + 1).toString())}
-                          disabled={vehicleCount >= (selectedTimeSlot.vehicleCount || 10)}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        Maksimum {selectedTimeSlot.vehicleCount || 10} araç seçebilirsiniz
-                      </p>
-                    </div>
-                  </div>
-                )}
+              <CardContent>
+                <div className="space-y-2">
+                  {selectedTimeSlot.vehicles && selectedTimeSlot.vehicles.length > 0 ? (
+                    selectedTimeSlot.vehicles.map((vehicleSlot: any) => {
+                      const vehicle = assignedVehicles.find(v => v.id === vehicleSlot.vehicleId);
+                      if (!vehicle) return null;
+                      const isSelected = selectedVehicles.some(sv => sv.vehicleId === vehicle.id);
 
-                {/* Transfer - Kişi Sayısı ve Araç Seçimi */}
-                {assignment.serviceCategory === "transfer" && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Kişi Sayısı</Label>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePersonCountForTransferChange((personCountForTransfer - 1).toString())}
-                          disabled={personCountForTransfer <= 1}
+                      return (
+                        <div
+                          key={vehicle.id}
+                          className={`p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : ''}`}
+                          onClick={() => !isSelected && handleVehicleSelect(vehicle.id!)}
                         >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <span className="font-bold text-lg w-12 text-center">{personCountForTransfer}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePersonCountForTransferChange((personCountForTransfer + 1).toString())}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Uygun Araçlar */}
-                    <div className="space-y-2">
-                      <Label>Uygun Araçlar ({personCountForTransfer} kişi için)</Label>
-                      <div className="space-y-2">
-                        {selectedTimeSlot.vehicles && selectedTimeSlot.vehicles.length > 0 ? (
-                          selectedTimeSlot.vehicles.map((vehicleSlot: any) => {
-                            const vehicle = assignedVehicles.find(v => v.id === vehicleSlot.vehicleId);
-                            if (!vehicle) return null;
-                            const isSelected = selectedVehicles.some(sv => sv.vehicleId === vehicle.id);
-
-                            return (
-                              <div
-                                key={vehicle.id}
-                                className={`p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : ''}`}
-                                onClick={() => !isSelected && handleVehicleSelect(vehicle.id!)}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <Car className="w-5 h-5 text-gray-600" />
-                                    <div>
-                                      <p className="font-medium">{vehicle.vehicleTypeName}</p>
-                                      <p className="text-sm text-gray-600">
-                                        Maksimum {vehicle.maxPassengerCapacity} kişi
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="font-bold" style={{ color: themeColor }}>{vehicleSlot.price} ₺</p>
-                                    {!isSelected && <Button size="sm" variant="outline">Seç</Button>}
-                                    {isSelected && <Badge variant="secondary">Seçildi</Badge>}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })
-                        ) : (
-                           <p className="text-gray-600 text-sm">Bu saat dilimi için uygun araç bulunamadı.</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Seçili Araçlar */}
-                    {selectedVehicles.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>Seçili Araçlar</Label>
-                        <div className="space-y-2">
-                          {selectedVehicles.map((sv) => (
-                            <div key={sv.vehicleId} className="p-3 border rounded-lg bg-blue-50">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <Car className="w-5 h-5 text-blue-600" />
-                                  <div>
-                                    <p className="font-medium">{sv.vehicle.vehicleTypeName}</p>
-                                    <p className="text-sm text-gray-600">
-                                      {sv.price} ₺ / adet
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="flex items-center gap-1">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleVehicleCountChangeForTransfer(sv.vehicleId!, sv.count - 1)}
-                                      disabled={sv.count <= 1}
-                                    >
-                                      <Minus className="w-3 h-3" />
-                                    </Button>
-                                    <span className="w-8 text-center font-medium">{sv.count}</span>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleVehicleCountChangeForTransfer(sv.vehicleId!, sv.count + 1)}
-                                    >
-                                      <Plus className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeVehicleFromSelection(sv.vehicleId!)}
-                                    className="text-red-600 hover:text-red-700"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </Button>
-                                </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Car className="w-5 h-5 text-gray-600" />
+                              <div>
+                                <p className="font-medium">{vehicle.vehicleTypeName}</p>
+                                <p className="text-sm text-gray-600">
+                                  Maksimum {vehicle.maxPassengerCapacity} kişi
+                                </p>
                               </div>
                             </div>
-                          ))}
+                            <div className="text-right">
+                              <p className="font-bold" style={{ color: themeColor }}>{vehicleSlot.price} {getCurrencySymbol(vehicleSlot.currency || 'TL')}</p>
+                              {!isSelected && <Button size="sm" variant="outline">Seç</Button>}
+                              {isSelected && <Badge variant="secondary">Seçildi</Badge>}
+                            </div>
+                          </div>
                         </div>
-                        <div className="p-3 bg-green-50 rounded-lg">
-                          <p className="text-sm text-green-800">
-                            <strong>Toplam Kapasite:</strong> {getTotalCapacityForTransfer()} kişi
-                            <br />
-                            <strong>Toplam Araç:</strong> {getTotalVehicleCountForTransfer()} adet
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Diğer Kategoriler - Kişi Sayısı */}
-                {assignment.serviceCategory !== "motor-tours" && assignment.serviceCategory !== "transfer" && (
-                  <div className="space-y-2">
-                    <Label>Kişi Sayısı</Label>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePersonCountChange((personCount - 1).toString())}
-                        disabled={personCount <= 1}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <span className="font-bold text-lg w-12 text-center">{personCount}</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePersonCountChange((personCount + 1).toString())}
-                        disabled={personCount >= (selectedTimeSlot.quota || assignment.serviceDetails?.quota || 999)}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Maksimum {selectedTimeSlot.quota || assignment.serviceDetails?.quota || 999} kişi
-                    </p>
-                  </div>
-                )}
+                      );
+                    })
+                  ) : (
+                     <p className="text-gray-600 text-sm">Bu saat dilimi için uygun araç bulunamadı.</p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )}
+          
+           {/* Transfer - Seçili Araçlar */}
+          {selectedVehicles.length > 0 && assignment.serviceCategory === 'transfer' && (
+            <Card>
+              <CardHeader><CardTitle>Seçili Araçlar</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {selectedVehicles.map((sv) => (
+                    <div key={sv.vehicleId} className="p-3 border rounded-lg bg-blue-50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Car className="w-5 h-5 text-blue-600" />
+                          <div>
+                            <p className="font-medium">{sv.vehicle.vehicleTypeName}</p>
+                            <p className="text-sm text-gray-600">
+                              {sv.price} {getCurrencySymbol(sv.currency || 'TL')} / adet
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleVehicleCountChangeForTransfer(sv.vehicleId!, sv.count - 1)}
+                              disabled={sv.count <= 1}
+                            >
+                              <Minus className="w-3 h-3" />
+                            </Button>
+                            <span className="w-8 text-center font-medium">{sv.count}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleVehicleCountChangeForTransfer(sv.vehicleId!, sv.count + 1)}
+                            >
+                              <Plus className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeVehicleFromSelection(sv.vehicleId!)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg mt-4">
+                  <p className="text-sm text-green-800">
+                    <strong>Toplam Kapasite:</strong> {getTotalCapacityForTransfer()} kişi
+                    <br />
+                    <strong>Toplam Araç:</strong> {getTotalVehicleCountForTransfer()} adet
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
 
           {/* Ödeme Ayarları */}
           {selectedTimeSlot && (
@@ -441,7 +464,7 @@ export function ReservationDetails({
                           {selectedVehicles.map(sv => (
                             <div key={sv.vehicleId} className="flex justify-between items-center text-sm">
                               <span>{sv.vehicle.vehicleTypeName} ({sv.count} adet)</span>
-                              <span className="font-medium">{sv.price * sv.count} ₺</span>
+                              <span className="font-medium">{sv.price * sv.count} {getCurrencySymbol(sv.currency || 'TL')}</span>
                             </div>
                           ))}
                         </div>
@@ -450,7 +473,7 @@ export function ReservationDetails({
                   {assignment.serviceCategory !== "transfer" && (
                     <div className="flex justify-between items-center">
                         <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Birim Fiyat:</span>
-                        <span className="font-bold">{`${selectedTimeSlot.price} ₺`}</span>
+                        <span className="font-bold">{`${selectedTimeSlot.price} ${getCurrencySymbol(selectedTimeSlot.currency || 'TL')}`}</span>
                     </div>
                   )}
                   
@@ -480,7 +503,7 @@ export function ReservationDetails({
                   <div className="flex justify-between items-center text-lg">
                     <span className="font-bold" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Toplam:</span>
                     <span className="font-bold text-xl" style={{ color: themeColor }}>
-                      {getTotalAmount()} ₺
+                      {getTotalAmount()} {getCurrencySymbol(selectedCurrency)}
                     </span>
                   </div>
                 </div>
@@ -510,7 +533,7 @@ export function ReservationDetails({
 
                     {paymentMethod === "prepayment" && (
                       <div className="space-y-2">
-                        <Label>Ön Ödeme Tutarı (₺)</Label>
+                        <Label>Ön Ödeme Tutarı ({getCurrencySymbol(selectedCurrency)})</Label>
                         <Input
                           type="number"
                           min="0"
@@ -519,8 +542,8 @@ export function ReservationDetails({
                           onChange={(e) => setPrepaymentAmount(parseFloat(e.target.value) || 0)}
                         />
                         <div className="text-sm text-gray-600">
-                          <p>Ön ödeme: {Math.min(prepaymentAmount, getTotalAmount())} ₺</p>
-                          <p>Kalan tutar: {getTotalAmount() - Math.min(prepaymentAmount, getTotalAmount())} ₺</p>
+                          <p>Ön ödeme: {Math.min(prepaymentAmount, getTotalAmount())} {getCurrencySymbol(selectedCurrency)}</p>
+                          <p>Kalan tutar: {getTotalAmount() - Math.min(prepaymentAmount, getTotalAmount())} {getCurrencySymbol(selectedCurrency)}</p>
                         </div>
                       </div>
                     )}
@@ -561,7 +584,7 @@ export function ReservationDetails({
                   }
                 >
                   <Calendar className="w-5 h-5 mr-2" />
-                  {isSubmitting ? "Rezervasyon Yapılıyor..." : `Rezervasyonu Tamamla - ${getTotalAmount()} ₺`}
+                  {isSubmitting ? "Rezervasyon Yapılıyor..." : `Rezervasyonu Tamamla - ${getTotalAmount()} ${getCurrencySymbol(selectedCurrency)}`}
                 </Button>
                 
                 {assignment.serviceCategory === "transfer" && selectedVehicles.length === 0 && (
