@@ -9,6 +9,7 @@ interface VehicleInSlot {
   price: number;
   quota: number;
   count: number;
+  currency: 'TL' | 'USD' | 'EUR';
 }
 
 interface SelectedVehicle extends VehicleInSlot {
@@ -19,8 +20,8 @@ interface SelectedVehicle extends VehicleInSlot {
 export function useReservationState(isOpen: boolean, assignment: any) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<Array<{id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]}>>([]);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]} | null>(null);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<Array<{id: string, startTime: string, endTime: string, price: number, quota: number, currency: 'TL' | 'USD' | 'EUR', vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]}>>([]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{id: string, startTime: string, endTime: string, price: number, quota: number, currency: 'TL' | 'USD' | 'EUR', vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]} | null>(null);
   const [personCount, setPersonCount] = useState<number>(1);
   const [vehicleCount, setVehicleCount] = useState<number>(1);
   const [routeId, setRouteId] = useState<string | null>(null);
@@ -63,6 +64,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     locationSlug: ""
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [selectedCurrency, setSelectedCurrency] = useState<'TL' | 'USD' | 'EUR'>('TL');
   const { toast } = useToast();
 
   // Reset state when modal opens/closes
@@ -86,8 +88,15 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       setCustomerErrors({});
       setIsSuccessModalOpen(false);
       setIsSubmitting(false);
+    } else {
+       // Set default currency when modal opens
+      if (assignment?.pricingSettings?.dateRanges?.[0]?.timeSlots?.[0]?.currency) {
+        setSelectedCurrency(assignment.pricingSettings.dateRanges[0].timeSlots[0].currency);
+      } else {
+        setSelectedCurrency('TL');
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, assignment]);
 
   // Load assigned vehicles for motor tours
   useEffect(() => {
@@ -287,7 +296,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     }
   };
 
-  const handleTimeSlotSelect = (timeSlot: {id: string, startTime: string, endTime: string, price: number, quota: number, vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]}) => {
+  const handleTimeSlotSelect = (timeSlot: {id: string, startTime: string, endTime: string, price: number, quota: number, currency: 'TL' | 'USD' | 'EUR', vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]}) => {
     setSelectedTimeSlot(timeSlot);
     
     // Reset person count when time slot changes
@@ -322,6 +331,9 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     } else {
       setPersonCount(1);
     }
+
+    // Set currency from selected time slot
+    setSelectedCurrency(timeSlot.currency || 'TL');
   };
 
   const handlePersonCountChange = (value: string) => {
@@ -510,12 +522,14 @@ export function useReservationState(isOpen: boolean, assignment: any) {
           startTime: selectedTimeSlot.startTime,
           endTime: selectedTimeSlot.endTime,
           price: selectedTimeSlot.price,
+          currency: selectedTimeSlot.currency,
         },
         
         // Pricing
         unitPrice: selectedTimeSlot.price, // Base price without commission
         totalAmount: paymentBreakdown.total,
         commissionAmount: assignment.pricingSettings?.commissionAmount || 0,
+        currency: selectedCurrency,
         
         // Payment
         paymentMethod: paymentMethod,
@@ -541,7 +555,8 @@ export function useReservationState(isOpen: boolean, assignment: any) {
           vehicleTypeName: sv.vehicle.vehicleTypeName,
           maxPassengerCapacity: sv.vehicle.maxPassengerCapacity,
           count: sv.count,
-          price: sv.price
+          price: sv.price,
+          currency: sv.currency
         }));
       } else {
         reservationData.personCount = personCount;
@@ -609,6 +624,8 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     isSuccessModalOpen,
     successData,
     isSubmitting,
+    selectedCurrency,
+    setSelectedCurrency,
     handleDateSelect,
     handleTimeSlotSelect,
     handlePersonCountChange,

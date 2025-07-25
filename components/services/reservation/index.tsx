@@ -45,6 +45,8 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
     successData,
     customerErrors,
     isSubmitting,
+    selectedCurrency,
+    setSelectedCurrency,
     handleDateSelect,
     handleTimeSlotSelect,
     handlePersonCountChange,
@@ -155,6 +157,8 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
               assignedVehicles={assignedVehicles}
               themeColor={themeColor}
               buttonStyle={getButtonStyle()}
+              selectedCurrency={selectedCurrency}
+              onCurrencyChange={setSelectedCurrency}
               handleTimeSlotSelect={handleTimeSlotSelect}
               handlePersonCountChange={handlePersonCountChange}
               handlePersonCountForTransferChange={handlePersonCountForTransferChange}
