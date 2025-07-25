@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -41,7 +42,17 @@ export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountC
   const [tourDetails, setTourDetails] = useState(categoryDetails?.tourDetails || "");
   const [difficulty, setDifficulty] = useState(categoryDetails?.difficulty || "");
   const [minAge, setMinAge] = useState(categoryDetails?.minAge || "");
-  const [photos, setPhotos] = useState<Array<string | null>>(categoryDetails?.photos || [null, null, null]);
+  
+  const initializePhotos = () => {
+    const existingPhotos = categoryDetails?.photos || [];
+    const photoArray = [...existingPhotos];
+    while (photoArray.length < 6) {
+      photoArray.push(null);
+    }
+    return photoArray.slice(0, 6);
+  };
+  const [photos, setPhotos] = useState<Array<string | null>>(initializePhotos());
+
   const [vehicles, setVehicles] = useState<VehicleData[]>([]);
 
   // Update category details when data changes
@@ -51,7 +62,7 @@ export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountC
       tourDetails,
       difficulty,
       minAge,
-      photos,
+      photos: photos.filter(p => p !== null),
     });
   }, [routeDetails, tourDetails, difficulty, minAge, photos, onCategoryDetailsChange]);
 
@@ -189,9 +200,9 @@ export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountC
       <div>
         <Label className="flex items-center gap-2">
           <Camera className="h-4 w-4" />
-          Fotoğraf Galerisi
+          Fotoğraf Galerisi (En fazla 6 adet)
         </Label>
-        <div className="grid grid-cols-3 gap-4 mt-1.5">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-1.5">
           {photos.map((photo, index) => (
             <ImageUpload
               key={index}

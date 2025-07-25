@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,6 +10,7 @@ import { ServiceDetailHeader } from "./ServiceDetailHeader";
 import { ServiceCoverImage } from "./ServiceCoverImage";
 import { ServiceGeneralNotes } from "./ServiceGeneralNotes";
 import { ServiceTourDetails } from "./ServiceTourDetails";
+import ServiceTourInformation from "./ServiceTourInformation";
 import { ServiceGallery } from "./ServiceGallery";
 import { ServiceContact } from "./ServiceContact";
 import { ServiceActionButtons } from "./ServiceActionButtons";
@@ -36,6 +38,8 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
     setIsGeneralNotesOpen,
     isTourDetailsOpen,
     setIsTourDetailsOpen,
+    isTourInformationOpen,
+    setIsTourInformationOpen,
     isGalleryOpen,
     setIsGalleryOpen,
     isContactOpen,
@@ -45,7 +49,6 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
 
   const [theme, setTheme] = useState<any>(null);
 
-  // Load theme based on category colors
   useEffect(() => {
     const loadTheme = async () => {
       if (assignment?.serviceCategory) {
@@ -63,7 +66,6 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
 
   const service = assignment.serviceDetails;
   
-  // Use default theme if custom theme not loaded yet
   const currentTheme = theme || {
     customStyle: { backgroundColor: '#dc2626' },
     decorativeIcons: []
@@ -96,6 +98,14 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
                 theme={currentTheme}
                 isOpen={isTourDetailsOpen}
                 onToggle={setIsTourDetailsOpen}
+              />
+
+              <ServiceTourInformation
+                assignment={assignment}
+                service={service}
+                theme={currentTheme}
+                isOpen={isTourInformationOpen}
+                onToggle={setIsTourInformationOpen}
               />
               
               <ServiceGeneralNotes 
@@ -130,7 +140,6 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
           onReservationClick={() => setIsReservationModalOpen(true)}
         />
 
-        {/* Image Modal */}
         {isImageModalOpen && selectedImage && (
           <Dialog open={isImageModalOpen} onOpenChange={() => setIsImageModalOpen(false)}>
             <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 bg-black/95 border-0">

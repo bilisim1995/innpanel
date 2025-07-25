@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -29,7 +30,18 @@ const PAYMENT_OPTIONS = [
 
 export function RegionTours({ selectedPayments, onPaymentChange, onPaymentAmountChange, categoryDetails, onCategoryDetailsChange }: RegionToursProps) {
   const [isVIP, setIsVIP] = useState(categoryDetails?.isVIP || false);
-  const [photos, setPhotos] = useState<Array<string | null>>(categoryDetails?.photos || [null, null, null]);
+  
+  // Ensure photo array is always 6 elements long
+  const initializePhotos = () => {
+    const existingPhotos = categoryDetails?.photos || [];
+    const photoArray = [...existingPhotos];
+    while (photoArray.length < 6) {
+      photoArray.push(null);
+    }
+    return photoArray.slice(0, 6); // Ensure it's not more than 6
+  };
+  const [photos, setPhotos] = useState<Array<string | null>>(initializePhotos());
+
   const [tourInfo, setTourInfo] = useState(categoryDetails?.tourInfo || "");
   const [included, setIncluded] = useState(categoryDetails?.included || "");
   const [excluded, setExcluded] = useState(categoryDetails?.excluded || "");
@@ -38,7 +50,7 @@ export function RegionTours({ selectedPayments, onPaymentChange, onPaymentAmount
   useEffect(() => {
     onCategoryDetailsChange({
       isVIP,
-      photos,
+      photos: photos.filter(p => p !== null), // Save only non-null photos
       tourInfo,
       included,
       excluded,
@@ -96,9 +108,9 @@ export function RegionTours({ selectedPayments, onPaymentChange, onPaymentAmount
       <div>
         <Label className="flex items-center gap-2">
           <Camera className="h-4 w-4" />
-          Fotoğraf Galerisi
+          Fotoğraf Galerisi (En fazla 6 adet)
         </Label>
-        <div className="grid grid-cols-3 gap-4 mt-1.5">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-1.5">
           {photos.map((photo, index) => (
             <ImageUpload
               key={index}

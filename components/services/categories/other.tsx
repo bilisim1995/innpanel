@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -32,18 +33,24 @@ export function Other({ selectedPayments, onPaymentChange, onPaymentAmountChange
     value: "",
     unit: "",
   });
-  const [photos, setPhotos] = useState<Array<string | null>>(categoryDetails?.photos || [null, null, null]);
+  
+  const initializePhotos = () => {
+    const existingPhotos = categoryDetails?.photos || [];
+    const photoArray = [...existingPhotos];
+    while (photoArray.length < 6) {
+      photoArray.push(null);
+    }
+    return photoArray.slice(0, 6);
+  };
+  const [photos, setPhotos] = useState<Array<string | null>>(initializePhotos());
 
   // Update local state when categoryDetails changes
   useEffect(() => {
     if (categoryDetails) {
       setServiceTitle(categoryDetails.serviceTitle || "");
       setServiceDescription(categoryDetails.serviceDescription || "");
-      setServiceDuration(categoryDetails.serviceDuration || {
-        value: "",
-        unit: "",
-      });
-      setPhotos(categoryDetails.photos || [null, null, null]);
+      setServiceDuration(categoryDetails.serviceDuration || { value: "", unit: "" });
+      setPhotos(initializePhotos());
     }
   }, [categoryDetails]);
 
@@ -53,7 +60,7 @@ export function Other({ selectedPayments, onPaymentChange, onPaymentAmountChange
       serviceTitle,
       serviceDescription,
       serviceDuration,
-      photos,
+      photos: photos.filter(p => p !== null),
     });
   }, [serviceTitle, serviceDescription, serviceDuration, photos, onCategoryDetailsChange]);
 
@@ -106,9 +113,9 @@ export function Other({ selectedPayments, onPaymentChange, onPaymentAmountChange
       <div>
         <Label className="flex items-center gap-2">
           <Camera className="h-4 w-4" />
-          Fotoğraf Galerisi
+          Fotoğraf Galerisi (En fazla 6 adet)
         </Label>
-        <div className="grid grid-cols-3 gap-4 mt-1.5">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-1.5">
           {photos.map((photo, index) => (
             <ImageUpload
               key={index}

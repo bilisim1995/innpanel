@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -40,7 +41,17 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
     baggageCapacity: "",
     features: "",
   });
-  const [photos, setPhotos] = useState<Array<string | null>>(categoryDetails?.photos || [null, null, null]);
+  
+  const initializePhotos = () => {
+    const existingPhotos = categoryDetails?.photos || [];
+    const photoArray = [...existingPhotos];
+    while (photoArray.length < 6) {
+      photoArray.push(null);
+    }
+    return photoArray.slice(0, 6);
+  };
+  const [photos, setPhotos] = useState<Array<string | null>>(initializePhotos());
+
   const [selectedTransferPrice, setSelectedTransferPrice] = useState<string>(categoryDetails?.selectedTransferPrice || "");
   const [selectedTransferPriceData, setSelectedTransferPriceData] = useState<TransferPriceData | null>(null);
 
@@ -56,13 +67,10 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
         setVehicles(vehiclesData.filter(v => v.isActive));
         setTransferPrices(transferPricesData.filter(tp => tp.isActive));
         
-        // If editing and there's a selected transfer price, find it
         if (categoryDetails?.selectedTransferPrice) {
           const selectedPrice = transferPricesData.find(tp => tp.id === categoryDetails.selectedTransferPrice);
           if (selectedPrice) {
             setSelectedTransferPriceData(selectedPrice);
-            
-            // Update route details from the selected transfer price
             setRouteDetails({
               startPoint: selectedPrice.departurePoint,
               endPoint: selectedPrice.arrivalPoint,
@@ -79,7 +87,7 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
     };
     
     loadData();
-  }, []);
+  }, [categoryDetails]);
 
   // When a transfer price is selected, update route details
   useEffect(() => {
@@ -87,15 +95,12 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
       const selected = transferPrices.find(tp => tp.id === selectedTransferPrice);
       if (selected) {
         setSelectedTransferPriceData(selected);
-        
-        // Update route details from the selected transfer price
         const updatedRouteDetails = {
           startPoint: selected.departurePoint,
           endPoint: selected.arrivalPoint,
           duration: selected.transferDuration.toString(),
-          distance: routeDetails.distance, // Keep existing distance if any
+          distance: routeDetails.distance,
         };
-        
         setRouteDetails(updatedRouteDetails);
       }
     }
@@ -107,7 +112,7 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
       selectedTransferPrice,
       routeDetails,
       vehicleDetails,
-      photos,
+      photos: photos.filter(p => p !== null),
     });
   }, [selectedTransferPrice, routeDetails, vehicleDetails, photos, onCategoryDetailsChange]);
 
@@ -141,7 +146,6 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
             Kayıtlı güzergah seçerseniz, kalkış ve varış noktaları otomatik doldurulur.
           </p>
           
-          {/* Display selected route details */}
           {selectedTransferPriceData && (
             <Card className="mt-4 bg-muted/30">
               <CardContent className="p-4 space-y-3">
@@ -158,7 +162,6 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
                   <span>Süre: {routeDetails.duration} dakika</span>
                 </div>
                 
-                {/* Display vehicle prices if available */}
                 {selectedTransferPriceData.vehiclePrices && (
                   <div className="space-y-1 pt-2 border-t">
                     <p className="text-sm font-medium">Araç Fiyatları:</p>
@@ -205,9 +208,9 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
       <div>
         <Label className="flex items-center gap-2">
           <Camera className="h-4 w-4" />
-          Fotoğraf Galerisi
+          Fotoğraf Galerisi (En fazla 6 adet)
         </Label>
-        <div className="grid grid-cols-3 gap-4 mt-1.5">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-1.5">
           {photos.map((photo, index) => (
             <ImageUpload
               key={index}

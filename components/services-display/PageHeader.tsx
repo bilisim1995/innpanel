@@ -1,3 +1,4 @@
+
 "use client";
 
 import { MapPin, Eye } from "lucide-react";
@@ -24,46 +25,46 @@ export function PageHeader({ location, showBackButton = false, onBackClick }: Pa
   };
 
   return (
-    <div>
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-start gap-4">
-            {showBackButton && (
-              <Button
-                onClick={onBackClick}
-                variant="ghost"
-                className="bg-white hover:bg-gray-50 border-2 border-gray-300 text-gray-700 font-medium p-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center text-sm flex-shrink-0 w-10 h-10"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            )}
-            
-            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative group">
+    <div className="sticky top-0 z-20 bg-white shadow-md border-b border-gray-200 transition-all duration-300">
+      <div className="max-w-4xl mx-auto px-4 py-3">
+        <div className="flex items-center gap-4">
+          {showBackButton && (
+            <Button
+              onClick={onBackClick}
+              variant="ghost"
+              className="bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 font-semibold p-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 w-10 h-10 flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
+
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative group border-2 border-white shadow-lg">
               {location.facilityImage ? (
                 <div className="relative w-full h-full">
-                  <img 
-                    src={location.facilityImage} 
+                  <img
+                    src={location.facilityImage}
                     alt={location.name}
-                    className="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-110 border-2 border-gray-200 rounded-lg shadow-md"
+                    className="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-110"
                     onClick={handleImageClick}
                   />
-                  <div 
-                    className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer"
+                  <div
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer"
                     onClick={handleImageClick}
                   >
-                    <Eye className="w-4 h-4 text-white" />
+                    <Eye className="w-6 h-6 text-white" />
                   </div>
                 </div>
               ) : (
-                <MapPin className="w-6 h-6 text-gray-600" />
+                <MapPin className="w-7 h-7 text-gray-500" />
               )}
             </div>
-            
-            <div className="flex-1 min-w-0 flex flex-col justify-center">
-              <h1 className="text-xl font-semibold text-gray-900 mb-1 drop-shadow-sm">
+
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-bold text-gray-900 truncate">
                 {location.name}
               </h1>
-              <p className="text-gray-600 text-sm font-medium drop-shadow-sm">{location.address}</p>
+              <p className="text-sm text-gray-600 truncate">{location.address}</p>
             </div>
           </div>
         </div>
@@ -71,16 +72,16 @@ export function PageHeader({ location, showBackButton = false, onBackClick }: Pa
 
       {location.facilityImage && (
         <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-          <DialogContent className="max-w-4xl w-full h-[90vh] p-0 bg-black/95 border-0">
+          <DialogContent className="max-w-4xl w-full h-[90vh] p-0 bg-black/90 border-0">
             <DialogTitle>
               <VisuallyHidden.Root>Tesis Fotoğrafı</VisuallyHidden.Root>
             </DialogTitle>
-            
+
             <div className="absolute top-4 right-4 z-20">
               <Button
                 onClick={() => setIsImageModalOpen(false)}
                 variant="ghost"
-                className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 w-10 h-10 rounded-lg flex items-center justify-center"
+                className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 w-10 h-10 rounded-full"
               >
                 ✕
               </Button>
@@ -90,7 +91,7 @@ export function PageHeader({ location, showBackButton = false, onBackClick }: Pa
               <img
                 src={location.facilityImage}
                 alt={location.name}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
               />
             </div>
           </DialogContent>

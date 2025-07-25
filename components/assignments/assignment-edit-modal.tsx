@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -288,6 +289,7 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
 
   if (!assignment) return null;
 
+  const isTransferCategory = assignment.serviceCategory === "transfer";
   const isBalloonCategory = assignment.serviceCategory.includes("balloon");
 
 
@@ -422,8 +424,14 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                                 {range.timeSlots.map((slot) => (
                                   <div key={slot.id} className="p-3 border rounded-lg bg-muted/30 space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
-                                      <div className="space-y-1"><Label className="text-xs">Başlangıç</Label><Input className="h-9" type="time" value={slot.startTime} onChange={(e) => updateTimeSlot(range.id, slot.id, 'startTime', e.target.value)} /></div>
-                                      <div className="space-y-1"><Label className="text-xs">Bitiş</Label><Input className="h-9" type="time" value={slot.endTime} onChange={(e) => updateTimeSlot(range.id, slot.id, 'endTime', e.target.value)} /></div>
+                                      <div className="space-y-1">
+                                        <Label className="text-xs">{isTransferCategory ? "Kalkış" : "Başlangıç"}</Label>
+                                        <Input className="h-9" type="time" value={slot.startTime} onChange={(e) => updateTimeSlot(range.id, slot.id, 'startTime', e.target.value)} />
+                                      </div>
+                                      <div className="space-y-1">
+                                        <Label className="text-xs">{isTransferCategory ? "Varış" : "Bitiş"}</Label>
+                                        <Input className="h-9" type="time" value={slot.endTime} onChange={(e) => updateTimeSlot(range.id, slot.id, 'endTime', e.target.value)} />
+                                      </div>
                                       
                                       {assignment.serviceCategory !== "transfer" && (
                                         <>

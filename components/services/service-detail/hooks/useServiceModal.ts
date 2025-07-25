@@ -6,6 +6,7 @@ export function useServiceModal() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isGeneralNotesOpen, setIsGeneralNotesOpen] = useState(false);
   const [isTourDetailsOpen, setIsTourDetailsOpen] = useState(false);
+  const [isTourInformationOpen, setIsTourInformationOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
 
@@ -24,6 +25,8 @@ export function useServiceModal() {
     setIsGeneralNotesOpen,
     isTourDetailsOpen,
     setIsTourDetailsOpen,
+    isTourInformationOpen,
+    setIsTourInformationOpen,
     isGalleryOpen,
     setIsGalleryOpen,
     isContactOpen,
