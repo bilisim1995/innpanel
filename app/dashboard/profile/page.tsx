@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -30,15 +30,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
-import { User, Lock, Mail, Shield, Palette, Plus, Edit, Trash2, Car, Phone } from "lucide-react";
+import { User, Lock, Mail, Shield, Palette, Plus, Edit, Trash2, Car, Phone, CreditCard } from "lucide-react";
 import { DEFAULT_CATEGORIES, getCategoryColors, deleteCategoryColor, CategoryColorSettings, getColorPreview } from "@/lib/categories";
-import { saveWhatsAppNumber, getWhatsAppNumber } from "@/lib/settings";
+import { saveWhatsAppNumber, getWhatsAppNumber, saveNotificationEmail, getNotificationEmail } from "@/lib/settings";
 import { CategoryColorModal } from "@/components/categories/category-color-modal";
 import { getVehicles, deleteVehicle, VehicleData } from "@/lib/vehicles";
 import { VehicleModal } from "@/components/vehicles/vehicle-modal";
 import { getTransferPrices, deleteTransferPrice, TransferPriceData } from "@/lib/transfer-prices";
 import { TransferPriceModal } from "@/components/transfer-prices/transfer-price-modal";
-import { CreditCard } from "lucide-react";
 
 export default function ProfilePage() {
   const { user, updateUserProfile, changePassword } = useAuth();
@@ -46,17 +45,27 @@ export default function ProfilePage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  // System Settings State
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [isUpdatingWhatsApp, setIsUpdatingWhatsApp] = useState(false);
+  const [notificationEmail, setNotificationEmail] = useState("");
+  const [isUpdatingNotificationEmail, setIsUpdatingNotificationEmail] = useState(false);
+
+  // Category Colors State
   const [categoryColors, setCategoryColors] = useState<CategoryColorSettings[]>([]);
   const [loadingColors, setLoadingColors] = useState(true);
   const [isColorModalOpen, setIsColorModalOpen] = useState(false);
   const [editingColor, setEditingColor] = useState<CategoryColorSettings | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<{id: string, name: string} | null>(null);
+
+  // Vehicle Management State
   const [vehicles, setVehicles] = useState<VehicleData[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(true);
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<VehicleData | null>(null);
+
+  // Transfer Pricing State
   const [transferPrices, setTransferPrices] = useState<TransferPriceData[]>([]);
   const [loadingTransferPrices, setLoadingTransferPrices] = useState(true);
   const [isTransferPriceModalOpen, setIsTransferPriceModalOpen] = useState(false);
@@ -82,14 +91,13 @@ export default function ProfilePage() {
         lastName: nameParts.slice(1).join(' ') || "",
       });
     }
-    // Load WhatsApp number from localStorage
-    setWhatsappNumber(localStorage.getItem('whatsappNumber') || "");
   }, [user]);
 
-  // Load category colors
+  // Load all settings and data on mount
   useEffect(() => {
     loadCategoryColors();
     loadWhatsAppNumber();
+    loadNotificationEmail();
     loadVehicles();
     loadTransferPrices();
   }, []);
@@ -118,6 +126,17 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error loading WhatsApp number:', error);
+    }
+  };
+
+  const loadNotificationEmail = async () => {
+    try {
+        const email = await getNotificationEmail();
+        if (email) {
+            setNotificationEmail(email);
+        }
+    } catch (error) {
+        console.error('Error loading notification email:', error);
     }
   };
 
@@ -152,6 +171,7 @@ export default function ProfilePage() {
       setLoadingTransferPrices(false);
     }
   };
+
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -212,6 +232,42 @@ export default function ProfilePage() {
     }
   };
 
+  const handleNotificationEmailSave = async () => {
+    if (!notificationEmail.trim()) {
+      toast({
+        title: "Hata",
+        description: "Bildirim e-postası boş bırakılamaz",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(notificationEmail)) {
+        toast({
+            title: "Hata",
+            description: "Lütfen geçerli bir e-posta adresi girin",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    setIsUpdatingNotificationEmail(true);
+    try {
+      await saveNotificationEmail(notificationEmail.trim());
+      toast({
+        title: "Başarılı",
+        description: "Bildirim e-postası başarıyla kaydedildi",
+      });
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: error instanceof Error ? error.message : "Bildirim e-postası kaydedilirken bir hata oluştu",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingNotificationEmail(false);
+    }
+  };
+
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -246,12 +302,7 @@ export default function ProfilePage() {
     try {
       await changePassword(passwordData.currentPassword, passwordData.newPassword);
       
-      // Clear password fields
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       
       toast({
         title: "Başarılı",
@@ -267,6 +318,7 @@ export default function ProfilePage() {
       setIsChangingPassword(false);
     }
   };
+
   const handleAddColor = (categoryId: string, categoryName: string) => {
     setSelectedCategory({ id: categoryId, name: categoryName });
     setEditingColor(null);
@@ -368,6 +420,7 @@ export default function ProfilePage() {
     setEditingTransferPrice(null);
     loadTransferPrices();
   };
+
   const getCategoryColorSettings = (categoryId: string) => {
     return categoryColors.find(color => color.categoryId === categoryId);
   };
@@ -404,31 +457,87 @@ export default function ProfilePage() {
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profil Fotoğrafı</CardTitle>
-              <CardDescription>
-                Profil fotoğrafınızı buradan güncelleyebilirsiniz
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="max-w-[200px]">
-                <ImageUpload
-                  value={profileImage}
-                  onChange={(value) => setProfileImage(value)}
-                  folder="profile"
-                  aspectRatio="square"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle>Profil Fotoğrafı</CardTitle>
+                <CardDescription>
+                  Profil fotoğrafınızı buradan güncelleyebilirsiniz
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="max-w-[200px] mx-auto">
+                  <ImageUpload
+                    value={profileImage}
+                    onChange={(value) => setProfileImage(value)}
+                    folder="profile"
+                    aspectRatio="square"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Sistem Ayarları</CardTitle>
+                <CardDescription>
+                  Genel sistem ve iletişim ayarlarını buradan yönetin.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="notificationEmail" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Rezervasyon Bildirim E-postası
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="notificationEmail"
+                      type="email"
+                      value={notificationEmail}
+                      onChange={(e) => setNotificationEmail(e.target.value)}
+                      placeholder="bildirimler@example.com"
+                      className="flex-1"
+                    />
+                    <Button onClick={handleNotificationEmailSave} variant="outline" disabled={isUpdatingNotificationEmail}>
+                      {isUpdatingNotificationEmail ? "Kaydediliyor..." : "Kaydet"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Yeni rezervasyon bildirimleri bu e-posta adresine gönderilecektir.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    WhatsApp Telefon Numarası
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="whatsappNumber"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value)}
+                      placeholder="WhatsApp numaranızı girin (örn: 5551234567)"
+                      className="flex-1"
+                    />
+                    <Button onClick={handleWhatsAppSave} variant="outline" disabled={isUpdatingWhatsApp}>
+                      {isUpdatingWhatsApp ? "Kaydediliyor..." : "Kaydet"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Bu numara, hizmet sayfalarındaki Bilgi Al WhatsApp butonunda kullanılacaktır.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           <form onSubmit={handleProfileSubmit}>
             <Card>
               <CardHeader>
                 <CardTitle>Kişisel Bilgiler</CardTitle>
                 <CardDescription>
-                  Profil bilgilerinizi buradan güncelleyebilirsiniz
+                  Giriş yapan yönetici profil bilgilerini buradan güncelleyebilirsiniz.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -471,28 +580,7 @@ export default function ProfilePage() {
                     className="bg-muted"
                   />
                   <p className="text-xs text-muted-foreground">
-                    E-posta adresi değiştirilemez
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    WhatsApp Telefon Numarası
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="whatsappNumber"
-                      value={whatsappNumber}
-                      onChange={(e) => setWhatsappNumber(e.target.value)}
-                      placeholder="WhatsApp numaranızı girin (örn: 5551234567)"
-                      className="flex-1"
-                    />
-                    <Button onClick={handleWhatsAppSave} variant="outline">
-                      {isUpdatingWhatsApp ? "Kaydediliyor..." : "Kaydet"}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Bu numara, hizmet sayfalarındaki Bilgi Al WhatsApp butonunda kullanılacaktır
+                    E-posta adresi değiştirilemez.
                   </p>
                 </div>
                 <div className="flex justify-end">
@@ -511,7 +599,7 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle>Şifre Değiştir</CardTitle>
                 <CardDescription>
-                  Hesap güvenliğiniz için şifrenizi düzenli olarak değiştirmenizi öneririz
+                  Hesap güvenliğiniz için şifrenizi düzenli olarak değiştirmenizi öneririz.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -567,7 +655,7 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle>İki Faktörlü Doğrulama</CardTitle>
               <CardDescription>
-                Hesabınızın güvenliğini artırmak için iki faktörlü doğrulamayı etkinleştirin
+                Hesabınızın güvenliğini artırmak için iki faktörlü doğrulamayı etkinleştirin.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -583,6 +671,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </TabsContent>
+
         <TabsContent value="categories" className="space-y-6">
           <Card>
             <CardHeader>
@@ -596,7 +685,6 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {/* Available Categories */}
                 <div>
                   <h4 className="font-medium mb-4">Mevcut Kategoriler</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -691,7 +779,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Color Settings Table */}
                 {categoryColors.length > 0 && (
                   <div>
                     <h4 className="font-medium mb-4">Renk Ayarları</h4>
@@ -823,7 +910,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </TabsContent>
-
+        
         <TabsContent value="vehicles" className="space-y-6">
           <Card>
             <CardHeader>
