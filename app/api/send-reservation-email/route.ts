@@ -17,7 +17,7 @@ const createAdminEmailHtml = (data: any): string => `
     </head>
     <body>
       <div class="container">
-        <h1>INNGEZ - Yeni Rezervasyon Bildirimi</h1>
+        <h1>INNGET - Yeni Rezervasyon Bildirimi</h1>
         <p><strong>Hizmet Adı:</strong> ${data.serviceName}</p>
         <h3>Rezervasyon Detayları</h3>
         <ul>
@@ -88,7 +88,7 @@ const formatCustomerWhatsAppMessage = (data: any): string => {
   const { serviceName, reservationDetails, customerInfo, totalAmount, currency } = data;
   return `Sayın *${customerInfo.name}*,
 
-INNGEZ aracılığıyla yapmış olduğunuz rezervasyonunuz başarıyla onaylanmıştır. ✅
+INNGET aracılığıyla yapmış olduğunuz rezervasyonunuz başarıyla onaylanmıştır. ✅
 
 *Hizmet:* ${serviceName}
 *Tarih:* ${new Date(reservationDetails.date).toLocaleDateString('tr-TR')}
@@ -144,9 +144,9 @@ export async function POST(req: NextRequest) {
   const adminEmail = await getNotificationEmail();
   if (adminEmail) {
     notificationPromises.push(transporter.sendMail({
-        from: `"INNGEZ Rezervasyon" <${process.env.SMTP_USER}>`,
+        from: `"INNGET Rezervasyon" <${process.env.SMTP_USER}>`,
         to: adminEmail,
-        subject: `INNGEZ Yeni Rezervasyon: ${reservationData.serviceName}`,
+        subject: `INNGET Yeni Rezervasyon: ${reservationData.serviceName}`,
         html: createAdminEmailHtml(reservationData),
     }).catch(err => console.error("Yönetici e-postası gönderilemedi:", err)));
   }
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
   const customerEmail = reservationData.customerInfo.email;
   if (customerEmail) {
     notificationPromises.push(transporter.sendMail({
-        from: `"INNGEZ Rezervasyon Onayı" <${process.env.SMTP_USER}>`,
+        from: `"INNGET Rezervasyon Onayı" <${process.env.SMTP_USER}>`,
         to: customerEmail,
         subject: `Rezervasyon Onayınız: ${reservationData.serviceName}`,
         html: createCustomerEmailHtml(reservationData),
