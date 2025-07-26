@@ -8,6 +8,7 @@ import {
   BoltIcon,
   EllipsisHorizontalIcon
 } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 export default function HomePage() {
   return (
@@ -17,27 +18,22 @@ export default function HomePage() {
         backgroundImage: "url('https://images.unsplash.com/photo-1532623471313-acb5d736d36e?q=80&w=2070&auto=format&fit=crop')",
       }}
     >
-      {/* Ana arka planı karartarak yazının okunurluğunu artıran katman */}
       <div className="absolute inset-0 bg-black/60 z-0"></div>
 
-      {/* YENİ: Arka plana eklenen saydam ve büyük sıcak hava balonu görseli */}
       <div className="absolute inset-0 z-[5] flex items-center justify-center overflow-hidden pointer-events-none">
-        <img
-          // Şeffaf arka planlı bir PNG görseli kullanıyoruz.
+        <Image
           src="https://www.pngall.com/wp-content/uploads/5/Hot-Air-Balloon-PNG-Free-Image.png"
           alt="Arka Plan Sıcak Hava Balonu"
-          // Görselin yüksekliğini ekranın 3/4'ü kadar yapıp opaklığını %10'a düşürüyoruz.
-          className="w-auto h-3/4 max-h-[80vh] object-contain opacity-10"
+          layout="fill"
+          objectFit="contain"
+          className="opacity-10"
         />
       </div>
 
-      {/* Ana İçerik Alanı */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-7xl mx-auto">
         
-        {/* İçerik, saydam görselin üzerinde yer alır */}
         <div className="relative z-20 w-full p-4">
 
-          {/* Ana Başlık ve Alt Başlık */}
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-4xl font-extrabold tracking-tight drop-shadow-lg">
               Konaklamanız <span className="text-amber-400">Unutulmaz Olsun</span>
@@ -47,7 +43,6 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Nasıl Çalışır? / QR Kod Eylem Çağrısı */}
           <div className="mt-16 bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 max-w-2xl w-full mx-auto">
             <h2 className="text-2xl font-bold mb-6">Rezervasyon Çok Kolay!</h2>
             <div className="flex flex-col md:flex-row items-center gap-6">
@@ -64,7 +59,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Aktiviteler Vitrini */}
           <div className="mt-20 w-full">
             <h3 className="text-3xl font-bold mb-8">Keşfedebileceğiniz Aktiviteler</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
@@ -104,7 +98,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* İletişim bilgisi eklenmiş Footer */}
       <footer className="absolute bottom-0 left-0 w-full p-6 z-10 text-center text-gray-400 text-sm">
         <div>
           <p className="mt-2">

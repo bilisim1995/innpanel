@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Banknote } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import { ServiceData } from "@/lib/services";
 import { getCategoryIcon, getCategoryColorsSync } from "./utils/categoryUtils";
+import Image from 'next/image';
 
 interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: ServiceData;
@@ -41,19 +42,15 @@ export function ServiceCard({
   const CategoryIcon = getCategoryIcon(assignment.serviceCategory);
   const colors = categoryColors[assignment.serviceCategory] || getCategoryColorsSync(assignment.serviceCategory);
   
-  // Get the background color from colors
   const backgroundColor = colors.customStyle?.background || colors.customStyle?.backgroundColor || '#dc2626';
   
-  // Get all images for an assignment (cover + gallery)
   const getAllImages = () => {
     const images: string[] = [];
     
-    // Add cover image first
     if (assignment.serviceDetails?.coverImage) {
       images.push(assignment.serviceDetails.coverImage);
     }
     
-    // Add gallery images
     if (assignment.serviceDetails?.categoryDetails?.photos) {
       const galleryImages = assignment.serviceDetails.categoryDetails.photos
         .filter((photo: string | null) => photo && photo !== assignment.serviceDetails?.coverImage);
@@ -73,12 +70,10 @@ export function ServiceCard({
       style={{ borderColor: backgroundColor }}
     >
       <CardContent className="p-0">
-        {/* Service Header */}
         <div 
           className="p-4 relative overflow-hidden"
           style={{ backgroundColor }}
         >
-          {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
           <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
           
@@ -94,10 +89,8 @@ export function ServiceCard({
           </div>
         </div>
 
-        {/* Service Image Slider */}
         {allImages.length > 0 && (
           <div className="relative group/image">
-            {/* Görünen Fiyat - Sağ Üst */}
             {assignment.pricingSettings?.displayPrice && assignment.pricingSettings.displayPrice > 0 && (
               <div className="absolute top-3 right-3 z-10">
                 <div className="flex items-center gap-1 text-xs text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/30 shadow-lg">
@@ -107,7 +100,6 @@ export function ServiceCard({
               </div>
             )}
             
-            {/* Image Counter - Sol Üst */}
             {allImages.length > 1 && (
               <div className="absolute top-3 left-3 z-10">
                 <div className="flex items-center gap-1 text-xs text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/30 shadow-lg">
@@ -117,11 +109,12 @@ export function ServiceCard({
             )}
             
             <div className="relative w-full h-48 overflow-hidden bg-gray-100">
-              <img 
+              <Image 
                 src={currentImage}
                 alt={assignment.serviceName}
-                className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${isDragging[assignment.id!] ? 'cursor-grabbing' : 'cursor-pointer'}`}
-                loading="lazy"
+                layout="fill"
+                objectFit="cover"
+                className={`transition-transform duration-300 group-hover:scale-105 ${isDragging[assignment.id!] ? 'cursor-grabbing' : 'cursor-pointer'}`}
                 onClick={() => onImageClick(currentImage)}
                 onMouseDown={(e) => onDragStart(assignment.id!, e)}
                 onMouseUp={(e) => onDragEnd(assignment.id!, allImages.length, e)}
@@ -133,7 +126,6 @@ export function ServiceCard({
               />
             </div>
             
-            {/* Navigation Arrows */}
             {allImages.length > 1 && (
               <>
                 <button
@@ -157,7 +149,6 @@ export function ServiceCard({
               </>
             )}
             
-            {/* Dots Indicator */}
             {allImages.length > 1 && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
                 {allImages.map((_, index) => (
@@ -165,7 +156,6 @@ export function ServiceCard({
                     key={index}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // This would need proper state management
                     }}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
                       index === currentIndex 
@@ -179,7 +169,6 @@ export function ServiceCard({
           </div>
         )}
 
-        {/* Action Buttons */}
         <div className="p-4 pt-6 space-y-3">
           <Button 
             onClick={() => onServiceSelect(assignment)}

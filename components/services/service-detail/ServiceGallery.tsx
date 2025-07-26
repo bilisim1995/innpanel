@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Camera, Sparkles, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
+import Image from 'next/image';
 
 interface ServiceGalleryProps {
   assignment: AssignmentData;
@@ -15,24 +16,19 @@ interface ServiceGalleryProps {
 }
 
 export function ServiceGallery({ assignment, service, theme, isOpen, onToggle, onImageClick }: ServiceGalleryProps) {
-  // Get the background style from theme
   const backgroundStyle = theme.customStyle?.background ? 
     { background: theme.customStyle.background } : 
     { backgroundColor: theme.customStyle?.backgroundColor || '#dc2626' };
   
-  // Get text color based on background style
   const textColor = theme.customStyle?.backgroundColor || '#dc2626';
   
-  // Get all images for gallery
   const getAllImages = () => {
     const images: string[] = [];
     
-    // Add cover image first
     if (service.coverImage) {
       images.push(service.coverImage);
     }
     
-    // Add gallery images
     if (service.categoryDetails?.photos) {
       const galleryImages = service.categoryDetails.photos
         .filter((photo: string | null) => photo && photo !== service.coverImage);
@@ -88,10 +84,12 @@ export function ServiceGallery({ assignment, service, theme, isOpen, onToggle, o
                   style={{ animationDelay: `${index * 100}ms` }}
                   onClick={() => onImageClick(photo)}
                 >
-                  <img 
+                  <Image 
                     src={photo}
                     alt={`${assignment.serviceName} - ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-125"
+                    layout="fill"
+                    objectFit="cover"
+                    className="transition-transform duration-700 group-hover:scale-125"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

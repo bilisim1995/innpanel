@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getReservations, updateReservation, deleteReservation, ReservationData } from "@/lib/reservations";
+import { getReservations, deleteReservation, ReservationData } from "@/lib/reservations";
 import { useToast } from "@/hooks/use-toast";
 import { 
   AlertDialog,
@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Edit, Trash2, Eye, Search, Calendar, Users, Car, CreditCard, Phone, User, MapPin, Building2, Clock, MessageSquare } from "lucide-react";
+import { Edit, Trash2, Eye, Search, Calendar, Users, Car, CreditCard, Phone, User, MapPin, Building2, Clock, MessageSquare, Mail } from "lucide-react";
 import { ReservationEditModal } from "@/components/reservations/reservation-edit-modal";
 
 export default function ReservationsPage() {
@@ -48,11 +48,7 @@ export default function ReservationsPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadReservations();
-  }, []);
-
-  const loadReservations = async () => {
+  const loadReservations = useCallback(async () => {
     try {
       setLoading(true);
       const reservationsData = await getReservations();
@@ -66,7 +62,11 @@ export default function ReservationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadReservations();
+  }, [loadReservations]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -133,19 +133,20 @@ export default function ReservationsPage() {
   };
 
   const filteredReservations = reservations.filter(reservation => {
+    const searchLower = search.toLowerCase();
     const matchesSearch = 
-      reservation.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      reservation.customerSurname.toLowerCase().includes(search.toLowerCase()) ||
-      reservation.serviceName.toLowerCase().includes(search.toLowerCase()) ||
-      reservation.companyName.toLowerCase().includes(search.toLowerCase()) ||
-      reservation.locationName.toLowerCase().includes(search.toLowerCase());
+      reservation.customerName.toLowerCase().includes(searchLower) ||
+      reservation.customerSurname.toLowerCase().includes(searchLower) ||
+      (reservation.customerEmail && reservation.customerEmail.toLowerCase().includes(searchLower)) ||
+      reservation.serviceName.toLowerCase().includes(searchLower) ||
+      reservation.companyName.toLowerCase().includes(searchLower) ||
+      reservation.locationName.toLowerCase().includes(searchLower);
     
     const matchesStatus = statusFilter === "all" || reservation.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
 
-  // Statistics
   const stats = {
     total: reservations.length,
     pending: reservations.filter(r => r.status === 'pending').length,
@@ -163,7 +164,6 @@ export default function ReservationsPage() {
         </div>
       </div>
 
-      {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -222,13 +222,12 @@ export default function ReservationsPage() {
         </Card>
       </div>
 
-      {/* Filters */}
       <div className="space-y-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rezervasyon ara..."
+              placeholder="Müşteri, e-posta, hizmet ara..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-sm"
@@ -248,12 +247,11 @@ export default function ReservationsPage() {
           </Select>
         </div>
 
-        {/* Reservations Table */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Rezervasyon No</TableHead>
+                <TableHead>Rez. No</TableHead>
                 <TableHead>Müşteri</TableHead>
                 <TableHead>Hizmet</TableHead>
                 <TableHead>Tarih & Saat</TableHead>
@@ -265,118 +263,57 @@ export default function ReservationsPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    Yükleniyor...
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8">Yükleniyor...</TableCell></TableRow>
               ) : filteredReservations.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    {search || statusFilter !== "all" 
-                      ? "Arama kriterlerine uygun rezervasyon bulunamadı" 
-                      : "Henüz rezervasyon bulunmuyor"}
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8">Rezervasyon bulunamadı</TableCell></TableRow>
               ) : (
                 filteredReservations.map((reservation) => (
                   <TableRow key={reservation.id}>
-                    <TableCell className="font-mono text-sm">
-                      {reservation.id?.substring(0, 8).toUpperCase()}
-                    </TableCell>
+                    <TableCell className="font-mono text-sm">{reservation.id?.substring(0, 8).toUpperCase()}</TableCell>
                     <TableCell>
                       <div>
                         <p className="font-medium">{reservation.customerName} {reservation.customerSurname}</p>
                         <p className="text-sm text-muted-foreground">{reservation.customerPhone}</p>
+                        <p className="text-sm text-muted-foreground">{reservation.customerEmail}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
                         <p className="font-medium">{reservation.serviceName}</p>
-                        <p className="text-sm text-muted-foreground">{reservation.companyName}</p>
-                        <Badge variant="outline" className="text-xs mt-1">
-                          {getCategoryLabel(reservation.serviceCategory)}
-                        </Badge>
+                        <p className="text-sm text-muted-foreground">{getCategoryLabel(reservation.serviceCategory)}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{reservation.reservationDate.toLocaleDateString('tr-TR')}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {reservation.timeSlot.startTime} - {reservation.timeSlot.endTime}
-                        </p>
+                        <p className="font-medium">{new Date(reservation.reservationDate).toLocaleDateString('tr-TR')}</p>
+                        <p className="text-sm text-muted-foreground">{reservation.timeSlot.startTime} - {reservation.timeSlot.endTime}</p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {reservation.serviceCategory === "transfer" ? (
-                        <div className="text-sm">
-                          <p>{reservation.personCountForTransfer} kişi</p>
-                          <p className="text-muted-foreground">{reservation.vehicleCount} araç</p>
-                        </div>
-                      ) : reservation.serviceCategory === "motor-tours" ? (
-                        <div className="text-sm">
-                          <p>{reservation.vehicleCount} araç</p>
-                        </div>
-                      ) : (
-                        <div className="text-sm">
-                          <p>{reservation.personCount} kişi</p>
-                        </div>
-                      )}
+                      <p>{reservation.adults + reservation.children} kişi</p>
                     </TableCell>
                     <TableCell>
-                      <div>
-                        <p className="font-medium">{reservation.totalAmount} ₺</p>
-                        {reservation.paymentMethod === 'prepayment' && (
-                          <p className="text-xs text-muted-foreground">
-                            Ön ödeme: {reservation.prepaymentAmount} ₺
-                          </p>
-                        )}
-                      </div>
+                      <p className="font-medium">{reservation.totalAmount} ₺</p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getStatusVariant(reservation.status) as any}>
-                        {getStatusLabel(reservation.status)}
-                      </Badge>
+                      <Badge variant={getStatusVariant(reservation.status) as any}>{getStatusLabel(reservation.status)}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleView(reservation)}
-                          title="Detayları Görüntüle"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleEdit(reservation)}
-                          title="Düzenle"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleView(reservation)}><Eye className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(reservation)}><Edit className="h-4 w-4" /></Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm" title="Sil">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <Button variant="ghost" size="sm"><Trash2 className="h-4 w-4" /></Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Rezervasyonu Sil</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Bu rezervasyonu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
-                              </AlertDialogDescription>
+                              <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                              <AlertDialogDescription>Bu işlem geri alınamaz. Rezervasyon kalıcı olarak silinecektir.</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>İptal</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => reservation.id && handleDelete(reservation.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Sil
-                              </AlertDialogAction>
+                              <AlertDialogAction onClick={() => reservation.id && handleDelete(reservation.id)} className="bg-destructive hover:bg-destructive/90">Sil</AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
@@ -390,14 +327,8 @@ export default function ReservationsPage() {
         </div>
       </div>
 
-      {/* Edit Modal */}
-      <ReservationEditModal
-        isOpen={isEditModalOpen}
-        onClose={handleEditModalClose}
-        reservation={editingReservation}
-      />
+      <ReservationEditModal isOpen={isEditModalOpen} onClose={handleEditModalClose} reservation={editingReservation} />
 
-      {/* View Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -405,20 +336,11 @@ export default function ReservationsPage() {
               <Eye className="h-5 w-5" />
               Rezervasyon Detayları
             </DialogTitle>
-            <DialogDescription>
-              Rezervasyon bilgilerini görüntüleyin
-            </DialogDescription>
           </DialogHeader>
           {viewingReservation && (
-            <div className="space-y-6">
-              {/* Customer Info */}
+            <div className="space-y-6 pt-4">
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Müşteri Bilgileri
-                  </CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5" />Müşteri Bilgileri</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Ad Soyad</p>
@@ -429,12 +351,12 @@ export default function ReservationsPage() {
                     <p className="font-medium">{viewingReservation.customerPhone}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Rezervasyon No</p>
-                    <p className="font-mono font-medium">{viewingReservation.id?.substring(0, 8).toUpperCase()}</p>
-                  </div>
-                  <div>
                     <p className="text-sm text-muted-foreground">E-posta</p>
                     <p className="font-medium">{viewingReservation.customerEmail}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Rezervasyon No</p>
+                    <p className="font-mono font-medium">{viewingReservation.id?.substring(0, 8).toUpperCase()}</p>
                   </div>
                   {viewingReservation.visitorNote && (
                     <div className="md:col-span-3">
@@ -444,17 +366,11 @@ export default function ReservationsPage() {
                   )}
                 </CardContent>
               </Card>
-
-              {/* Service Info */}
+              
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
-                    Hizmet Bilgileri
-                  </CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" />Hizmet Bilgileri</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                   <div>
                     <p className="text-sm text-muted-foreground">Hizmet Adı</p>
                     <p className="font-medium">{viewingReservation.serviceName}</p>
                   </div>
@@ -462,156 +378,45 @@ export default function ReservationsPage() {
                     <p className="text-sm text-muted-foreground">Firma</p>
                     <p className="font-medium">{viewingReservation.companyName}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Kategori</p>
-                    <Badge variant="outline">{getCategoryLabel(viewingReservation.serviceCategory)}</Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Hizmet Noktası</p>
-                    <p className="font-medium">{viewingReservation.locationName}</p>
-                  </div>
                 </CardContent>
               </Card>
 
-              {/* Reservation Details */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Rezervasyon Detayları
-                  </CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Rezervasyon Detayları</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Tarih</p>
-                    <p className="font-medium">{viewingReservation.reservationDate.toLocaleDateString('tr-TR')}</p>
+                    <p className="font-medium">{new Date(viewingReservation.reservationDate).toLocaleDateString('tr-TR')}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Saat</p>
                     <p className="font-medium">{viewingReservation.timeSlot.startTime} - {viewingReservation.timeSlot.endTime}</p>
                   </div>
-                  
-                  {/* Category-specific details */}
-                  {viewingReservation.serviceCategory === "transfer" && (
-                    <>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Kişi Sayısı</p>
-                        <p className="font-medium">{viewingReservation.personCountForTransfer} kişi</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Araç Sayısı</p>
-                        <p className="font-medium">{viewingReservation.vehicleCount} adet</p>
-                      </div>
-                      {viewingReservation.selectedVehicles && viewingReservation.selectedVehicles.length > 0 && (
-                        <div className="col-span-full">
-                          <p className="text-sm text-muted-foreground mb-2">Seçili Araçlar</p>
-                          <div className="space-y-2">
-                            {viewingReservation.selectedVehicles.map((vehicle, index) => (
-                              <div key={index} className="flex items-center gap-2 p-2 border rounded">
-                                <Car className="h-4 w-4" />
-                                <span>{vehicle.vehicleTypeName} ({vehicle.maxPassengerCapacity} kişi) - {vehicle.count} adet</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  
-                  {viewingReservation.serviceCategory === "motor-tours" && (
-                    <>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Araç Sayısı</p>
-                        <p className="font-medium">{viewingReservation.vehicleCount} adet</p>
-                      </div>
-                      {viewingReservation.selectedVehicle && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Seçili Araç</p>
-                          <div className="flex items-center gap-2">
-                            <Car className="h-4 w-4" />
-                            <span>{viewingReservation.selectedVehicle.vehicleTypeName} ({viewingReservation.selectedVehicle.maxPassengerCapacity} kişi)</span>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  
-                  {viewingReservation.serviceCategory !== "transfer" && viewingReservation.serviceCategory !== "motor-tours" && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Kişi Sayısı</p>
-                      <p className="font-medium">{viewingReservation.personCount} kişi</p>
-                    </div>
-                  )}
-                  
                   <div>
+                    <p className="text-sm text-muted-foreground">Kişi Sayısı</p>
+                    <p className="font-medium">{viewingReservation.adults + viewingReservation.children} kişi</p>
+                  </div>
+                   <div>
                     <p className="text-sm text-muted-foreground">Durum</p>
-                    <Badge variant={getStatusVariant(viewingReservation.status) as any}>
-                      {getStatusLabel(viewingReservation.status)}
-                    </Badge>
+                    <Badge variant={getStatusVariant(viewingReservation.status) as any}>{getStatusLabel(viewingReservation.status)}</Badge>
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Payment Info */}
+              
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    Ödeme Bilgileri
-                  </CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5" />Ödeme Bilgileri</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Birim Fiyat</p>
-                    <p className="font-medium">{viewingReservation.unitPrice} ₺</p>
-                  </div>
-                  <div>
+                   <div>
                     <p className="text-sm text-muted-foreground">Toplam Tutar</p>
                     <p className="font-medium text-lg">{viewingReservation.totalAmount} ₺</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Ödeme Yöntemi</p>
-                    <p className="font-medium">
-                      {viewingReservation.paymentMethod === 'full_start' ? 'Başlangıçta Tam Ödeme' : 'Ön Ödeme'}
-                    </p>
+                    <p className="font-medium">{viewingReservation.paymentMethod === 'full_start' ? 'Başlangıçta Tam Ödeme' : 'Ön Ödeme'}</p>
                   </div>
-                  {viewingReservation.paymentMethod === 'prepayment' && (
-                    <>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Ön Ödeme</p>
-                        <p className="font-medium">{viewingReservation.prepaymentAmount} ₺</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Kalan Tutar</p>
-                        <p className="font-medium">{viewingReservation.remainingAmount} ₺</p>
-                      </div>
-                    </>
-                  )}
-                  {viewingReservation.commissionAmount && viewingReservation.commissionAmount > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Komisyon</p>
-                      <p className="font-medium">{viewingReservation.commissionAmount} ₺</p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
-              {/* Timestamps */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Zaman Bilgileri</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Oluşturulma Tarihi</p>
-                    <p className="font-medium">{viewingReservation.createdAt.toLocaleString('tr-TR')}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Son Güncelleme</p>
-                    <p className="font-medium">{viewingReservation.updatedAt.toLocaleString('tr-TR')}</p>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           )}
         </DialogContent>

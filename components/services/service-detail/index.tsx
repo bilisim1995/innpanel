@@ -16,6 +16,7 @@ import { ServiceContact } from "./ServiceContact";
 import { ServiceActionButtons } from "./ServiceActionButtons";
 import { getDisplayCategoryColors } from "../../services-display/utils/categoryUtils";
 import { useServiceModal } from "./hooks/useServiceModal";
+import Image from 'next/image';
 
 interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: any;
@@ -60,7 +61,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
     if (isOpen && assignment) {
       loadTheme();
     }
-  }, [isOpen, assignment?.serviceCategory]);
+  }, [isOpen, assignment]);
 
   if (!assignment || !assignment.serviceDetails) return null;
 
@@ -157,10 +158,12 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
               </div>
 
               <div className="w-full h-full flex items-center justify-center p-8">
-                <img
+                <Image
                   src={selectedImage}
                   alt="Aktivite Fotoğrafı"
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  layout="fill"
+                  objectFit="contain"
+                  className="rounded-lg shadow-2xl"
                 />
               </div>
             </DialogContent>

@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import Image from 'next/image';
 
 interface PageHeaderProps {
   location: LocationData;
@@ -42,10 +43,12 @@ export function PageHeader({ location, showBackButton = false, onBackClick }: Pa
             <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative group border-2 border-white shadow-lg">
               {location.facilityImage ? (
                 <div className="relative w-full h-full">
-                  <img
+                  <Image
                     src={location.facilityImage}
                     alt={location.name}
-                    className="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-110"
+                    layout="fill"
+                    objectFit="cover"
+                    className="cursor-pointer transition-transform duration-300 group-hover:scale-110"
                     onClick={handleImageClick}
                   />
                   <div
@@ -88,11 +91,15 @@ export function PageHeader({ location, showBackButton = false, onBackClick }: Pa
             </div>
 
             <div className="w-full h-full flex items-center justify-center p-8">
-              <img
-                src={location.facilityImage}
-                alt={location.name}
-                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-              />
+              <div className="relative w-full h-full">
+                <Image
+                  src={location.facilityImage}
+                  alt={location.name}
+                  layout="fill"
+                  objectFit="contain"
+                  className="rounded-xl shadow-2xl"
+                />
+              </div>
             </div>
           </DialogContent>
         </Dialog>

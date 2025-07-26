@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,11 +40,7 @@ export default function LocationsPage() {
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadLocations();
-  }, []);
-
-  const loadLocations = async () => {
+  const loadLocations = useCallback(async () => {
     try {
       setLoading(true);
       const locationsData = await getLocations();
@@ -58,7 +54,11 @@ export default function LocationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadLocations();
+  }, [loadLocations]);
 
   const handleDelete = async (id: string) => {
     try {

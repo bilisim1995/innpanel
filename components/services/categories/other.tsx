@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,13 +20,7 @@ interface OtherProps {
   onCategoryDetailsChange: (details: any) => void;
 }
 
-const PAYMENT_OPTIONS = [
-  { id: "cash", label: "Tur başlangıcında ödeme (nakit/kart)" },
-  { id: "online", label: "Sanal POS ile ödeme" },
-  { id: "partial", label: "Ön ödeme" },
-];
-
-export function Other({ selectedPayments, onPaymentChange, onPaymentAmountChange, categoryDetails, onCategoryDetailsChange }: OtherProps) {
+export function Other({ onCategoryDetailsChange, categoryDetails }: OtherProps) {
   const [serviceTitle, setServiceTitle] = useState(categoryDetails?.serviceTitle || "");
   const [serviceDescription, setServiceDescription] = useState(categoryDetails?.serviceDescription || "");
   const [serviceDuration, setServiceDuration] = useState(categoryDetails?.serviceDuration || {
@@ -34,17 +28,17 @@ export function Other({ selectedPayments, onPaymentChange, onPaymentAmountChange
     unit: "",
   });
   
-  const initializePhotos = () => {
+  const initializePhotos = useCallback(() => {
     const existingPhotos = categoryDetails?.photos || [];
     const photoArray = [...existingPhotos];
     while (photoArray.length < 6) {
       photoArray.push(null);
     }
     return photoArray.slice(0, 6);
-  };
+  }, [categoryDetails?.photos]);
+
   const [photos, setPhotos] = useState<Array<string | null>>(initializePhotos());
 
-  // Update local state when categoryDetails changes
   useEffect(() => {
     if (categoryDetails) {
       setServiceTitle(categoryDetails.serviceTitle || "");
@@ -52,9 +46,8 @@ export function Other({ selectedPayments, onPaymentChange, onPaymentAmountChange
       setServiceDuration(categoryDetails.serviceDuration || { value: "", unit: "" });
       setPhotos(initializePhotos());
     }
-  }, [categoryDetails]);
+  }, [categoryDetails, initializePhotos]);
 
-  // Update category details when data changes
   useEffect(() => {
     onCategoryDetailsChange({
       serviceTitle,

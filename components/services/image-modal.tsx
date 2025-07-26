@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ZoomIn, ZoomOut, RotateCcw, Eye } from "lucide-react";
+import { X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import Image from 'next/image';
 
 interface ImageModalProps {
   isOpen: boolean;
   onClose: () => void;
   imageUrl: string | null;
-  onServiceSelect: () => void;
 }
 
-export function ImageModal({ isOpen, onClose, imageUrl, onServiceSelect }: ImageModalProps) {
+export function ImageModal({ isOpen, onClose, imageUrl }: ImageModalProps) {
   const [zoom, setZoom] = useState(1);
 
   const handleZoomIn = () => {
@@ -42,7 +42,6 @@ export function ImageModal({ isOpen, onClose, imageUrl, onServiceSelect }: Image
           <VisuallyHidden.Root>Görsel Detayları</VisuallyHidden.Root>
         </DialogTitle>
         
-        {/* Header Controls */}
         <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button
@@ -79,15 +78,6 @@ export function ImageModal({ isOpen, onClose, imageUrl, onServiceSelect }: Image
           <div className="flex items-center gap-2">
             <Button
               onClick={handleClose}
-              className="bg-gray-900 hover:bg-gray-800 text-white font-medium px-6 py-2 rounded-lg shadow-lg"
-            >
-              <X className="w-4 h-4 mr-2" />
-              Galeriyi Kapat
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleClose}
               className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
             >
               <X className="w-4 h-4" />
@@ -96,22 +86,20 @@ export function ImageModal({ isOpen, onClose, imageUrl, onServiceSelect }: Image
           </div>
         </div>
 
-        {/* Image Container */}
         <div className="w-full h-full flex items-center justify-center p-8 pt-20">
           <div 
-            className="relative max-w-full max-h-full overflow-hidden rounded-lg shadow-2xl"
-            style={{ transform: `scale(${zoom})` }}
+            className="relative w-full h-full"
+            style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s' }}
           >
-            <img
+            <Image
               src={imageUrl}
               alt="Hizmet Fotoğrafı"
-              className="max-w-full max-h-full object-contain"
-              style={{ maxHeight: '70vh', maxWidth: '90vw' }}
+              layout="fill"
+              objectFit="contain"
             />
           </div>
         </div>
 
-        {/* Bottom Gradient */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
       </DialogContent>
     </Dialog>

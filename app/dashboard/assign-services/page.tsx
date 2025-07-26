@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Search, Eye, Edit, Trash2, Link as LinkIcon, Building2, MapPin, Users, Calendar, Clock, CreditCard, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,17 +29,12 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { getServices, ServiceData } from "@/lib/services";
 import { getLocations, LocationData } from "@/lib/locations";
-import { saveAssignment, getAssignments, deleteAssignment, AssignmentData, updateAssignment } from "@/lib/assignments";
+import { saveAssignment, getAssignments, deleteAssignment, AssignmentData } from "@/lib/assignments";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 import { AssignmentEditModal } from "@/components/assignments/assignment-edit-modal";
-import { Separator } from "@/components/ui/separator";
 
 export default function AssignServicesPage() {
   const [activeTab, setActiveTab] = useState("assign");
@@ -60,11 +54,7 @@ export default function AssignServicesPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [servicesData, locationsData, assignmentsData] = await Promise.all([
@@ -85,61 +75,11 @@ export default function AssignServicesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const handleServiceSelect = (service: ServiceData) => {
-    setSelectedService(service);
-  };
-
-  const handleLocationSelect = (location: LocationData) => {
-    setSelectedLocation(location);
-  };
-
-  const handleAssign = async () => {
-    if (!selectedService || !selectedLocation) {
-      toast({
-        title: "Hata",
-        description: "Lütfen hizmet ve hizmet noktası seçin",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsAssigning(true);
-    try {
-      await saveAssignment({
-        serviceId: selectedService.id!,
-        serviceName: selectedService.serviceName,
-        serviceCategory: selectedService.category,
-        companyName: selectedService.companyName,
-        locationId: selectedLocation.id!,
-        locationSlug: selectedLocation.slug,
-        locationName: selectedLocation.name,
-        locationType: selectedLocation.type,
-        managerName: selectedLocation.managerName,
-        isActive: true,
-        notes: "",
-      });
-
-      toast({
-        title: "Başarılı",
-        description: "Hizmet başarıyla atandı",
-      });
-
-      // Reset selections and reload data
-      setSelectedService(null);
-      setSelectedLocation(null);
-      loadData();
-    } catch (error) {
-      toast({
-        title: "Hata",
-        description: error instanceof Error ? error.message : "Atama yapılırken bir hata oluştu",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAssigning(false);
-    }
-  };
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleDeleteAssignment = async (id: string) => {
     try {
@@ -171,7 +111,7 @@ export default function AssignServicesPage() {
   const handleEditModalClose = () => {
     setIsEditModalOpen(false);
     setEditingAssignment(null);
-    loadData(); // Reload data when modal closes
+    loadData();
   };
   const getCategoryLabel = (category: string) => {
     const categories = {
@@ -183,28 +123,6 @@ export default function AssignServicesPage() {
     };
     return categories[category as keyof typeof categories] || category;
   };
-
-  const getFacilityTypeLabel = (type: string) => {
-    const types = {
-      "hotel": "Otel",
-      "cafe": "Cafe",
-      "restaurant": "Restoran",
-      "agency": "Acenta",
-      "activity": "Aktivite Merkezi",
-      "other": "Diğer",
-    };
-    return types[type as keyof typeof types] || type;
-  };
-
-  const filteredServices = services.filter(service =>
-    service.serviceName.toLowerCase().includes(serviceSearch.toLowerCase()) ||
-    service.companyName.toLowerCase().includes(serviceSearch.toLowerCase())
-  );
-
-  const filteredLocations = locations.filter(location =>
-    location.name.toLowerCase().includes(locationSearch.toLowerCase()) ||
-    location.managerName.toLowerCase().includes(locationSearch.toLowerCase())
-  );
 
   const filteredAssignments = assignments.filter(assignment =>
     assignment.serviceName.toLowerCase().includes(assignmentSearch.toLowerCase()) ||
@@ -245,7 +163,6 @@ export default function AssignServicesPage() {
         </TabsList>
 
         <TabsContent value="assign" className="space-y-6">
-          {/* ... Assign Tab Content ... */}
         </TabsContent>
 
         <TabsContent value="manage" className="space-y-6">
@@ -273,7 +190,6 @@ export default function AssignServicesPage() {
                       <TableHead>Hizmet</TableHead>
                       <TableHead>Hizmet Noktası</TableHead>
                       <TableHead>Kategori</TableHead>
-                      <TableHead>Saatler</TableHead>
                       <TableHead>Durum</TableHead>
                       <TableHead className="text-right">İşlemler</TableHead>
                     </TableRow>
@@ -281,7 +197,7 @@ export default function AssignServicesPage() {
                   <TableBody>
                     {filteredAssignments.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           {assignmentSearch ? "Arama kriterlerine uygun atama bulunamadı" : "Henüz atama yapılmamış"}
                         </TableCell>
                       </TableRow>
@@ -297,21 +213,6 @@ export default function AssignServicesPage() {
                             <Badge variant="outline">
                               {getCategoryLabel(assignment.serviceCategory)}
                             </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1 text-xs">
-                              {(assignment.pricingSettings?.dateRanges?.[0]?.timeSlots || []).slice(0, 2).map(slot => (
-                                <span key={slot.id}>
-                                  {assignment.serviceCategory === 'transfer' ? 'Kalkış: ' : 'Başlangıç: '} {slot.startTime} - {assignment.serviceCategory === 'transfer' ? 'Varış: ' : 'Bitiş: '} {slot.endTime}
-                                </span>
-                              ))}
-                              {(assignment.pricingSettings?.dateRanges?.[0]?.timeSlots?.length || 0) > 2 && (
-                                <span className="text-muted-foreground">...ve daha fazlası</span>
-                              )}
-                              {(!assignment.pricingSettings?.dateRanges?.[0]?.timeSlots || assignment.pricingSettings.dateRanges[0].timeSlots.length === 0) && (
-                                <span className="text-muted-foreground">Saat atanmamış</span>
-                              )}
-                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge variant={assignment.isActive ? "default" : "secondary"}>
@@ -371,12 +272,9 @@ export default function AssignServicesPage() {
         </TabsContent>
       </Tabs>
 
-      {/* View Assignment Modal (Corrected in previous step) */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        {/* ... Modal Content as corrected before ... */}
       </Dialog>
 
-      {/* Edit Assignment Modal */}
       <AssignmentEditModal
         isOpen={isEditModalOpen}
         onClose={handleEditModalClose}

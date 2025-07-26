@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +12,7 @@ import { Download, QrCode, Info, X, ZoomIn, ZoomOut, RotateCcw, Copy } from "luc
 import { useToast } from "@/hooks/use-toast";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import QRCodeLib from 'qrcode';
+import Image from 'next/image';
 
 interface QrCodeModalProps {
   isOpen: boolean;
@@ -77,17 +78,10 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
   
   const selectedSize = QR_SIZES.find(size => size.id === selectedSizeId) || QR_SIZES[0];
 
-  // QR kod URL'si oluştur
   const qrUrl = location ? `${window.location.origin}/services/${location.slug}?qr_scan=true` : '';
 
-  // QR kod oluştur
-  useEffect(() => {
-    if (qrUrl && isOpen) {
-      generateQRCode();
-    }
-  }, [qrUrl, isOpen]);
-
-  const generateQRCode = async () => {
+  const generateQRCode = useCallback(async () => {
+    if (!qrUrl) return;
     try {
       const qrDataUrl = await QRCodeLib.toDataURL(qrUrl, {
         width: 200,
@@ -107,7 +101,13 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
         variant: "destructive",
       });
     }
-  };
+  }, [qrUrl, toast]);
+
+  useEffect(() => {
+    if (isOpen) {
+      generateQRCode();
+    }
+  }, [isOpen, generateQRCode]);
 
   const handleZoomIn = () => {
     setZoomLevel(prev => Math.min(prev + 0.2, 2));
@@ -137,33 +137,28 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
     }
   };
 
-  // Canvas'a QR stand çizme fonksiyonu
-  const drawQRStand = async (canvas: HTMLCanvasElement, scale: number = 1) => {
+  const drawQRStand = useCallback(async (canvas: HTMLCanvasElement, scale: number = 1) => {
     const ctx = canvas.getContext('2d');
     if (!ctx || !qrCodeDataUrl) return;
 
     const { pixelWidth, pixelHeight } = selectedSize;
     
-    // Canvas boyutlarını ayarla
     canvas.width = pixelWidth * scale;
     canvas.height = pixelHeight * scale;
     ctx.scale(scale, scale);
 
-    // Arka plan gradyanı
     const bgGradient = ctx.createLinearGradient(0, 0, pixelWidth, pixelHeight);
     bgGradient.addColorStop(0, '#ffffff');
     bgGradient.addColorStop(1, '#f8fafc');
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, pixelWidth, pixelHeight);
 
-    // Primary gradyan overlay
     const primaryGradient = ctx.createLinearGradient(0, 0, pixelWidth, pixelHeight);
     primaryGradient.addColorStop(0, 'rgba(220, 38, 38, 0.05)');
     primaryGradient.addColorStop(1, 'rgba(220, 38, 38, 0.1)');
     ctx.fillStyle = primaryGradient;
     ctx.fillRect(0, 0, pixelWidth, pixelHeight);
 
-    // Dekoratif daireler
     ctx.fillStyle = 'rgba(220, 38, 38, 0.05)';
     ctx.beginPath();
     ctx.arc(pixelWidth - 40, 40, 40, 0, 2 * Math.PI);
@@ -176,19 +171,16 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
     const centerX = pixelWidth / 2;
     const centerY = pixelHeight / 2;
 
-    // INN Panel başlığı
     ctx.fillStyle = '#dc2626';
     ctx.font = 'bold 24px Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('INN Panel', centerX, centerY - 120);
 
-    // QR Code Container (gölge efekti)
     ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
     ctx.shadowBlur = 6;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 4;
     
-    // Ana QR container
     ctx.fillStyle = 'white';
     ctx.strokeStyle = '#dc2626';
     ctx.lineWidth = 2;
@@ -197,7 +189,6 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
     ctx.fill();
     ctx.stroke();
 
-    // İç border
     ctx.shadowColor = 'transparent';
     ctx.fillStyle = '#f3f4f6';
     ctx.strokeStyle = '#d1d5db';
@@ -207,13 +198,11 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
     ctx.fill();
     ctx.stroke();
 
-    // Gerçek QR kod resmi yükle ve çiz
     return new Promise<void>((resolve) => {
-      const qrImage = new Image();
+      const qrImage = new window.Image();
       qrImage.onload = () => {
         ctx.drawImage(qrImage, centerX - 40, centerY - 40, 80, 80);
         
-        // Ana yazılar (Poppins font)
         const fontSize = selectedSizeId === 'slim' || selectedSizeId === 'a6' ? 11 : 14;
         ctx.font = `600 ${fontSize}px Poppins, Inter, system-ui, -apple-system, sans-serif`;
         ctx.fillStyle = '#374151';
@@ -223,7 +212,6 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
         const secondLineY = selectedSizeId === 'slim' || selectedSizeId === 'a6' ? centerY + 115 : centerY + 120;
         ctx.fillText('QR kodunu taratın', centerX, secondLineY);
 
-        // Website
         ctx.font = '10px Arial, sans-serif';
         ctx.fillStyle = '#9ca3af';
         ctx.fillText('www.innpanel.com', centerX, centerY + 150);
@@ -232,14 +220,11 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
       };
       qrImage.src = qrCodeDataUrl;
     });
-  };
+  }, [qrCodeDataUrl, selectedSize, selectedSizeId]);
 
-  const generateSVGContent = async () => {
+  const generateSVGContent = useCallback(async () => {
     const { pixelWidth, pixelHeight } = selectedSize;
-    
-    // QR kod için base64 data
-    const qrBase64 = qrCodeDataUrl.split(',')[1];
-    
+        
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${pixelWidth}" height="${pixelHeight}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${pixelWidth} ${pixelHeight}">
   <defs>
@@ -256,37 +241,30 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
     </filter>
   </defs>
   
-  <!-- Background -->
   <rect width="100%" height="100%" fill="url(#bgGradient)"/>
   <rect width="100%" height="100%" fill="url(#primaryGradient)"/>
   
-  <!-- Decorative circles -->
   <circle cx="${pixelWidth - 40}" cy="40" r="40" fill="#dc2626" opacity="0.05"/>
   <circle cx="40" cy="${pixelHeight - 40}" r="32" fill="#dc2626" opacity="0.05"/>
   
-  <!-- Content Container -->
   <g transform="translate(${pixelWidth/2}, ${pixelHeight/2})">
-    <!-- Title -->
     <text x="0" y="-120" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#dc2626">INN Panel</text>
     
-    <!-- QR Code Container -->
     <rect x="-60" y="-60" width="120" height="120" fill="white" stroke="#dc2626" stroke-width="2" rx="8" filter="url(#shadow)"/>
     <rect x="-48" y="-48" width="96" height="96" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" rx="4"/>
     
-    <!-- Real QR Code -->
     <image x="-40" y="-40" width="80" height="80" xlink:href="${qrCodeDataUrl}"/>
     
-    <!-- Instructions -->
     <text x="0" y="100" text-anchor="middle" font-family="Poppins, Inter, system-ui, -apple-system, sans-serif" font-size="${selectedSizeId === 'slim' || selectedSizeId === 'a6' ? '11' : '14'}" font-weight="600" fill="#374151">Hizmetlerimizi görüntülemek için</text>
     <text x="0" y="${selectedSizeId === 'slim' || selectedSizeId === 'a6' ? '115' : '120'}" text-anchor="middle" font-family="Poppins, Inter, system-ui, -apple-system, sans-serif" font-size="${selectedSizeId === 'slim' || selectedSizeId === 'a6' ? '11' : '14'}" font-weight="600" fill="#dc2626">QR kodunu taratın</text>
     
-    <!-- Website -->
     <text x="0" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af">www.innpanel.com</text>
   </g>
 </svg>`;
-  };
+  }, [qrCodeDataUrl, selectedSize, selectedSizeId]);
 
   const handleDownload = async () => {
+    if (!location) return;
     try {
       const svgContent = await generateSVGContent();
       const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
@@ -294,7 +272,7 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
       
       const link = document.createElement('a');
       link.href = url;
-      link.download = `qr-stand-${location?.name?.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${selectedSize.id}.svg`;
+      link.download = `qr-stand-${location.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${selectedSize.id}.svg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -315,12 +293,11 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
   };
 
   const handleDownloadPDF = async () => {
+    if (!location) return;
     try {
-      // Canvas oluştur ve çiz
       const canvas = document.createElement('canvas');
-      await drawQRStand(canvas, 3); // Yüksek çözünürlük için 3x scale
+      await drawQRStand(canvas, 3);
 
-      // jsPDF ile PDF oluştur
       const { default: jsPDF } = await import('jspdf');
       const pdf = new jsPDF({
         orientation: selectedSize.mmWidth > selectedSize.mmHeight ? 'landscape' : 'portrait',
@@ -328,12 +305,10 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
         format: [selectedSize.mmWidth, selectedSize.mmHeight]
       });
 
-      // Canvas'ı PDF'e ekle
       const imgData = canvas.toDataURL('image/png', 1.0);
       pdf.addImage(imgData, 'PNG', 0, 0, selectedSize.mmWidth, selectedSize.mmHeight);
 
-      // PDF'i indir
-      pdf.save(`qr-stand-${location?.name?.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${selectedSize.id}.pdf`);
+      pdf.save(`qr-stand-${location.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${selectedSize.id}.pdf`);
 
       toast({
         title: "Başarılı",
@@ -360,9 +335,7 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
         </DialogTitle>
         
         <div className="flex h-full">
-          {/* Sol Panel - Kontroller */}
           <div className="w-80 border-r bg-muted/30 flex flex-col max-h-full">
-            {/* 1. Başlık Alanı (Sabit) */}
             <div className="p-6 border-b">
               <div className="flex items-center gap-2 mb-2">
                 <h2 className="text-lg font-semibold">QR Kodu Standı</h2>
@@ -380,10 +353,8 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
               </p>
             </div>
 
-            {/* 2. Kaydırılabilir İçerik Alanı */}
             <div className="flex-1 overflow-y-auto">
               <div className="p-6 space-y-6 min-h-full">
-                {/* QR URL Bilgisi */}
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">QR Kod URLsi</Label>
                   <div className="flex items-center gap-2">
@@ -401,7 +372,6 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
                   </div>
                 </div>
 
-                {/* Boyut Seçimi */}
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">Stand Boyutu Seçin</Label>
                   <Select value={selectedSizeId} onValueChange={setSelectedSizeId}>
@@ -418,7 +388,6 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
                   </Select>
                 </div>
 
-                {/* Seçili Boyut Bilgileri */}
                 <Card className="border-primary/20">
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-center gap-2">
@@ -444,9 +413,7 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
               </div>
             </div>
 
-            {/* 3. Buton ve Not Alanı (Sabit) */}
             <div className="p-6 border-t bg-muted/40">
-              {/* İşlem Butonları */}
               <div className="space-y-3 mb-4">
                 <Button 
                   onClick={handleDownload}
@@ -474,9 +441,7 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
             </div>
           </div>
 
-          {/* Sağ Panel - Ön İzleme */}
           <div className="flex-1 bg-gray-100 flex flex-col">
-            {/* Ön İzleme Başlığı */}
             <div className="p-6 border-b bg-white flex items-center justify-between">
               <div>
               <h3 className="text-lg font-semibold text-gray-800">Ön İzleme</h3>
@@ -485,7 +450,6 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
               </p>
               </div>
               
-              {/* Yakınlaştırma Kontrolleri */}
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -520,7 +484,6 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
               </div>
             </div>
             
-            {/* Ön İzleme İçeriği */}
             <div className="flex-1 flex items-center justify-center p-8">
             <ScrollArea className="w-full h-full">
               <div className="flex items-center justify-center min-h-full">
@@ -546,9 +509,11 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
                     <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-primary/20 mx-auto inline-block">
                       <div className="w-24 h-24 bg-white border border-gray-200 rounded flex items-center justify-center">
                         {qrCodeDataUrl ? (
-                          <img 
+                          <Image 
                             src={qrCodeDataUrl} 
                             alt="QR Code" 
+                            width={80}
+                            height={80}
                             className="w-20 h-20"
                           />
                         ) : (
@@ -575,10 +540,8 @@ export function QrCodeModal({ isOpen, onClose, location }: QrCodeModalProps) {
           </div>
         </div>
 
-        {/* Gizli canvas - PDF oluşturma için */}
         <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-        {/* Hizmet Noktası Bilgileri Popup */}
         {showLocationInfo && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 relative">

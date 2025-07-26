@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { bunnyStorage } from "@/lib/bunny-storage";
 import { useToast } from "@/hooks/use-toast";
+import Image from 'next/image';
 
 interface ImageUploadProps {
   value?: string | null;
@@ -32,7 +33,6 @@ export function ImageUpload({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Hata",
@@ -42,7 +42,6 @@ export function ImageUpload({
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "Hata",
@@ -55,12 +54,10 @@ export function ImageUpload({
     setIsUploading(true);
 
     try {
-      // Delete old image if exists
       if (value) {
         await bunnyStorage.deleteFile(value);
       }
 
-      // Upload new image
       const result = await bunnyStorage.uploadFile(file, folder);
       
       if (result.success && result.url) {
@@ -81,7 +78,6 @@ export function ImageUpload({
       });
     } finally {
       setIsUploading(false);
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -135,10 +131,11 @@ export function ImageUpload({
       >
         {value ? (
           <>
-            <img
+            <Image
               src={value}
               alt="Uploaded image"
-              className="w-full h-full object-cover"
+              layout="fill"
+              objectFit="cover"
             />
             {!disabled && (
               <div className="absolute top-2 right-2 space-x-1">

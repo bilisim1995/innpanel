@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { LocationData, getLocationBySlug } from "@/lib/locations";
 import { ServiceData, getServices } from "@/lib/services";
 import { AssignmentData, getAssignmentsByLocation } from "@/lib/assignments";
@@ -17,33 +17,12 @@ export function useServicesData(locationSlug: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [locationSlug]);
-
-  // Load category colors
-  useEffect(() => {
-    const loadCategoryColors = async () => {
-      const colors: {[key: string]: any} = {};
-      const categories = ["region-tours", "motor-tours", "balloon", "transfer", "other"];
-      
-      for (const category of categories) {
-        colors[category] = await getDisplayCategoryColors(category);
-      }
-      
-      setCategoryColors(colors);
-    };
-    
-    loadCategoryColors();
-  }, []);
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null); 
 
-      // Firestore rules'a takılmamak için try-catch içinde çalıştır
       try {
-        // Sadece slug ile lokasyonu bul
         const currentLocation = await getLocationBySlug(locationSlug);
 
         if (!currentLocation) {
@@ -54,13 +33,11 @@ export function useServicesData(locationSlug: string) {
 
         setLocation(currentLocation);
 
-        // Paralel olarak verileri yükle
         const [assignmentsData, servicesData] = await Promise.all([
           getAssignmentsByLocation(currentLocation.id!),
           getServices(),
         ]);
 
-        // Atamaları hizmet detayları ile birleştir
         const enhancedAssignments = assignmentsData.map(assignment => {
           const serviceDetails = servicesData.find(service => service.id === assignment.serviceId);
           return {
@@ -85,7 +62,26 @@ export function useServicesData(locationSlug: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [locationSlug]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    const loadCategoryColors = async () => {
+      const colors: {[key: string]: any} = {};
+      const categories = ["region-tours", "motor-tours", "balloon", "transfer", "other"];
+      
+      for (const category of categories) {
+        colors[category] = await getDisplayCategoryColors(category);
+      }
+      
+      setCategoryColors(colors);
+    };
+    
+    loadCategoryColors();
+  }, []);
 
   const handleCategorySelect = (categoryId: string) => {
     const categoryLabel = getCategoryLabel(categoryId);

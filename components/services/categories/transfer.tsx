@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,15 +20,11 @@ import { getVehicles, VehicleData } from "@/lib/vehicles";
 import { getTransferPrices, TransferPriceData } from "@/lib/transfer-prices";
 
 interface TransferProps {
-  selectedPayments: Array<{id: string, amount: string}>;
-  onPaymentChange: (id: string, checked: boolean) => void;
-  onPaymentAmountChange: (id: string, amount: string) => void;
   categoryDetails: any;
   onCategoryDetailsChange: (details: any) => void;
 }
 
-export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountChange, categoryDetails, onCategoryDetailsChange }: TransferProps) {
-  const [vehicles, setVehicles] = useState<VehicleData[]>([]);
+export function Transfer({ categoryDetails, onCategoryDetailsChange }: TransferProps) {
   const [transferPrices, setTransferPrices] = useState<TransferPriceData[]>([]);
   const [loading, setLoading] = useState(false);
   const [routeDetails, setRouteDetails] = useState(categoryDetails?.routeDetails || {
@@ -42,29 +38,24 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
     features: "",
   });
   
-  const initializePhotos = () => {
+  const initializePhotos = useCallback(() => {
     const existingPhotos = categoryDetails?.photos || [];
     const photoArray = [...existingPhotos];
     while (photoArray.length < 6) {
       photoArray.push(null);
     }
     return photoArray.slice(0, 6);
-  };
-  const [photos, setPhotos] = useState<Array<string | null>>(initializePhotos());
+  }, [categoryDetails?.photos]);
 
+  const [photos, setPhotos] = useState<Array<string | null>>(initializePhotos());
   const [selectedTransferPrice, setSelectedTransferPrice] = useState<string>(categoryDetails?.selectedTransferPrice || "");
   const [selectedTransferPriceData, setSelectedTransferPriceData] = useState<TransferPriceData | null>(null);
 
-  // Load vehicles and transfer prices
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [vehiclesData, transferPricesData] = await Promise.all([
-          getVehicles(),
-          getTransferPrices()
-        ]);
-        setVehicles(vehiclesData.filter(v => v.isActive));
+        const transferPricesData = await getTransferPrices();
         setTransferPrices(transferPricesData.filter(tp => tp.isActive));
         
         if (categoryDetails?.selectedTransferPrice) {
@@ -89,24 +80,21 @@ export function Transfer({ selectedPayments, onPaymentChange, onPaymentAmountCha
     loadData();
   }, [categoryDetails]);
 
-  // When a transfer price is selected, update route details
   useEffect(() => {
     if (selectedTransferPrice) {
       const selected = transferPrices.find(tp => tp.id === selectedTransferPrice);
       if (selected) {
         setSelectedTransferPriceData(selected);
-        const updatedRouteDetails = {
+        setRouteDetails(prev => ({
+          ...prev,
           startPoint: selected.departurePoint,
           endPoint: selected.arrivalPoint,
           duration: selected.transferDuration.toString(),
-          distance: routeDetails.distance,
-        };
-        setRouteDetails(updatedRouteDetails);
+        }));
       }
     }
   }, [selectedTransferPrice, transferPrices]);
 
-  // Update category details when data changes
   useEffect(() => {
     onCategoryDetailsChange({
       selectedTransferPrice,

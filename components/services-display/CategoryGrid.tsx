@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { AssignmentData } from "@/lib/assignments";
 import { ServiceData } from "@/lib/services";
 import { getCategoryLabel, getCategoryIcon, getCategoryColorsSync } from "./utils/categoryUtils";
+import Image from 'next/image';
 
 interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: ServiceData;
@@ -22,24 +23,22 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sliderAssignments, setSliderAssignments] = useState<EnhancedAssignmentData[]>([]);
 
-  // Get assignments with cover images for slider
   useEffect(() => {
     const assignmentsWithImages = assignments
       .filter(assignment => assignment.serviceDetails?.coverImage)
       .filter((assignment, index, self) => 
         self.findIndex(a => a.serviceDetails?.coverImage === assignment.serviceDetails?.coverImage) === index
-      ); // Remove duplicates based on cover image
+      ); 
     
     setSliderAssignments(assignmentsWithImages);
   }, [assignments]);
 
-  // Auto-slide functionality
   useEffect(() => {
     if (sliderAssignments.length <= 1) return;
     
     const interval = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % sliderAssignments.length);
-    }, 4000); // Change slide every 4 seconds
+    }, 4000); 
     
     return () => clearInterval(interval);
   }, [sliderAssignments.length]);
@@ -62,7 +61,6 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
     }
   };
 
-  // Get unique categories from assignments
   const getAvailableCategories = () => {
     const categories = assignments.reduce((acc, assignment) => {
       if (!acc.find(cat => cat.id === assignment.serviceCategory)) {
@@ -78,7 +76,7 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
       return acc;
     }, [] as Array<{id: string, label: string, icon: any, colors: any, count: number}>);
     
-    return categories.sort((a, b) => b.count - a.count); // Sort by count descending
+    return categories.sort((a, b) => b.count - a.count);
   };
 
   const availableCategories = getAvailableCategories();
@@ -86,10 +84,8 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
 
   return (
     <div className="space-y-6">
-      {/* Cover Images Slider */}
       {sliderAssignments.length > 0 && (
         <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-2xl cursor-pointer group" onClick={handleSlideClick} style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)' }}>
-          {/* Images */}
           <div className="relative w-full h-full">
             {sliderAssignments.map((assignment, index) => (
               <div
@@ -98,17 +94,18 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
                   index === currentSlide ? 'opacity-100' : 'opacity-0'
                 }`}
               >
-                <img
+                <Image
                   src={assignment.serviceDetails!.coverImage!}
                   alt={assignment.serviceName}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  layout="fill"
+                  objectFit="cover"
+                  className="group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
               </div>
             ))}
           </div>
 
-          {/* Navigation Arrows */}
           {sliderAssignments.length > 1 && (
             <>
               <button
@@ -132,7 +129,6 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
             </>
           )}
 
-          {/* Pagination Dots */}
           {sliderAssignments.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
               {sliderAssignments.map((_, index) => (
@@ -152,10 +148,8 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
             </div>
           )}
 
-          {/* Service Information Overlay */}
           {currentAssignment && (
             <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-              {/* Service Name */}
               <div className="space-y-2">
                 <h2 className="text-white text-xl font-bold drop-shadow-lg leading-tight">
                   {currentAssignment.serviceName}
@@ -164,15 +158,12 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
             </div>
           )}
 
-          {/* Top Badges */}
           {currentAssignment && (
             <div className="absolute top-4 left-0 right-0 flex justify-between items-start px-6 z-10">
-              {/* Category Badge - Left */}
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30 shadow-lg">
                 {getCategoryLabel(currentAssignment.serviceCategory)}
               </span>
               
-              {/* Price Badge - Right */}
               {currentAssignment.pricingSettings?.displayPrice && currentAssignment.pricingSettings.displayPrice > 0 && (
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-600/80 backdrop-blur-sm text-white border border-green-500/50 shadow-lg">
                   <Banknote className="w-3 h-3" />
@@ -182,7 +173,6 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
             </div>
           )}
 
-          {/* Hover Overlay */}
           <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
             <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-xl border border-white/30">
               <ChevronRight className="w-6 h-6 text-white" />
@@ -202,7 +192,6 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
               onClick={() => onCategorySelect(category.id)}
             >
               <CardContent className="p-0">
-                {/* Category Header */}
                 <div 
                   className="p-6 relative overflow-hidden h-32"
                   style={category.colors.useImage && category.colors.categoryImage ? {
@@ -216,7 +205,6 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
                     { backgroundColor: category.colors.customStyle?.backgroundColor || '#dc2626', color: 'white' }
                   }
                 >
-                  {/* Decorative elements */}
                   <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full -translate-y-12 translate-x-12"></div>
                   <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/20 rounded-full translate-y-10 -translate-x-10"></div>
                   
@@ -224,7 +212,6 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
                     {!category.colors.useImage && (
                       <div className="w-16 h-16 bg-white/30 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xl border border-white/50 group-hover:scale-110 transition-transform duration-300 relative">
                         <CategoryIcon className="w-8 h-8 text-white drop-shadow-lg" />
-                        {/* Count Badge */}
                         <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white">
                           {category.count}
                         </div>
@@ -233,7 +220,6 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
                   </div>
                 </div>
                 
-                {/* Action Area */}
                 <div className="p-4 bg-gradient-to-r from-gray-50 to-white group-hover:from-gray-100 group-hover:to-gray-50 transition-all duration-300 h-20 flex flex-col items-center justify-center">
                   <div className="flex items-center justify-center gap-2 text-gray-800 group-hover:text-gray-900 font-bold text-lg">
                     <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{category.label}</span>

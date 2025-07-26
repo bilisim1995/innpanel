@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
@@ -100,16 +99,7 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  useEffect(() => {
-    loadCategoryColors();
-    loadWhatsAppNumber();
-    loadNotificationEmail();
-    loadWhatsAppNotificationNumber();
-    loadVehicles();
-    loadTransferPrices();
-  }, []);
-
-  const loadCategoryColors = async () => {
+  const loadCategoryColors = useCallback(async () => {
     try {
       setLoadingColors(true);
       const colors = await getCategoryColors();
@@ -119,36 +109,36 @@ export default function ProfilePage() {
     } finally {
       setLoadingColors(false);
     }
-  };
+  },[toast]);
 
-  const loadWhatsAppNumber = async () => {
+  const loadWhatsAppNumber = useCallback(async () => {
     try {
       const number = await getWhatsAppNumber();
       if (number) setWhatsappNumber(number);
     } catch (error) {
       console.error('Error loading WhatsApp number:', error);
     }
-  };
-
-  const loadNotificationEmail = async () => {
+  },[]);
+  
+  const loadNotificationEmail = useCallback(async () => {
     try {
       const email = await getNotificationEmail();
       if (email) setNotificationEmail(email);
     } catch (error) {
       console.error('Error loading notification email:', error);
     }
-  };
+  },[]);
 
-  const loadWhatsAppNotificationNumber = async () => {
+  const loadWhatsAppNotificationNumber = useCallback(async () => {
     try {
       const number = await getWhatsAppNotificationNumber();
       if (number) setWhatsappNotificationNumber(number);
     } catch (error) {
       console.error('Error loading WhatsApp notification number:', error);
     }
-  };
+  },[]);
 
-  const loadVehicles = async () => {
+  const loadVehicles = useCallback(async () => {
     try {
       setLoadingVehicles(true);
       const vehiclesData = await getVehicles();
@@ -158,9 +148,9 @@ export default function ProfilePage() {
     } finally {
       setLoadingVehicles(false);
     }
-  };
-
-  const loadTransferPrices = async () => {
+  },[toast]);
+  
+  const loadTransferPrices = useCallback(async () => {
     try {
       setLoadingTransferPrices(true);
       const transferPricesData = await getTransferPrices();
@@ -170,7 +160,16 @@ export default function ProfilePage() {
     } finally {
       setLoadingTransferPrices(false);
     }
-  };
+  },[toast]);
+
+  useEffect(() => {
+    loadCategoryColors();
+    loadWhatsAppNumber();
+    loadNotificationEmail();
+    loadWhatsAppNotificationNumber();
+    loadVehicles();
+    loadTransferPrices();
+  }, [loadCategoryColors, loadWhatsAppNumber, loadNotificationEmail, loadWhatsAppNotificationNumber, loadVehicles, loadTransferPrices]);
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -293,8 +292,6 @@ export default function ProfilePage() {
     loadCategoryColors();
   };
   
-  // Omitted for brevity: vehicle and transfer price modal handlers...
-
   return (
     <div className="space-y-6">
       <div>
@@ -304,7 +301,6 @@ export default function ProfilePage() {
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          {/* Tabs Triggers */}
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
@@ -341,7 +337,7 @@ export default function ProfilePage() {
                     <Input id="whatsappNotificationNumber" value={whatsappNotificationNumber} onChange={(e) => setWhatsappNotificationNumber(e.target.value)} placeholder="Alıcı WhatsApp No (örn: 905551234567)" />
                     <Button onClick={handleWhatsAppNotificationSave} variant="outline" disabled={isUpdatingWhatsAppNotification}>{isUpdatingWhatsAppNotification ? "Kaydediliyor..." : "Kaydet"}</Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Yeni rezervasyon bildirimleri bu WhatsApp numarasına gönderilir ( ülke koduyla birlikte).</p>
+                  <p className="text-xs text-muted-foreground">Yeni rezervasyon bildirimleri bu WhatsApp numarasına gönderilir (ülke koduyla birlikte).</p>
                 </div>
               </CardContent>
             </Card>
@@ -358,34 +354,28 @@ export default function ProfilePage() {
                     <Input id="whatsappNumber" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} placeholder="İletişim butonu için WhatsApp No"/>
                     <Button onClick={handleWhatsAppSave} variant="outline" disabled={isUpdatingWhatsApp}>{isUpdatingWhatsApp ? "Kaydediliyor..." : "Kaydet"}</Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Bu numara, hizmet sayfalarındaki "Bilgi Al" butonunda kullanılır.</p>
+                  <p className="text-xs text-muted-foreground">Bu numara, hizmet sayfalarındaki &quot;Bilgi Al&quot; butonunda kullanılır.</p>
                 </div>
               </CardContent>
             </Card>
 
           <form onSubmit={handleProfileSubmit}>
-            {/* Personal info form remains the same */}
           </form>
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
-          {/* Security content remains the same */}
         </TabsContent>
         
         <TabsContent value="categories" className="space-y-6">
-          {/* Categories content remains the same */}
         </TabsContent>
         
         <TabsContent value="vehicles" className="space-y-6">
-          {/* Vehicles content remains the same */}
         </TabsContent>
 
         <TabsContent value="transfer-pricing" className="space-y-6">
-          {/* Transfer pricing content remains the same */}
         </TabsContent>
       </Tabs>
 
-      {/* Modals remain the same */}
     </div>
   );
 }

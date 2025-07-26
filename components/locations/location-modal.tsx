@@ -31,9 +31,8 @@ import {
   PlusCircle,
   Edit3
 } from "lucide-react";
-import { createSlug, updateSlug, slugToText, extractSlugNumber } from "@/lib/utils";
+import { createSlug, updateSlug } from "@/lib/utils";
 
-// Dynamically import Map component to avoid SSR issues
 const Map = dynamic(() => import("@/components/ui/map").then(mod => ({ default: mod.Map })), {
   ssr: false
 });
@@ -80,7 +79,7 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
     managerPhone: "",
     managerEmail: "",
     address: "",
-    coordinates: [38.7436, 34.8478] as [number, number], // Default to Cappadocia
+    coordinates: [38.7436, 34.8478] as [number, number],
     phone: "",
     email: "",
     website: "",
@@ -97,7 +96,6 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
   const [photos, setPhotos] = useState<Array<string | null>>([null, null, null, null, null]);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
-  // resetForm fonksiyonunu önce tanımla
   const resetForm = useCallback(() => {
     setFormData({
       name: "",
@@ -118,18 +116,17 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
       isActive: true,
       maxCapacity: "",
       notes: "",
-      facilityImage: editingLocation?.facilityImage || null,
+      facilityImage: null,
     });
     setPhotos([null, null, null, null, null]);
     setCustomSlug("");
     setIsEditingSlug(false);
     setCurrentStep(0);
     setErrors({});
-  }, [editingLocation?.facilityImage]);
+  }, []);
 
-  // Load editing location data when modal opens
   useEffect(() => {
-    if (editingLocation && editingLocation.id && isOpen) {
+    if (editingLocation && isOpen) {
       setFormData({
         name: editingLocation.name,
         type: editingLocation.type,
@@ -153,13 +150,11 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
       });
       setPhotos(editingLocation.photos || [null, null, null, null, null]);
       setCustomSlug(editingLocation.slug || "");
-    } else if ((!editingLocation || !editingLocation.id) && isOpen) {
-      // Reset form for new location
+    } else if (!editingLocation && isOpen) {
       resetForm();
     }
   }, [editingLocation, isOpen, resetForm]);
 
-  // Slug önizlemesi oluştur
   const getSlugPreview = useCallback(() => {
     if (isEditingSlug && customSlug) {
       return customSlug;
@@ -177,7 +172,7 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
     }
     
     return "";
-  }, [isEditingSlug, customSlug, editingLocation?.slug, editingLocation?.name, formData.name]);
+  }, [isEditingSlug, customSlug, editingLocation, formData.name]);
 
   const handleSlugEdit = () => {
     setIsEditingSlug(true);
@@ -232,26 +227,6 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
     }));
   };
 
-  const handlePhotoUpload = async (index: number, file: File) => {
-    try {
-      const response = await bunnyStorage.uploadFile(file, 'hizmetnoktalari');
-      if (response.success && response.url) {
-        const newPhotos = [...photos];
-        newPhotos[index] = response.url;
-        setPhotos(newPhotos);
-      } else {
-        throw new Error(response.error || 'Upload failed');
-      }
-    } catch (error) {
-      console.error('Photo upload error:', error);
-      toast({
-        title: "Hata",
-        description: "Fotoğraf yüklenirken bir hata oluştu",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handlePhotoChange = async (index: number, value: string | null) => {
     try {
       const newPhotos = [...photos];
@@ -265,12 +240,6 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
         variant: "destructive",
       });
     }
-  };
-
-  const handlePhotoRemove = (index: number) => {
-    const newPhotos = [...photos];
-    newPhotos[index] = null;
-    setPhotos(newPhotos);
   };
 
   const handleSubmit = async () => {
@@ -705,7 +674,6 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
           {editingLocation ? "Hizmet Noktası Düzenle" : "Yeni Hizmet Noktası"}
         </DialogTitle>
 
-        {/* Step Navigation */}
         <div className="flex items-center justify-between mb-6">
           {STEPS.map((step, index) => (
             <div
@@ -736,12 +704,10 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
           ))}
         </div>
 
-        {/* Step Content */}
         <div className="min-h-[400px]">
           {renderStepContent()}
         </div>
 
-        {/* Navigation Buttons */}
         <div className="flex justify-between pt-6 border-t">
           <Button
             variant="outline"

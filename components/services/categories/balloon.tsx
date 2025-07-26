@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,13 +22,7 @@ interface BalloonProps {
   onCategoryDetailsChange: (details: any) => void;
 }
 
-const PAYMENT_OPTIONS = [
-  { id: "cash", label: "Tur başlangıcında ödeme (nakit/kart)" },
-  { id: "online", label: "Sanal POS ile ödeme" },
-  { id: "partial", label: "Ön ödeme" },
-];
-
-export function Balloon({ selectedPayments, onPaymentChange, onPaymentAmountChange, categoryDetails, onCategoryDetailsChange }: BalloonProps) {
+export function Balloon({ onCategoryDetailsChange, categoryDetails }: BalloonProps) {
   const [flightInfo, setFlightInfo] = useState(categoryDetails?.flightInfo || {
     departurePoint: "",
     duration: "",
@@ -38,28 +31,24 @@ export function Balloon({ selectedPayments, onPaymentChange, onPaymentAmountChan
     flightArea: "",
   });
 
-  const initializePhotos = () => {
+  const initializePhotos = useCallback(() => {
     const existingPhotos = categoryDetails?.photos || [];
     const photoArray = [...existingPhotos];
     while (photoArray.length < 6) {
       photoArray.push(null);
     }
     return photoArray.slice(0, 6);
-  };
+  }, [categoryDetails?.photos]);
+
   const [photos, setPhotos] = useState<Array<string | null>>(initializePhotos());
 
-
-  // Update local state when categoryDetails changes
   useEffect(() => {
     if (categoryDetails?.flightInfo) {
       setFlightInfo(categoryDetails.flightInfo);
     }
-    if (categoryDetails?.photos) {
-      setPhotos(initializePhotos());
-    }
-  }, [categoryDetails]);
+    setPhotos(initializePhotos());
+  }, [categoryDetails, initializePhotos]);
 
-  // Update category details when data changes
   useEffect(() => {
     onCategoryDetailsChange({
       flightInfo,
