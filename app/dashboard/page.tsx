@@ -1,12 +1,13 @@
+
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { getReservations } from "@/lib/reservations";
 import { getServices } from "@/lib/services";
 import { getLocations } from "@/lib/locations";
 import { getAssignments } from "@/lib/assignments";
-import { Building2, MapPin, Calendar, Users, CreditCard, TrendingUp } from "lucide-react";
+import { Building2, MapPin, Calendar, CreditCard } from "lucide-react";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -14,8 +15,6 @@ export default function DashboardPage() {
       total: 0,
       pending: 0,
       confirmed: 0,
-      cancelled: 0,
-      completed: 0
     },
     services: {
       total: 0,
@@ -52,8 +51,6 @@ export default function DashboardPage() {
             total: reservations.length,
             pending: reservations.filter(r => r.status === 'pending').length,
             confirmed: reservations.filter(r => r.status === 'confirmed').length,
-            cancelled: reservations.filter(r => r.status === 'cancelled').length,
-            completed: reservations.filter(r => r.status === 'completed').length
           },
           services: {
             total: services.length,
@@ -78,7 +75,6 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-
     loadStats();
   }, []);
 
@@ -91,17 +87,12 @@ export default function DashboardPage() {
         {/* Rezervasyon İstatistikleri */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Toplam Rezervasyon
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Toplam Rezervasyon</CardTitle>
             <Calendar className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
+              <div className="animate-pulse h-12 w-full bg-gray-200 rounded"></div>
             ) : (
               <>
                 <div className="text-2xl font-bold">{stats.reservations.total}</div>
@@ -117,17 +108,12 @@ export default function DashboardPage() {
         {/* Toplam Gelir */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Toplam Gelir
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>
             <CreditCard className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
+              <div className="animate-pulse h-12 w-full bg-gray-200 rounded"></div>
             ) : (
               <>
                 <div className="text-2xl font-bold text-green-600">
@@ -144,17 +130,12 @@ export default function DashboardPage() {
         {/* Aktif Hizmetler */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Aktif Hizmetler
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Aktif Hizmetler</CardTitle>
             <Building2 className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
+             <div className="animate-pulse h-12 w-full bg-gray-200 rounded"></div>
             ) : (
               <>
                 <div className="text-2xl font-bold">{stats.services.active}</div>
@@ -169,17 +150,12 @@ export default function DashboardPage() {
         {/* Hizmet Noktaları */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Hizmet Noktaları
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Hizmet Noktaları</CardTitle>
             <MapPin className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
+              <div className="animate-pulse h-12 w-full bg-gray-200 rounded"></div>
             ) : (
               <>
                 <div className="text-2xl font-bold">{stats.locations.active}</div>
@@ -201,10 +177,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
+              <div className="animate-pulse h-12 w-full bg-gray-200 rounded"></div>
             ) : (
               <>
                 <div className="text-2xl font-bold">{stats.assignments.active}</div>
@@ -233,10 +206,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
+              <div className="animate-pulse h-12 w-full bg-gray-200 rounded"></div>
             ) : (
               <>
                 <div className="text-2xl font-bold text-green-600">

@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -80,6 +81,20 @@ export function updateSlug(newText: string, currentSlug: string): string {
   return `${baseSlug}-${generateRandomNumber()}`;
 }
 
+
+/**
+ * Telefon numarasını WhatsApp API formatına (90...) getirir.
+ */
+export function formatPhoneNumberForWhatsApp(phoneNumber: string): string | null {
+  if (!phoneNumber) return null;
+  const cleaned = phoneNumber.replace(/\D/g, '');
+  if (cleaned.startsWith('90') && cleaned.length === 12) return cleaned;
+  if (cleaned.startsWith('0') && cleaned.length === 11) return `90${cleaned.substring(1)}`;
+  if (cleaned.length === 10 && cleaned.startsWith('5')) return `90${cleaned}`;
+  console.warn(`Geçersiz telefon numarası formatı: ${phoneNumber}`);
+  return null;
+}
+
 /**
  * Helper function to convert Firestore Timestamps to Date objects recursively
  */
@@ -88,17 +103,14 @@ export const convertTimestampsToDate = (obj: any): any => {
     return obj;
   }
   
-  // Check if it's a Firestore Timestamp
   if (obj && typeof obj === 'object' && typeof obj.toDate === 'function') {
     return obj.toDate();
   }
   
-  // If it's an array, recursively convert each element
   if (Array.isArray(obj)) {
     return obj.map(item => convertTimestampsToDate(item));
   }
   
-  // If it's an object, recursively convert each property
   if (typeof obj === 'object') {
     const converted: any = {};
     for (const key in obj) {
@@ -109,7 +121,6 @@ export const convertTimestampsToDate = (obj: any): any => {
     return converted;
   }
   
-  // Return primitive values as-is
   return obj;
 };
 
@@ -128,7 +139,6 @@ export const removeUndefinedValues = (obj: any): any => {
   const cleaned: any = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined) {
-      // Special handling for Date objects - keep them as is for Firestore
       if (value instanceof Date) {
         cleaned[key] = value;
       } else {

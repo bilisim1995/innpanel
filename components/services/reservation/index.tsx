@@ -17,68 +17,16 @@ interface ReservationModalProps {
 }
 
 export function ReservationModal({ isOpen, onClose, assignment }: ReservationModalProps) {
-  const {
-    // ...all other state and handlers from the hook
-    selectedDate,
-    availableDates,
-    availableTimeSlots,
-    selectedTimeSlot,
-    personCount,
-    vehicleCount,
-    displayPrices,
-    selectedVehicle,
-    paymentMethod,
-    isPaymentSettingsOpen,
-    availablePaymentMethods,
-    prepaymentAmount,
-    isCalendarExpanded,
-    categoryTheme,
-    assignedVehicles,
-    filteredVehicles,
-    personCountForTransfer,
-    selectedVehicles,
-    customerName,
-    customerSurname,
-    customerEmail, // Destructure the email state
-    customerPhone,
-    visitorNote,
-    isSuccessModalOpen,
-    successData,
-    customerErrors,
-    isSubmitting,
-    selectedCurrency,
-    setSelectedCurrency,
-    handleDateSelect,
-    handleTimeSlotSelect,
-    handlePersonCountChange,
-    handlePersonCountForTransferChange,
-    handleVehicleCountChange,
-    handleVehicleSelect,
-    handleVehicleCountChangeForTransfer,
-    removeVehicleFromSelection,
-    getTotalCapacityForTransfer,
-    getTotalVehicleCountForTransfer,
-    getTotalAmount,
-    getPaymentBreakdown,
-    handleReservation,
-    handleCalendarToggle,
-    setPaymentMethod,
-    setIsPaymentSettingsOpen,
-    setPrepaymentAmount,
-    setIsSuccessModalOpen,
-    setCustomerName,
-    setCustomerSurname,
-    setCustomerEmail, // Destructure the email setter
-    setCustomerPhone,
-    setVisitorNote
-  } = useReservationState(isOpen, assignment);
+  // useReservationState hook'undan TÜM state ve fonksiyonları al
+  const reservationState = useReservationState(isOpen, assignment);
 
   const getThemeColor = () => {
-    return categoryTheme?.customStyle?.backgroundColor || '#dc2626';
+    // Tema rengini assignment'dan al, yoksa varsayılan bir renk kullan
+    return assignment?.theme?.primaryColor || '#dc2626';
   };
   
   const getButtonStyle = () => {
-    return { backgroundColor: getThemeColor(), border: 'none' };
+    return { backgroundColor: getThemeColor(), color: '#ffffff', border: 'none' };
   };
 
   if (!assignment) return null;
@@ -100,79 +48,43 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
           <ReservationHeader assignment={assignment} themeColor={getThemeColor()} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <ReservationCalendar 
-              selectedDate={selectedDate}
-              availableDates={availableDates}
-              isCalendarExpanded={isCalendarExpanded}
-              handleCalendarToggle={handleCalendarToggle}
-              handleDateSelect={handleDateSelect}
+              selectedDate={reservationState.selectedDate}
+              availableDates={reservationState.availableDates}
+              isCalendarExpanded={reservationState.isCalendarExpanded}
+              handleCalendarToggle={reservationState.handleCalendarToggle}
+              handleDateSelect={reservationState.handleDateSelect}
               themeColor={getThemeColor()}
             />
+            {/* ReservationDetails'a TÜM gerekli prop'ları geçir */}
             <ReservationDetails 
-              {...{
-                assignment,
-                selectedDate,
-                availableTimeSlots,
-                selectedTimeSlot,
-                personCount,
-                vehicleCount,
-                displayPrices,
-                filteredVehicles,
-                personCountForTransfer,
-                selectedVehicle,
-                selectedVehicles,
-                availablePaymentMethods,
-                paymentMethod,
-                isPaymentSettingsOpen,
-                prepaymentAmount,
-                assignedVehicles,
-                themeColor: getThemeColor(),
-                buttonStyle: getButtonStyle(),
-                selectedCurrency,
-                onCurrencyChange: setSelectedCurrency,
-                handleTimeSlotSelect,
-                handlePersonCountChange,
-                handlePersonCountForTransferChange,
-                handleVehicleCountChange,
-                handleVehicleSelect,
-                handleVehicleCountChangeForTransfer,
-                removeVehicleFromSelection,
-                getTotalCapacityForTransfer,
-                getTotalVehicleCountForTransfer,
-                getTotalAmount,
-                getPaymentBreakdown,
-                handleReservation,
-                setPaymentMethod,
-                setIsPaymentSettingsOpen,
-                setPrepaymentAmount,
-                isSubmitting,
-                customerName,
-                customerSurname,
-                customerEmail, // Pass state
-                customerPhone,
-                visitorNote,
-                customerErrors,
-                onCustomerNameChange: setCustomerName,
-                onCustomerSurnameChange: setCustomerSurname,
-                onCustomerEmailChange: setCustomerEmail, // Pass setter function
-                onCustomerPhoneChange: setCustomerPhone,
-                onVisitorNoteChange: setVisitorNote
-              }}
+              assignment={assignment}
+              {...reservationState} // Hook'tan gelen tüm state ve fonksiyonları yay
+              themeColor={getThemeColor()}
+              buttonStyle={getButtonStyle()}
+              onCurrencyChange={reservationState.setSelectedCurrency}
+              onCustomerNameChange={reservationState.setCustomerName}
+              onCustomerSurnameChange={reservationState.setCustomerSurname}
+              onCustomerEmailChange={reservationState.setCustomerEmail}
+              onCustomerPhoneChange={reservationState.setCustomerPhone}
+              onVisitorNoteChange={reservationState.setVisitorNote}
             />
           </div>
         </div>
         
-        <ReservationSuccess 
-          isOpen={isSuccessModalOpen}
-          onClose={() => {
-            setIsSuccessModalOpen(false);
-            onClose();
-          }} 
-          reservationId={successData.reservationId}
-          serviceName={successData.serviceName}
-          reservationDate={successData.reservationDate}
-          timeSlot={successData.timeSlot}
-          locationSlug={successData.locationSlug}
-        />
+        {reservationState.isSuccessModalOpen && reservationState.successData && (
+          <ReservationSuccess 
+            isOpen={reservationState.isSuccessModalOpen}
+            onClose={() => {
+              reservationState.setIsSuccessModalOpen(false);
+              onClose();
+            }} 
+            reservationId={reservationState.successData.reservationId}
+            serviceName={reservationState.successData.serviceName}
+            reservationDate={reservationState.successData.reservationDate}
+            timeSlot={reservationState.successData.timeSlot}
+            locationSlug={reservationState.successData.locationSlug}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -1,3 +1,4 @@
+
 import { db } from './firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where, limit } from 'firebase/firestore';
 
@@ -14,15 +15,12 @@ const SETTINGS_COLLECTION = 'settings';
 
 export const saveSetting = async (key: string, value: string, description?: string): Promise<string> => {
   try {
-    // Check if setting already exists
     const existingSetting = await getSetting(key);
     
     if (existingSetting) {
-      // Update existing setting
       await updateSetting(existingSetting.id!, { value, description });
       return existingSetting.id!;
     } else {
-      // Create new setting
       const now = new Date();
       const docRef = await addDoc(collection(db, SETTINGS_COLLECTION), {
         key,
@@ -106,6 +104,8 @@ export const deleteSetting = async (id: string): Promise<void> => {
 };
 
 // Helper functions for specific settings
+
+// WhatsApp number for customer contact button
 export const saveWhatsAppNumber = async (phoneNumber: string): Promise<void> => {
   await saveSetting('whatsapp_number', phoneNumber, 'WhatsApp iletişim numarası');
 };
@@ -115,11 +115,22 @@ export const getWhatsAppNumber = async (): Promise<string | null> => {
   return setting?.value || null;
 };
 
+// Notification email for new reservations
 export const saveNotificationEmail = async (email: string): Promise<void> => {
   await saveSetting('notification_email', email, 'Rezervasyon bildirim e-postası');
 };
 
 export const getNotificationEmail = async (): Promise<string | null> => {
   const setting = await getSetting('notification_email');
+  return setting?.value || null;
+};
+
+// WhatsApp number for new reservation notifications
+export const saveWhatsAppNotificationNumber = async (phoneNumber: string): Promise<void> => {
+  await saveSetting('whatsapp_notification_number', phoneNumber, 'WhatsApp bildirim numarası');
+};
+
+export const getWhatsAppNotificationNumber = async (): Promise<string | null> => {
+  const setting = await getSetting('whatsapp_notification_number');
   return setting?.value || null;
 };

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -23,7 +24,14 @@ export function ReservationCalendar({
   handleDateSelect,
   themeColor
 }: ReservationCalendarProps) {
+  
+  // Hata düzeltmesi: availableDates'in bir dizi olduğundan emin ol
   const isDateAvailable = (date: Date) => {
+    // Eğer availableDates tanımsız veya null ise, false döndür.
+    if (!availableDates) {
+      return false;
+    }
+    // Dizi ise .some() metodunu güvenle çağır.
     return availableDates.some(d => d.toDateString() === date.toDateString());
   };
 
@@ -75,7 +83,7 @@ export function ReservationCalendar({
               return date < new Date() || !isDateAvailable(date);
             }}
             modifiers={{
-              available: availableDates,
+              available: availableDates || [], // Burada da availableDates'in undefined olmamasını sağla
               selected: selectedDate ? [selectedDate] : []
             }}
             modifiersStyles={{
