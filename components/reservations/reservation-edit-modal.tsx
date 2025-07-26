@@ -15,6 +15,7 @@ import {
   Edit3,
   User,
   Phone,
+  Mail, // Import Mail icon
   Calendar,
   CreditCard,
   AlertCircle,
@@ -120,26 +121,6 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
     return statuses[status as keyof typeof statuses] || status;
   };
 
-  const getStatusIcon = (status: string) => {
-    const icons = {
-      "pending": Clock,
-      "confirmed": CheckCircle,
-      "cancelled": XCircle,
-      "completed": CheckCircle,
-    };
-    return icons[status as keyof typeof icons] || AlertCircle;
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors = {
-      "pending": "text-yellow-600",
-      "confirmed": "text-green-600",
-      "cancelled": "text-red-600",
-      "completed": "text-blue-600",
-    };
-    return colors[status as keyof typeof colors] || "text-gray-600";
-  };
-
   const getCategoryLabel = (category: string) => {
     const categories = {
       "region-tours": "Bölge Turları",
@@ -204,7 +185,7 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
             </CardContent>
           </Card>
 
-          {/* Customer Information (Editable) */}
+          {/* Customer Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -271,6 +252,21 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
                   </p>
                 )}
               </div>
+
+              {/* Customer Email (Read-only) */}
+              <div className="space-y-2">
+                <Label htmlFor="customerEmail" className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  E-posta
+                </Label>
+                <Input
+                  id="customerEmail"
+                  value={reservation.customerEmail}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="visitorNote" className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
@@ -281,97 +277,84 @@ export function ReservationEditModal({ isOpen, onClose, reservation }: Reservati
                   value={formData.visitorNote}
                   disabled
                   rows={3}
+                  className="bg-muted"
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* Status and Notes */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Rezervasyon Durumu
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="status">Durum</Label>
-                <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-yellow-600" />
-                        Beklemede
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="confirmed">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        Onaylandı
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="cancelled">
-                      <div className="flex items-center gap-2">
-                        <XCircle className="h-4 w-4 text-red-600" />
-                        İptal Edildi
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="completed">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-blue-600" />
-                        Tamamlandı
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Status and Payment */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Rezervasyon Durumu
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Durum</Label>
+                  <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-yellow-600" />
+                          Beklemede
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="confirmed">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          Onaylandı
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="cancelled">
+                        <div className="flex items-center gap-2">
+                          <XCircle className="h-4 w-4 text-red-600" />
+                          İptal Edildi
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="completed">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-blue-600" />
+                          Tamamlandı
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Payment Info (Read-only) */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Ödeme Bilgileri
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Ödeme Bilgileri
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
                   <Label className="text-sm font-medium">Toplam Tutar</Label>
-                  <p className="text-lg font-bold p-2 bg-muted rounded">{reservation.totalAmount} ₺</p>
+                  <p className="text-lg font-bold">{reservation.totalAmount} ₺</p>
                 </div>
-                <div>
+                <div className="flex justify-between items-center">
                   <Label className="text-sm font-medium">Ödeme Yöntemi</Label>
-                  <p className="p-2 bg-muted rounded text-sm">
-                    {reservation.paymentMethod === 'full_start' ? 'Başlangıçta Tam Ödeme' : 'Ön Ödeme'}
-                  </p>
+                  <Badge variant="secondary">
+                    {reservation.paymentMethod === 'full_start' ? 'Tamamı' : 'Ön Ödeme'}
+                  </Badge>
                 </div>
-                {reservation.paymentMethod === 'prepayment' && (
-                  <>
-                    <div>
-                      <Label className="text-sm font-medium">Ön Ödeme</Label>
-                      <p className="p-2 bg-muted rounded text-sm">{reservation.prepaymentAmount} ₺</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Kalan Tutar</Label>
-                      <p className="p-2 bg-muted rounded text-sm">{reservation.remainingAmount} ₺</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={onClose} disabled={isLoading}>
-              İptal
+              Kapat
             </Button>
             <Button onClick={handleSave} disabled={isLoading}>
               {isLoading ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}

@@ -432,6 +432,10 @@ export default function ReservationsPage() {
                     <p className="text-sm text-muted-foreground">Rezervasyon No</p>
                     <p className="font-mono font-medium">{viewingReservation.id?.substring(0, 8).toUpperCase()}</p>
                   </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">E-posta</p>
+                    <p className="font-medium">{viewingReservation.customerEmail}</p>
+                  </div>
                   {viewingReservation.visitorNote && (
                     <div className="md:col-span-3">
                       <p className="text-sm text-muted-foreground">Ziyaretçi Notu</p>
