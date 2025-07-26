@@ -125,8 +125,10 @@ export function ReservationDetails({
     if (isNaN(amount) || amount === null) {
       amount = 0;
     }
-    // Directly use selectedCurrency as its type is guaranteed to be valid.
-    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: selectedCurrency }).format(amount);
+    // Runtime safety check: handle cases where 'TL' might be passed
+    // despite the stricter type, which can happen with old data from Firestore.
+    const validCurrencyCode = (selectedCurrency as string) === 'TL' ? 'TRY' : selectedCurrency;
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: validCurrencyCode }).format(amount);
   }
 
   return (

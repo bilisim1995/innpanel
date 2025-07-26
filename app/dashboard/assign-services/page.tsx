@@ -372,7 +372,7 @@ export default function AssignServicesPage() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Atamayı Onayla</AlertDialogTitle>
                     <AlertDialogDescription>
-                      "{selectedService?.serviceName}" hizmetini "{selectedLocation?.name}" noktasına atamak istediğinizden emin misiniz?
+                      {selectedService?.serviceName} hizmetini {selectedLocation?.name} noktasına atamak istediğinizden emin misiniz?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
