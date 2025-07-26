@@ -1,7 +1,9 @@
+
 import { db } from './firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
 import { removeUndefinedValues } from './utils';
 
+// ... (Keep existing interfaces)
 export interface ReservationData {
   id?: string;
   // Service and Assignment Info
@@ -16,6 +18,7 @@ export interface ReservationData {
   // Customer Info
   customerName: string;
   customerSurname: string;
+  customerEmail: string; // Ensure email is part of the data
   customerPhone: string;
   visitorNote?: string;
   
@@ -26,37 +29,18 @@ export interface ReservationData {
     startTime: string;
     endTime: string;
     price: number;
+    currency: string;
   };
   
   // Participant Details
-  personCount?: number; // For regular services
-  personCountForTransfer?: number; // For transfer services
-  vehicleCount?: number; // For motor tours and transfer
-  
-  // Selected Vehicles (for transfer)
-  selectedVehicles?: Array<{
-    vehicleId: string;
-    vehicleTypeName: string;
-    maxPassengerCapacity: number;
-    count: number;
-  }>;
-  
-  // Selected Vehicle (for motor tours)
-  selectedVehicle?: {
-    vehicleId: string;
-    vehicleTypeName: string;
-    maxPassengerCapacity: number;
-  };
+  adults: number;
+  children: number;
   
   // Pricing
-  unitPrice: number;
   totalAmount: number;
-  commissionAmount?: number;
   
   // Payment
   paymentMethod: 'full_start' | 'prepayment' | 'full_location';
-  prepaymentAmount?: number;
-  remainingAmount?: number;
   
   // Status
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
@@ -66,22 +50,66 @@ export interface ReservationData {
   updatedAt: Date;
 }
 
+
 const RESERVATIONS_COLLECTION = 'reservations';
 
-export const saveReservation = async (reservationData: Omit<ReservationData, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+// Extend the input to include currency for the email
+interface SaveReservationData extends Omit<ReservationData, 'id' | 'createdAt' | 'updatedAt' | 'status'> {
+    currency: string;
+}
+
+export const saveReservation = async (reservationData: SaveReservationData): Promise<string> => {
   try {
     const now = new Date();
+    // Destructure currency out, as we don't need to save it to DB
+    const { currency, ...dbData } = reservationData;
+
     const dataToSave = {
-      ...reservationData,
-      status: 'pending', // Default status
+      ...dbData,
+      status: 'pending' as const, // Default status
       createdAt: now,
       updatedAt: now,
     };
     
-    // Remove undefined values to prevent Firestore errors
     const cleanedData = removeUndefinedValues(dataToSave);
     
     const docRef = await addDoc(collection(db, RESERVATIONS_COLLECTION), cleanedData);
+
+    // --- Send Email after successful save ---
+    try {
+      // Structure the data for the email API
+      const emailPayload = {
+        serviceName: cleanedData.serviceName,
+        totalAmount: cleanedData.totalAmount,
+        currency: currency,
+        reservationDetails: {
+          date: cleanedData.reservationDate,
+          timeSlot: `${cleanedData.timeSlot.startTime} - ${cleanedData.timeSlot.endTime}`,
+          adults: cleanedData.adults,
+          children: cleanedData.children,
+        },
+        customerInfo: {
+          name: `${cleanedData.customerName} ${cleanedData.customerSurname}`,
+          email: cleanedData.customerEmail,
+          phone: cleanedData.customerPhone,
+          notes: cleanedData.visitorNote || '',
+        },
+      };
+
+      // Fire-and-forget call to the email API
+      fetch('/api/send-reservation-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailPayload),
+      });
+
+    } catch (emailError) {
+      // Log the email error but don't fail the whole reservation process
+      console.error('Failed to trigger reservation email:', emailError);
+    }
+    // -----------------------------------------
     
     return docRef.id;
   } catch (error) {
@@ -90,6 +118,7 @@ export const saveReservation = async (reservationData: Omit<ReservationData, 'id
   }
 };
 
+// ... (Keep existing getReservations, updateReservation, deleteReservation, etc.)
 export const getReservations = async (): Promise<ReservationData[]> => {
   try {
     const q = query(collection(db, RESERVATIONS_COLLECTION), orderBy('createdAt', 'desc'));
@@ -127,49 +156,5 @@ export const deleteReservation = async (id: string): Promise<void> => {
   } catch (error) {
     console.error('Error deleting reservation:', error);
     throw new Error('Rezervasyon silinirken bir hata oluştu');
-  }
-};
-
-export const getReservationsByService = async (serviceId: string): Promise<ReservationData[]> => {
-  try {
-    const q = query(
-      collection(db, RESERVATIONS_COLLECTION), 
-      where('serviceId', '==', serviceId),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      reservationDate: doc.data().reservationDate?.toDate() || new Date(),
-      createdAt: doc.data().createdAt?.toDate() || new Date(),
-      updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-    })) as ReservationData[];
-  } catch (error) {
-    console.error('Error fetching reservations by service:', error);
-    throw new Error('Hizmet rezervasyonları yüklenirken bir hata oluştu');
-  }
-};
-
-export const getReservationsByLocation = async (locationId: string): Promise<ReservationData[]> => {
-  try {
-    const q = query(
-      collection(db, RESERVATIONS_COLLECTION), 
-      where('locationId', '==', locationId),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      reservationDate: doc.data().reservationDate?.toDate() || new Date(),
-      createdAt: doc.data().createdAt?.toDate() || new Date(),
-      updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-    })) as ReservationData[];
-  } catch (error) {
-    console.error('Error fetching reservations by location:', error);
-    throw new Error('Lokasyon rezervasyonları yüklenirken bir hata oluştu');
   }
 };

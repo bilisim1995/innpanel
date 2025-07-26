@@ -114,3 +114,12 @@ export const getWhatsAppNumber = async (): Promise<string | null> => {
   const setting = await getSetting('whatsapp_number');
   return setting?.value || null;
 };
+
+export const saveNotificationEmail = async (email: string): Promise<void> => {
+  await saveSetting('notification_email', email, 'Rezervasyon bildirim e-postası');
+};
+
+export const getNotificationEmail = async (): Promise<string | null> => {
+  const setting = await getSetting('notification_email');
+  return setting?.value || null;
+};
