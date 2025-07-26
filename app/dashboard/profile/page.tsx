@@ -395,7 +395,7 @@ export default function ProfilePage() {
                       <Input id="whatsappNumber" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} placeholder="İletişim butonu için WhatsApp No"/>
                       <Button onClick={handleWhatsAppSave} variant="outline" disabled={isUpdatingWhatsApp}>{isUpdatingWhatsApp ? "Kaydediliyor..." : "Kaydet"}</Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">Bu numara, hizmet sayfalarındaki "Bilgi Al" butonunda kullanılır.</p>
+                    <p className="text-xs text-muted-foreground">Bu numara, hizmet sayfalarındaki Bilgi Al butonunda kullanılır.</p>
                   </div>
                 </CardContent>
               </Card>

@@ -125,8 +125,8 @@ export function ReservationDetails({
     if (isNaN(amount) || amount === null) {
       amount = 0;
     }
-    const validCurrencyCode = selectedCurrency === 'TL' ? 'TRY' : selectedCurrency;
-    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: validCurrencyCode }).format(amount);
+    // Directly use selectedCurrency as its type is guaranteed to be valid.
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: selectedCurrency }).format(amount);
   }
 
   return (
