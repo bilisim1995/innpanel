@@ -23,7 +23,7 @@ const createAdminEmailHtml = (data: any): string => `
         <ul>
           <li><strong>Tarih:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString('tr-TR')}</li>
           <li><strong>Saat:</strong> ${data.reservationDetails.timeSlot}</li>
-          <li><strong>Katılımcılar:</strong> ${data.reservationDetails.adults} Yetişkin, ${data.reservationDetails.children} Çocuk</li>
+          <li><strong>Katılımcılar:</strong> ${data.reservationDetails.adults} Yetişkin, ${data.reservationDetails.children || 0} Çocuk</li>
         </ul>
         <h3>Müşteri Bilgileri</h3>
         <ul>
@@ -56,7 +56,7 @@ const createCustomerEmailHtml = (data: any): string => `
         <ul>
           <li><strong>Tarih:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString('tr-TR')}</li>
           <li><strong>Saat:</strong> ${data.reservationDetails.timeSlot}</li>
-          <li><strong>Katılımcılar:</strong> ${data.reservationDetails.adults} Yetişkin, ${data.reservationDetails.children} Çocuk</li>
+          <li><strong>Katılımcılar:</strong> ${data.reservationDetails.adults} Yetişkin, ${data.reservationDetails.children || 0} Çocuk</li>
           <li><strong>Toplam Tutar:</strong> ${data.totalAmount} ${data.currency}</li>
         </ul>
         <p>İyi eğlenceler dileriz!</p>
@@ -77,7 +77,7 @@ const formatAdminWhatsAppMessage = (data: any): string => {
 *Telefon:* ${customerInfo.phone}
 *Tarih:* ${new Date(reservationDetails.date).toLocaleDateString('tr-TR')}
 *Saat:* ${reservationDetails.timeSlot}
-*Katılımcılar:* ${reservationDetails.adults} Yetişkin, ${reservationDetails.children} Çocuk
+*Katılımcılar:* ${reservationDetails.adults} Yetişkin, ${reservationDetails.children || 0} Çocuk
 *Toplam Tutar:* ${totalAmount} ${currency}
 
 *Müşteri Notu:*
@@ -93,7 +93,7 @@ INNGEZ aracılığıyla yapmış olduğunuz rezervasyonunuz başarıyla onaylanm
 *Hizmet:* ${serviceName}
 *Tarih:* ${new Date(reservationDetails.date).toLocaleDateString('tr-TR')}
 *Saat:* ${reservationDetails.timeSlot}
-*Katılımcılar:* ${reservationDetails.adults} Yetişkin, ${reservationDetails.children} Çocuk
+*Katılımcılar:* ${reservationDetails.adults} Yetişkin, ${reservationDetails.children || 0} Çocuk
 *Toplam Tutar:* *${totalAmount} ${currency}*
 
 Herhangi bir sorunuz olursa lütfen bizimle iletişime geçin.`;

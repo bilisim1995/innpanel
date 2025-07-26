@@ -105,6 +105,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       setCustomerName("");
       setCustomerSurname("");
       setCustomerPhone("");
+      setCustomerEmail("");
       setVisitorNote("");
       setCustomerErrors({});
       setIsSuccessModalOpen(false);
@@ -346,6 +347,11 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     if (!customerName.trim()) errors.customerName = "Ad alanı zorunludur";
     if (!customerSurname.trim()) errors.customerSurname = "Soyad alanı zorunludur";
     if (!customerPhone.trim()) errors.customerPhone = "Telefon numarası zorunludur";
+    if (!customerEmail.trim()) {
+        errors.customerEmail = "E-posta alanı zorunludur";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+        errors.customerEmail = "Geçerli bir e-posta adresi girin";
+    }
     setCustomerErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -375,6 +381,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
             locationName: assignment.locationName,
             customerName: customerName.trim(),
             customerSurname: customerSurname.trim(),
+            customerEmail: customerEmail.trim(), // Added this line
             customerPhone: customerPhone.trim(),
             visitorNote: visitorNote.trim(),
             reservationDate: selectedDate,
