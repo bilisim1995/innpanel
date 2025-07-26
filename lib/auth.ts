@@ -16,7 +16,7 @@ interface AuthState {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  updateUserProfile: (displayName: string) => Promise<void>;
+  updateUserProfile: (displayName: string, photoURL?: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
@@ -52,7 +52,7 @@ export const useAuth = create<AuthState>((set, get) => ({
       console.error('Logout error:', error);
     }
   },
-  updateUserProfile: async (displayName: string) => {
+  updateUserProfile: async (displayName: string, photoURL?: string) => {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -60,11 +60,12 @@ export const useAuth = create<AuthState>((set, get) => ({
       }
 
       await updateProfile(currentUser, {
-        displayName: displayName
+        displayName: displayName,
+        photoURL: photoURL
       });
 
       // Update the user state
-      set({ user: { ...currentUser, displayName } });
+      set({ user: { ...currentUser, displayName, photoURL: photoURL ?? currentUser.photoURL } });
     } catch (error) {
       console.error('Profile update error:', error);
       throw new Error('Profil güncellenirken bir hata oluştu');
