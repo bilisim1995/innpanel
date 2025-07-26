@@ -1,9 +1,8 @@
 
 import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { removeUndefinedValues } from './utils';
 
-// ... (Keep existing interfaces)
 export interface ReservationData {
   id?: string;
   // Service and Assignment Info
@@ -18,7 +17,7 @@ export interface ReservationData {
   // Customer Info
   customerName: string;
   customerSurname: string;
-  customerEmail: string; // Ensure email is part of the data
+  customerEmail: string;
   customerPhone: string;
   visitorNote?: string;
   
@@ -35,9 +34,18 @@ export interface ReservationData {
   // Participant Details
   adults: number;
   children: number;
+  personCount?: number;
+  personCountForTransfer?: number;
+  vehicleCount?: number;
+  selectedVehicles?: any[];
+  selectedVehicle?: any;
   
   // Pricing
   totalAmount: number;
+  unitPrice?: number;
+  prepaymentAmount?: number;
+  remainingAmount?: number;
+  commissionAmount?: number;
   
   // Payment
   paymentMethod: 'full_start' | 'prepayment' | 'full_location';
@@ -50,10 +58,8 @@ export interface ReservationData {
   updatedAt: Date;
 }
 
-
 const RESERVATIONS_COLLECTION = 'reservations';
 
-// Extend the input to include currency for the email
 interface SaveReservationData extends Omit<ReservationData, 'id' | 'createdAt' | 'updatedAt' | 'status'> {
     currency: string;
 }
@@ -61,12 +67,11 @@ interface SaveReservationData extends Omit<ReservationData, 'id' | 'createdAt' |
 export const saveReservation = async (reservationData: SaveReservationData): Promise<string> => {
   try {
     const now = new Date();
-    // Destructure currency out, as we don't need to save it to DB
     const { currency, ...dbData } = reservationData;
 
     const dataToSave = {
       ...dbData,
-      status: 'pending' as const, // Default status
+      status: 'pending' as const,
       createdAt: now,
       updatedAt: now,
     };
@@ -75,9 +80,7 @@ export const saveReservation = async (reservationData: SaveReservationData): Pro
     
     const docRef = await addDoc(collection(db, RESERVATIONS_COLLECTION), cleanedData);
 
-    // --- Send Email after successful save ---
     try {
-      // Structure the data for the email API
       const emailPayload = {
         serviceName: cleanedData.serviceName,
         totalAmount: cleanedData.totalAmount,
@@ -96,7 +99,6 @@ export const saveReservation = async (reservationData: SaveReservationData): Pro
         },
       };
 
-      // Fire-and-forget call to the email API
       fetch('/api/send-reservation-email', {
         method: 'POST',
         headers: {
@@ -106,10 +108,8 @@ export const saveReservation = async (reservationData: SaveReservationData): Pro
       });
 
     } catch (emailError) {
-      // Log the email error but don't fail the whole reservation process
       console.error('Failed to trigger reservation email:', emailError);
     }
-    // -----------------------------------------
     
     return docRef.id;
   } catch (error) {
@@ -118,7 +118,6 @@ export const saveReservation = async (reservationData: SaveReservationData): Pro
   }
 };
 
-// ... (Keep existing getReservations, updateReservation, deleteReservation, etc.)
 export const getReservations = async (): Promise<ReservationData[]> => {
   try {
     const q = query(collection(db, RESERVATIONS_COLLECTION), orderBy('createdAt', 'desc'));

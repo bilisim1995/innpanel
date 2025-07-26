@@ -29,15 +29,11 @@ interface ServicesDisplayProps {
 export function ServicesDisplay({ locationSlug }: ServicesDisplayProps) {
   const router = useRouter();
   
-  // Remove qr_scan parameter from URL after page loads
   useEffect(() => {
-    // Check if we're in the browser and if the URL has the qr_scan parameter
     if (typeof window !== 'undefined' && window.location.href.includes('qr_scan=true')) {
-      // Create a new URL without the qr_scan parameter
       const url = new URL(window.location.href);
       url.searchParams.delete('qr_scan');
       
-      // Replace the current URL without reloading the page
       window.history.replaceState({}, document.title, url.toString());
     }
   }, []);
@@ -61,7 +57,6 @@ export function ServicesDisplay({ locationSlug }: ServicesDisplayProps) {
     isServiceModalOpen,
     currentImageIndex,
     isDragging,
-    dragStart,
     handleImageClick,
     handleServiceSelect,
     setIsImageModalOpen,
@@ -125,22 +120,14 @@ export function ServicesDisplay({ locationSlug }: ServicesDisplayProps) {
 
       <Footer />
       
-      {/* Bottom padding to prevent content being hidden behind fixed footer */}
       <div className="h-16"></div>
       
       <WhatsAppButton />
 
-      {/* Modals */}
       <ImageModal
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
         imageUrl={selectedImage}
-        onServiceSelect={() => {
-          setIsImageModalOpen(false);
-          if (selectedService) {
-            setIsServiceModalOpen(true);
-          }
-        }}
       />
 
       <ServiceDetailModal

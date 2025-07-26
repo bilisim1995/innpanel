@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Info, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
-import { Service } from "@/lib/services";
+import { ServiceData } from "@/lib/services";
 
 interface ServiceTourInformationProps {
     assignment: AssignmentData;
-    service: Service;
+    service: ServiceData;
     theme: any;
     isOpen: boolean;
     onToggle: (open: boolean) => void;
@@ -18,20 +18,14 @@ interface ServiceTourInformationProps {
 const getTourInfoForCategory = (category: string, details: any): string | null => {
     if (!details) return null;
 
-
-
     switch (category) {
         case "region-tours":
             return details.tourInfo || null;
         case "motor-tours":
-            // Assuming the main text description for motor-tours could be in a 'description' field.
-            // This can be adjusted if the field is named differently.
             return details.routeDetails?.description || details.tourDetails || null;
         case "balloon":
-            // Example: Balloon flights might have flight-specific info.
             return details.flightInfo?.flightArea || null;
         case "transfer":
-             // Transfers might not have a 'tour info' section, but we can check.
             return details.routeDetails?.notes || null;
         case "other":
             return details.tourDetails || null;
@@ -39,7 +33,6 @@ const getTourInfoForCategory = (category: string, details: any): string | null =
             return null;
     }
 };
-
 
 export function ServiceTourInformation({ assignment, service, theme, isOpen, onToggle }: ServiceTourInformationProps) {
     const backgroundStyle = theme.customStyle?.background ?

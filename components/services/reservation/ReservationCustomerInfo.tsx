@@ -88,7 +88,6 @@ export function ReservationCustomerInfo({
         <div className="space-y-2">
           <Label htmlFor="customerPhone" className="flex items-center gap-2"><Phone className="h-4 w-4" /> Telefon Numarası</Label>
           <PhoneInput
-            id="customerPhone"
             value={customerPhone}
             onChange={onCustomerPhoneChange}
             className={errors.customerPhone ? '[&>input]:border-red-500' : ''}

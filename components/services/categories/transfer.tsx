@@ -85,7 +85,7 @@ export function Transfer({ categoryDetails, onCategoryDetailsChange }: TransferP
       const selected = transferPrices.find(tp => tp.id === selectedTransferPrice);
       if (selected) {
         setSelectedTransferPriceData(selected);
-        setRouteDetails(prev => ({
+        setRouteDetails((prev: any) => ({
           ...prev,
           startPoint: selected.departurePoint,
           endPoint: selected.arrivalPoint,
