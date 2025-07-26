@@ -17,11 +17,9 @@ interface ReservationModalProps {
 }
 
 export function ReservationModal({ isOpen, onClose, assignment }: ReservationModalProps) {
-  // useReservationState hook'undan TÜM state ve fonksiyonları al
   const reservationState = useReservationState(isOpen, assignment);
 
   const getThemeColor = () => {
-    // Tema rengini assignment'dan al, yoksa varsayılan bir renk kullan
     return assignment?.theme?.primaryColor || '#dc2626';
   };
   
@@ -55,13 +53,12 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
               handleDateSelect={reservationState.handleDateSelect}
               themeColor={getThemeColor()}
             />
-            {/* ReservationDetails'a TÜM gerekli prop'ları geçir */}
             <ReservationDetails 
               assignment={assignment}
-              {...reservationState} // Hook'tan gelen tüm state ve fonksiyonları yay
+              {...reservationState}
               themeColor={getThemeColor()}
               buttonStyle={getButtonStyle()}
-              onCurrencyChange={reservationState.setSelectedCurrency}
+              // Explicitly pass all required customer info handlers
               onCustomerNameChange={reservationState.setCustomerName}
               onCustomerSurnameChange={reservationState.setCustomerSurname}
               onCustomerEmailChange={reservationState.setCustomerEmail}

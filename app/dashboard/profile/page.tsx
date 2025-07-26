@@ -384,23 +384,21 @@ export default function ProfilePage() {
         <TabsContent value="profile" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
-          
-
               <Card>
-              <CardHeader>
-                <CardTitle>Genel Ayarlar</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="whatsappNumber" className="flex items-center gap-2"><Phone className="h-4 w-4" /> Müşteri WhatsApp Numarası</Label>
-                  <div className="flex gap-2">
-                    <Input id="whatsappNumber" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} placeholder="İletişim butonu için WhatsApp No"/>
-                    <Button onClick={handleWhatsAppSave} variant="outline" disabled={isUpdatingWhatsApp}>{isUpdatingWhatsApp ? "Kaydediliyor..." : "Kaydet"}</Button>
+                <CardHeader>
+                  <CardTitle>Genel Ayarlar</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsappNumber" className="flex items-center gap-2"><Phone className="h-4 w-4" /> Müşteri WhatsApp Numarası</Label>
+                    <div className="flex gap-2">
+                      <Input id="whatsappNumber" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} placeholder="İletişim butonu için WhatsApp No"/>
+                      <Button onClick={handleWhatsAppSave} variant="outline" disabled={isUpdatingWhatsApp}>{isUpdatingWhatsApp ? "Kaydediliyor..." : "Kaydet"}</Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Bu numara, hizmet sayfalarındaki "Bilgi Al" butonunda kullanılır.</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">Bu numara, hizmet sayfalarındaki "Bilgi Al" butonunda kullanılır.</p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             </div>
             
             <div className="lg:col-span-2 space-y-6">
@@ -487,8 +485,6 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           </form>
-
-    
         </TabsContent>
         
         <TabsContent value="categories" className="space-y-6">
