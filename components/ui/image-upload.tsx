@@ -125,7 +125,7 @@ export function ImageUpload({
         className={cn(
           "relative border-2 border-dashed border-muted-foreground/25 rounded-lg overflow-hidden",
           aspectRatioClass,
-          !value && "min-h-[200px]",
+          aspectRatio === 'auto' && "min-h-[200px]",
           "hover:border-muted-foreground/50 transition-colors"
         )}
       >
