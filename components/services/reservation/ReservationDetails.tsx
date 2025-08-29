@@ -18,7 +18,8 @@ import {
   Plus,
   Minus,
   X,
-  Globe
+  Globe,
+  Plane
 } from "lucide-react";
 
 interface ReservationDetailsProps {
@@ -61,12 +62,14 @@ interface ReservationDetailsProps {
   customerEmail: string;
   customerPhone: string;
   visitorNote: string;
+  flightCode: string; // Yeni eklendi
   customerErrors: {[key: string]: string};
   onCustomerNameChange: (value: string) => void;
   onCustomerSurnameChange: (value: string) => void;
   onCustomerEmailChange: (value: string) => void;
   onCustomerPhoneChange: (value: string) => void;
   onVisitorNoteChange: (value: string) => void;
+  setFlightCode: (value: string) => void; // Yeni eklendi
   selectedCurrency: 'TRY' | 'USD' | 'EUR';
   setSelectedCurrency: (currency: 'TRY' | 'USD' | 'EUR') => void;
 }
@@ -111,12 +114,14 @@ export function ReservationDetails({
   customerEmail,
   customerPhone,
   visitorNote,
+  flightCode, // Yeni eklendi
   customerErrors,
   onCustomerNameChange,
   onCustomerSurnameChange,
   onCustomerEmailChange,
   onCustomerPhoneChange,
   onVisitorNoteChange,
+  setFlightCode, // Yeni eklendi
   selectedCurrency,
   setSelectedCurrency,
 }: ReservationDetailsProps) {
@@ -150,9 +155,28 @@ export function ReservationDetails({
                 className="flex items-center gap-2 text-lg"
                 style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
               >
-                <Clock className="h-5 w-5" />
+               
                 Saat Seçimi ({availableTimeSlots.length} Adet)
               </CardTitle>
+              <div className="flex justify-start items-center text-sm text-gray-500 mt-2 px-1 gap-4">
+              <Clock className="h-5 w-5" />
+              {assignment.serviceCategory === 'transfer' ? (
+                <>
+                  <span className="font-medium">Alınış</span>
+                  <span className="font-medium">-</span>
+                  <span className="font-medium">Varış</span>
+                </>
+              ) : (
+                <>
+                  <span className="font-medium">Başlangıç</span>
+                  <span className="font-medium">-</span>
+                  <span className="font-medium">Bitiş</span>
+                </>
+              )}
+            </div>
+              
+
+
             </CardHeader>
             <CardContent>
               {availableTimeSlots.length === 0 ? (
@@ -289,12 +313,19 @@ export function ReservationDetails({
                             const vehicleSlot = selectedTimeSlot.vehicles.find((v: any) => v.vehicleId === vehicle.id);
                             if (!vehicleSlot) return null;
                             const isSelected = selectedVehicles.some(sv => sv.vehicleId === vehicle.id);
+                            const isDisabled = personCountForTransfer > vehicle.maxPassengerCapacity; // Yeni kontrol
 
                             return (
                               <div
                                 key={vehicle.id}
-                                className={`p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : ''}`}
-                                onClick={() => !isSelected && handleVehicleSelect(vehicle.id!)}
+                                className={`p-3 border rounded-lg transition-colors ${
+                                  isDisabled
+                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' // Disabled stili
+                                    : isSelected
+                                    ? 'bg-blue-50 border-blue-300 cursor-pointer hover:bg-gray-50'
+                                    : 'cursor-pointer hover:bg-gray-50'
+                                }`}
+                                onClick={() => !isDisabled && !isSelected && handleVehicleSelect(vehicle.id!)}
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-3">
@@ -308,10 +339,17 @@ export function ReservationDetails({
                                   </div>
                                   <div className="text-right">
                                     <p className="font-bold" style={{ color: themeColor }}>{formatCurrency(vehicleSlot.price)}</p>
-                                    {!isSelected && <Button size="sm" variant="outline">Seç</Button>}
+                                    {!isSelected && (
+                                      <Button size="sm" variant="outline" disabled={isDisabled}> {/* Butonu da devre dışı bırak */}
+                                        Seç
+                                      </Button>
+                                    )}
                                     {isSelected && <Badge variant="secondary">Seçildi</Badge>}
                                   </div>
                                 </div>
+                                {isDisabled && (
+                                  <p className="text-red-500 text-xs mt-1">Bu araç, {personCountForTransfer} kişilik grubunuz için küçük.</p>
+                                )}
                               </div>
                             );
                           })
@@ -413,6 +451,30 @@ export function ReservationDetails({
             </Card>
           )}
 
+          {selectedTimeSlot && assignment.serviceCategory === "transfer" && (
+            <Card>
+              <CardHeader>
+                <CardTitle 
+                  className="flex items-center gap-2 text-lg"
+                  style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
+                >
+                  <Plane className="h-5 w-5" />
+                  Uçuş Bilgileri (İsteğe Bağlı)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Label htmlFor="flight-code">Uçuş Kodu</Label>
+                <Input 
+                  id="flight-code" 
+                  placeholder="Örn: TK1234"
+                  className="mt-1.5"
+                  value={flightCode}
+                  onChange={(e) => setFlightCode(e.target.value)}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {selectedTimeSlot && (
             <Card>
               <CardHeader>
@@ -425,21 +487,19 @@ export function ReservationDetails({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {assignment.serviceCategory === 'balloon' && (
-                  <div className="space-y-2">
-                      <Label htmlFor="currency-select" className="flex items-center gap-2"><Globe className="h-4 w-4" /> Para Birimi</Label>
-                      <Select value={selectedCurrency} onValueChange={(value) => setSelectedCurrency(value as any)}>
-                          <SelectTrigger id="currency-select">
-                              <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="TRY">Türk Lirası (₺)</SelectItem>
-                              <SelectItem value="USD">ABD Doları ($)</SelectItem>
-                              <SelectItem value="EUR">Euro (€)</SelectItem>
-                          </SelectContent>
-                      </Select>
-                  </div>
-                )}
+                <div className="space-y-2">
+                    <Label htmlFor="currency-select" className="flex items-center gap-2"><Globe className="h-4 w-4" /> Para Birimi</Label>
+                    <Select value={selectedCurrency} onValueChange={(value) => setSelectedCurrency(value as any)}>
+                        <SelectTrigger id="currency-select">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="TRY">Türk Lirası (₺)</SelectItem>
+                            <SelectItem value="USD">ABD Doları ($)</SelectItem>
+                            <SelectItem value="EUR">Euro (€)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-lg">

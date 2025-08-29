@@ -50,11 +50,20 @@ export function Balloon({ onCategoryDetailsChange, categoryDetails }: BalloonPro
   }, [categoryDetails, initializePhotos]);
 
   useEffect(() => {
-    onCategoryDetailsChange({
+    const newCategoryDetails = {
       flightInfo,
       photos: photos.filter(p => p !== null),
-    });
-  }, [flightInfo, photos, onCategoryDetailsChange]);
+    };
+    
+    // Check if the new categoryDetails are different from the existing ones
+    // before calling onCategoryDetailsChange to prevent infinite loop.
+    const areFlightInfoEqual = JSON.stringify(newCategoryDetails.flightInfo) === JSON.stringify(categoryDetails?.flightInfo);
+    const arePhotosEqual = JSON.stringify(newCategoryDetails.photos) === JSON.stringify(categoryDetails?.photos);
+
+    if (!areFlightInfoEqual || !arePhotosEqual) {
+      onCategoryDetailsChange(newCategoryDetails);
+    }
+  }, [flightInfo, photos, onCategoryDetailsChange, categoryDetails]);
 
   return (
     <div className="space-y-6">

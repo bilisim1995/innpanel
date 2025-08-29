@@ -6,7 +6,7 @@ const nextConfig = {
   
   // Image optimization
   images: {
-    domains: ['images.pexels.com', 'innpanel.b-cdn.net'],
+    domains: ['images.pexels.com', 'innpanel.b-cdn.net', 'www.pngall.com'],
     formats: ['image/webp', 'image/avif'],
   },
   

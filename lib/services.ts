@@ -14,7 +14,13 @@ export interface ServiceData {
   quota: number;
   coverImage?: string | null;
   paymentOptions: Array<{id: string, amount: string}>;
-  categoryDetails?: any;
+  categoryDetails?: {
+    vehicleDetails?: {
+      features: string;
+      baggageCapacity: string;
+    };
+    [key: string]: any; // Diğer categoryDetails alanları için
+  };
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -46,6 +52,7 @@ export const getServices = async (): Promise<ServiceData[]> => {
     
     return querySnapshot.docs.map(doc => {
       const data = doc.data();
+
       
       return {
         id: doc.id,

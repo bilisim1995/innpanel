@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -9,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Camera,
+  DollarSign // Eklenen icon
 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 
@@ -27,6 +27,8 @@ export function Other({ onCategoryDetailsChange, categoryDetails }: OtherProps) 
     value: "",
     unit: "",
   });
+  const [price, setPrice] = useState(categoryDetails?.price || ""); // Fiyat alanı eklendi
+  const [currency, setCurrency] = useState(categoryDetails?.currency || 'TRY'); // Para birimi alanı eklendi
   
   const initializePhotos = useCallback(() => {
     const existingPhotos = categoryDetails?.photos || [];
@@ -44,6 +46,8 @@ export function Other({ onCategoryDetailsChange, categoryDetails }: OtherProps) 
       setServiceTitle(categoryDetails.serviceTitle || "");
       setServiceDescription(categoryDetails.serviceDescription || "");
       setServiceDuration(categoryDetails.serviceDuration || { value: "", unit: "" });
+      setPrice(categoryDetails.price || ""); // Fiyatı categoryDetails'ten çek
+      setCurrency(categoryDetails.currency || 'TRY'); // Para birimini categoryDetails'ten çek
       setPhotos(initializePhotos());
     }
   }, [categoryDetails, initializePhotos]);
@@ -54,8 +58,10 @@ export function Other({ onCategoryDetailsChange, categoryDetails }: OtherProps) 
       serviceDescription,
       serviceDuration,
       photos: photos.filter(p => p !== null),
+      price, // Fiyatı categoryDetails içine ekle
+      currency, // Para birimini categoryDetails içine ekle
     });
-  }, [serviceTitle, serviceDescription, serviceDuration, photos, onCategoryDetailsChange]);
+  }, [serviceTitle, serviceDescription, serviceDuration, photos, price, currency, onCategoryDetailsChange]);
 
   return (
     <div className="space-y-6">
@@ -98,6 +104,32 @@ export function Other({ onCategoryDetailsChange, categoryDetails }: OtherProps) 
               <SelectItem value="hour">Saat</SelectItem>
               <SelectItem value="day">Gün</SelectItem>
               <SelectItem value="week">Hafta</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div>
+        <Label className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4" /> {/* Icon eklendi */}
+          Fiyat
+        </Label>
+        <div className="grid grid-cols-2 gap-4 mt-1.5">
+          <Input 
+            type="number" 
+            min="0" 
+            placeholder="Fiyat girin"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+          <Select value={currency} onValueChange={(value: 'TRY' | 'USD' | 'EUR') => setCurrency(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Para birimi seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TRY">TRY</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
             </SelectContent>
           </Select>
         </div>

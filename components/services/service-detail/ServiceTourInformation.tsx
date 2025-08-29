@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,8 +81,8 @@ export function ServiceTourInformation({ assignment, service, theme, isOpen, onT
                 <CollapsibleContent>
                     <CardContent>
                         <p
-                          className="leading-relaxed font-medium text-lg"
-                          style={{ color: textColor }}
+                            className="leading-relaxed font-medium text-lg"
+                            style={{ color: 'red', fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '1.1rem' }}
                         >
                             {tourInfoText}
                         </p>

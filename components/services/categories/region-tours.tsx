@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   CreditCard,
   Camera,
-  CalendarDays
+  CalendarDays,
+  DollarSign // Eklenen icon
 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 
@@ -45,6 +46,8 @@ export function RegionTours({ selectedPayments, onPaymentChange, onPaymentAmount
   const [tourInfo, setTourInfo] = useState(categoryDetails?.tourInfo || "");
   const [included, setIncluded] = useState(categoryDetails?.included || "");
   const [excluded, setExcluded] = useState(categoryDetails?.excluded || "");
+  const [price, setPrice] = useState(categoryDetails?.price || ""); // Fiyat alanı eklendi
+  const [currency, setCurrency] = useState(categoryDetails?.currency || 'TRY'); // Para birimi alanı eklendi
 
   // Update category details when data changes
   useEffect(() => {
@@ -54,8 +57,10 @@ export function RegionTours({ selectedPayments, onPaymentChange, onPaymentAmount
       tourInfo,
       included,
       excluded,
+      price, // Fiyatı categoryDetails içine ekle
+      currency, // Para birimini categoryDetails içine ekle
     });
-  }, [isVIP, photos, tourInfo, included, excluded, onCategoryDetailsChange]);
+  }, [isVIP, photos, tourInfo, included, excluded, price, currency, onCategoryDetailsChange]);
 
   return (
     <div className="space-y-6">
@@ -102,6 +107,32 @@ export function RegionTours({ selectedPayments, onPaymentChange, onPaymentAmount
             value={excluded}
             onChange={(e) => setExcluded(e.target.value)}
           />
+        </div>
+      </div>
+
+      <div>
+        <Label className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4" /> {/* Icon eklendi */}
+          Fiyat
+        </Label>
+        <div className="grid grid-cols-2 gap-4 mt-1.5">
+          <Input 
+            type="number" 
+            min="0" 
+            placeholder="Fiyat girin"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+          <Select value={currency} onValueChange={(value: 'TRY' | 'USD' | 'EUR') => setCurrency(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Para birimi seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TRY">TRY</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,6 +13,7 @@ import {
   Info,
   Car,
   Camera,
+  DollarSign // Eklenen icon
 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 
@@ -42,6 +42,8 @@ export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountC
   const [tourDetails, setTourDetails] = useState(categoryDetails?.tourDetails || "");
   const [difficulty, setDifficulty] = useState(categoryDetails?.difficulty || "");
   const [minAge, setMinAge] = useState(categoryDetails?.minAge || "");
+  const [price, setPrice] = useState(categoryDetails?.price || ""); // Fiyat alanı eklendi
+  const [currency, setCurrency] = useState(categoryDetails?.currency || 'TRY'); // Para birimi alanı eklendi
   
   const initializePhotos = () => {
     const existingPhotos = categoryDetails?.photos || [];
@@ -63,8 +65,10 @@ export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountC
       difficulty,
       minAge,
       photos: photos.filter(p => p !== null),
+      price, // Fiyatı categoryDetails içine ekle
+      currency, // Para birimini categoryDetails içine ekle
     });
-  }, [routeDetails, tourDetails, difficulty, minAge, photos, onCategoryDetailsChange]);
+  }, [routeDetails, tourDetails, difficulty, minAge, photos, price, currency, onCategoryDetailsChange]);
 
   // Load vehicles
   useEffect(() => {
@@ -194,6 +198,32 @@ export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountC
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      <div>
+        <Label className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4" />
+          Fiyat
+        </Label>
+        <div className="grid grid-cols-2 gap-4 mt-1.5">
+          <Input 
+            type="number" 
+            min="0" 
+            placeholder="Fiyat girin"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+          <Select value={currency} onValueChange={(value: 'TRY' | 'USD' | 'EUR') => setCurrency(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Para birimi seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TRY">TRY</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

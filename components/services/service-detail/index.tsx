@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -17,9 +16,13 @@ import { ServiceActionButtons } from "./ServiceActionButtons";
 import { getDisplayCategoryColors } from "../../services-display/utils/categoryUtils";
 import { useServiceModal } from "./hooks/useServiceModal";
 import Image from 'next/image';
+// Kaldırıldı: import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// Kaldırıldı: import { CarFront } from 'lucide-react';
+import { ServiceData } from "@/lib/services"; 
+import { ServiceVehicleFeatures } from "./ServiceVehicleFeatures"; // Yeni eklendi
 
 interface EnhancedAssignmentData extends AssignmentData {
-  serviceDetails?: any;
+  serviceDetails?: ServiceData; 
 }
 
 interface ServiceDetailModalProps {
@@ -93,6 +96,14 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
             />
 
             <div className="px-8 space-y-8">
+              {/* Araç Özellikleri kartı ServiceVehicleFeatures bileşeni ile gösterilir */}
+              {assignment.serviceCategory === "transfer" && (
+                <ServiceVehicleFeatures 
+                  service={service}
+                  theme={currentTheme}
+                />
+              )}
+
               <ServiceTourDetails 
                 assignment={assignment}
                 service={service}

@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Edit, Trash2, Eye, Search, Calendar, Users, Car, CreditCard, Phone, User, MapPin, Building2, Clock, MessageSquare, Mail } from "lucide-react";
+import { Edit, Trash2, Eye, Search, Calendar, Users, Car, CreditCard, Phone, User, MapPin, Building2, Clock, MessageSquare, Mail, Plane } from "lucide-react";
 import { ReservationEditModal } from "@/components/reservations/reservation-edit-modal";
 
 export default function ReservationsPage() {
@@ -396,6 +396,12 @@ export default function ReservationsPage() {
                     <p className="text-sm text-muted-foreground">Kişi Sayısı</p>
                     <p className="font-medium">{viewingReservation.adults + viewingReservation.children} kişi</p>
                   </div>
+                  {viewingReservation.serviceCategory === 'transfer' && viewingReservation.flightCode && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Uçuş Kodu</p>
+                      <p className="font-medium">{viewingReservation.flightCode}</p>
+                    </div>
+                  )}
                    <div>
                     <p className="text-sm text-muted-foreground">Durum</p>
                     <Badge variant={getStatusVariant(viewingReservation.status) as any}>{getStatusLabel(viewingReservation.status)}</Badge>

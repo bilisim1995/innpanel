@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -13,7 +12,8 @@ import {
   Info,
   Camera,
   Clock,
-  MapPin
+  MapPin,
+  DollarSign // Eklenen icon
 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { getVehicles, VehicleData } from "@/lib/vehicles";
@@ -37,6 +37,7 @@ export function Transfer({ categoryDetails, onCategoryDetailsChange }: TransferP
     baggageCapacity: "",
     features: "",
   });
+  const [currency, setCurrency] = useState(categoryDetails?.currency || 'TRY'); // Para birimi alanı eklendi
   
   const initializePhotos = useCallback(() => {
     const existingPhotos = categoryDetails?.photos || [];
@@ -68,6 +69,8 @@ export function Transfer({ categoryDetails, onCategoryDetailsChange }: TransferP
               duration: selectedPrice.transferDuration.toString(),
               distance: categoryDetails.routeDetails?.distance || "",
             });
+            // Para birimini buradan çek
+            setCurrency(categoryDetails.currency || 'TRY'); 
           }
         }
       } catch (error) {
@@ -101,8 +104,9 @@ export function Transfer({ categoryDetails, onCategoryDetailsChange }: TransferP
       routeDetails,
       vehicleDetails,
       photos: photos.filter(p => p !== null),
+      currency, // Para birimini categoryDetails içine ekle
     });
-  }, [selectedTransferPrice, routeDetails, vehicleDetails, photos, onCategoryDetailsChange]);
+  }, [selectedTransferPrice, routeDetails, vehicleDetails, photos, currency, onCategoryDetailsChange]);
 
   return (
     <div className="space-y-6">
@@ -165,6 +169,23 @@ export function Transfer({ categoryDetails, onCategoryDetailsChange }: TransferP
             </Card>
           )}
         </div>
+      </div>
+
+      <div>
+        <Label className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4" /> {/* Icon eklendi */}
+          Para Birimi
+        </Label>
+        <Select value={currency} onValueChange={(value: 'TRY' | 'USD' | 'EUR') => setCurrency(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Para birimi seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TRY">TRY</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+            </SelectContent>
+        </Select>
       </div>
 
       <div>

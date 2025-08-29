@@ -1,4 +1,3 @@
-
 import { db } from './firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { removeUndefinedValues } from './utils';
@@ -20,6 +19,7 @@ export interface ReservationData {
   customerEmail: string;
   customerPhone: string;
   visitorNote?: string;
+  flightCode?: string; // flightCode eklendi
   
   // Reservation Details
   reservationDate: Date;
@@ -90,6 +90,7 @@ export const saveReservation = async (reservationData: SaveReservationData): Pro
           timeSlot: `${cleanedData.timeSlot.startTime} - ${cleanedData.timeSlot.endTime}`,
           adults: cleanedData.adults,
           children: cleanedData.children,
+          ...(cleanedData.serviceCategory === 'transfer' && cleanedData.flightCode && { flightCode: cleanedData.flightCode }) // Flight code eklendi
         },
         customerInfo: {
           name: `${cleanedData.customerName} ${cleanedData.customerSurname}`,

@@ -24,6 +24,7 @@ const createAdminEmailHtml = (data: any): string => `
           <li><strong>Tarih:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString('tr-TR')}</li>
           <li><strong>Saat:</strong> ${data.reservationDetails.timeSlot}</li>
           <li><strong>Katılımcılar:</strong> ${data.reservationDetails.adults} Yetişkin, ${data.reservationDetails.children || 0} Çocuk</li>
+          ${data.reservationDetails.flightCode ? `<li><strong>Uçuş Kodu:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
         </ul>
         <h3>Müşteri Bilgileri</h3>
         <ul>
@@ -57,6 +58,7 @@ const createCustomerEmailHtml = (data: any): string => `
           <li><strong>Tarih:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString('tr-TR')}</li>
           <li><strong>Saat:</strong> ${data.reservationDetails.timeSlot}</li>
           <li><strong>Katılımcılar:</strong> ${data.reservationDetails.adults} Yetişkin, ${data.reservationDetails.children || 0} Çocuk</li>
+          ${data.reservationDetails.flightCode ? `<li><strong>Uçuş Kodu:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
           <li><strong>Toplam Tutar:</strong> ${data.totalAmount} ${data.currency}</li>
         </ul>
         <p>İyi eğlenceler dileriz!</p>
@@ -78,7 +80,7 @@ const formatAdminWhatsAppMessage = (data: any): string => {
 *Tarih:* ${new Date(reservationDetails.date).toLocaleDateString('tr-TR')}
 *Saat:* ${reservationDetails.timeSlot}
 *Katılımcılar:* ${reservationDetails.adults} Yetişkin, ${reservationDetails.children || 0} Çocuk
-*Toplam Tutar:* ${totalAmount} ${currency}
+${reservationDetails.flightCode ? `*Uçuş Kodu:* ${reservationDetails.flightCode}\n` : ''}*Toplam Tutar:* ${totalAmount} ${currency}
 
 *Müşteri Notu:*
 _${customerInfo.notes || 'Not bırakılmadı'}_`;
@@ -94,7 +96,7 @@ INNGET aracılığıyla yapmış olduğunuz rezervasyonunuz başarıyla onaylanm
 *Tarih:* ${new Date(reservationDetails.date).toLocaleDateString('tr-TR')}
 *Saat:* ${reservationDetails.timeSlot}
 *Katılımcılar:* ${reservationDetails.adults} Yetişkin, ${reservationDetails.children || 0} Çocuk
-*Toplam Tutar:* *${totalAmount} ${currency}*
+${reservationDetails.flightCode ? `*Uçuş Kodu:* ${reservationDetails.flightCode}\n` : ''}*Toplam Tutar:* *${totalAmount} ${currency}*
 
 Herhangi bir sorunuz olursa lütfen bizimle iletişime geçin.`;
 };
