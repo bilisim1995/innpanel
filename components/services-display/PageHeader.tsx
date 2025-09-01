@@ -1,4 +1,3 @@
-
 "use client";
 
 import { MapPin, Eye } from "lucide-react";
@@ -9,6 +8,7 @@ import { useState } from "react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Image from 'next/image';
+import { LanguageSelector } from "@/components/language-selector"; // Yeni eklenen import
 
 interface PageHeaderProps {
   location: LocationData;
@@ -69,6 +69,11 @@ export function PageHeader({ location, showBackButton = false, onBackClick }: Pa
               </h1>
               <p className="text-sm text-gray-600 truncate">{location.address}</p>
             </div>
+          </div>
+
+          {/* Dil bayrağı bileşeni */}
+          <div className="ml-auto">
+            <LanguageSelector />
           </div>
         </div>
       </div>
