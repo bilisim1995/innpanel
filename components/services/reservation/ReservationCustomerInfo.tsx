@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { User, Mail, Phone, MessageSquare } from "lucide-react";
+import { User, Mail, Phone, MessageSquare } from "lucide-react";  
 
 interface ReservationCustomerInfoProps {
   customerName: string;
