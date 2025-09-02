@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { useTranslation } from 'react-i18next';
 
 import {
   DropdownMenu,
@@ -23,31 +24,52 @@ const languages: Language[] = [
   { code: "en", name: "English", flag: "/flags/gb.svg" }, // Assuming Great Britain flag for English
 ];
 
+const locales = ['en', 'tr'];
+
+// Helper to get the path without the locale prefix
+const getPathWithoutLocale = (currentPathname: string, availableLocales: string[]) => {
+  const segment = currentPathname.split('/').filter(Boolean)[0];
+  if (availableLocales.includes(segment)) {
+    return currentPathname.replace(`/${segment}`, '');
+  }
+  return currentPathname;
+};
+
 export function LanguageSelector() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { i18n } = useTranslation();
 
-  // Determine current language from pathname if locale is part of the URL
-  // This is a simplified approach, a more robust i18n solution would be better
-  const currentLang = languages.find(lang => pathname.startsWith(`/${lang.code}`)) || languages[0]; // Default to Turkish
+  const currentDisplayLang = languages.find(lang => lang.code === i18n.language) || languages.find(lang => lang.code === 'en') || languages[0];
 
   const handleLanguageChange = (langCode: string) => {
-    // This is a placeholder for actual i18n implementation
-    // In a real app, you would change the locale and redirect
-    console.log("Changing language to:", langCode);
-    // Example: router.push(`/${langCode}${pathname.substring(3)}`); // Assuming /en/path or /tr/path
+    const currentPathWithoutLocale = getPathWithoutLocale(pathname, locales);
+    const currentSearchParams = searchParams.toString();
+
+    if (currentPathWithoutLocale.startsWith('/services/')) {
+      let newPath = `/${langCode}${currentPathWithoutLocale}`;
+      if (currentSearchParams) {
+        newPath += `?${currentSearchParams}`;
+      }
+      router.push(newPath);
+    } else {
+      // Diğer rotalar için sadece i18n dilini değiştir, URL'yi elleme
+      // (Middleware zaten bu rotaları dil yönlendirmesinden hariç tutuyor)
+      i18n.changeLanguage(langCode);
+    }
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="outline" // Changed to outline variant
-          className="w-10 h-10 p-0 rounded-full border border-gray-300 shadow-sm hover:bg-gray-50" // Added border and shadow classes
+          variant="outline" 
+          className="w-10 h-10 p-0 rounded-full border border-gray-300 shadow-sm hover:bg-gray-50" 
         >
           <Image
-            src={currentLang.flag}
-            alt={currentLang.name}
+            src={currentDisplayLang.flag}
+            alt={currentDisplayLang.name}
             width={24}
             height={24}
             className="rounded-full"
