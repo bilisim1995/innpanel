@@ -6,7 +6,7 @@ import { ReservationCalendar } from "./ReservationCalendar";
 import { ReservationHeader } from "./ReservationHeader";
 import { ReservationSuccess } from "./ReservationSuccess";
 import { useReservationState } from "./hooks/useReservationState";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
@@ -32,15 +32,15 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
-        
-        <div className="sticky top-0 z-50 flex items-center justify-between p-4 bg-white border-b">
-           <h2 className="text-lg font-bold" style={{ color: getThemeColor() }}>
+        <DialogHeader className="sticky top-0 z-50 flex items-center justify-between p-4 bg-white border-b flex-row">
+           <DialogTitle className="text-lg font-bold" style={{ color: getThemeColor() }}>
             Rezervasyon Yap
-          </h2>
+          </DialogTitle>
+          <DialogDescription className="sr-only">Bir hizmet için rezervasyon oluşturun.</DialogDescription>
           <Button onClick={onClose} variant="outline" size="icon">
             <X className="h-4 w-4" />
           </Button>
-        </div>
+        </DialogHeader>
         
         <div className="space-y-6 p-6">
           <ReservationHeader assignment={assignment} themeColor={getThemeColor()} />

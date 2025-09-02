@@ -16,6 +16,16 @@ interface SelectedVehicle extends VehicleInSlot {
     vehicle: VehicleData;
 }
 
+// DEFINED: Para birimi kodlarını standartlaştırmak için bir yardımcı fonksiyon eklendi.
+// Bu, "TL" gibi veritabanından gelebilecek değerleri "TRY" gibi standart kodlara çevirir.
+const normalizeCurrency = (currency: string): 'TRY' | 'USD' | 'EUR' => {
+    const upperCurrency = currency.toUpperCase();
+    if (upperCurrency === 'TL') return 'TRY';
+    // Gelecekte başka standart dışı kodlar eklenirse buraya eklenebilir.
+    return upperCurrency as 'TRY' | 'USD' | 'EUR';
+};
+
+
 export function useReservationState(isOpen: boolean, assignment: any) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
@@ -43,7 +53,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   const [customerPhone, setCustomerPhone] = useState<string>("");
   const [customerEmail, setCustomerEmail] = useState<string>("");
   const [visitorNote, setVisitorNote] = useState<string>("");
-  const [flightCode, setFlightCode] = useState<string>(""); // Yeni eklenen flightCode state
+  const [flightCode, setFlightCode] = useState<string>("");
   const [customerErrors, setCustomerErrors] = useState<{[key: string]: string}>({});
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
   const [successData, setSuccessData] = useState<{
@@ -64,7 +74,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedCurrency, setSelectedCurrency] = useState<'TRY' | 'USD' | 'EUR'>('TRY');
-  const [exchangeRates, setExchangeRates] = useState<any>(null);
+  const [exchangeRates, setExchangeRates] = useState<{[key in 'TRY' | 'USD' | 'EUR']?: number} | null>(null);
   const { toast } = useToast();
 
   // Fetch exchange rates when modal opens
@@ -73,13 +83,14 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       const fetchRates = async () => {
         try {
           const response = await fetch('https://api.frankfurter.app/latest?from=EUR&to=TRY,USD');
+          if (!response.ok) throw new Error('Network response was not ok');
           const data = await response.json();
-          setExchangeRates({ ...data.rates, EUR: 1 });
+          setExchangeRates({ ...data.rates, EUR: 1 }); // Base currency is EUR
         } catch (error) {
           console.error("Failed to fetch exchange rates:", error);
           toast({
             title: "Kur Bilgisi Alınamadı",
-            description: "Fiyatlar varsayılan kur üzerinden gösterilecektir.",
+            description: "Fiyatlar varsayılan kur üzerinden gösterilecektir. Lütfen daha sonra tekrar deneyin.",
             variant: "destructive",
           });
         }
@@ -91,7 +102,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   // Reset state when modal opens/closes or assignment changes
   useEffect(() => {
     if (!isOpen) {
-      // Reset all states to default
       setSelectedDate(undefined);
       setSelectedTimeSlot(null);
       setPersonCount(1);
@@ -108,44 +118,39 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       setCustomerPhone("");
       setCustomerEmail("");
       setVisitorNote("");
-      setFlightCode(""); // flightCode state'ini sıfırla
+      setFlightCode("");
       setCustomerErrors({});
       setIsSuccessModalOpen(false);
       setIsSubmitting(false);
       setDisplayPrices({});
       setDisplayPrepaymentAmount(0);
     } else {
-      // Set default currency when modal opens, based on the categoryDetails or first available time slot
       const defaultCurrency = assignment?.serviceDetails?.categoryDetails?.currency || assignment?.pricingSettings?.dateRanges?.[0]?.timeSlots?.[0]?.currency || 'TRY';
-      setSelectedCurrency(defaultCurrency);
+      setSelectedCurrency(normalizeCurrency(defaultCurrency)); // Use normalizer here as well
     }
   }, [isOpen, assignment]);
 
-  // Helper function for currency conversion
-    const convertPrice = useCallback((amount: number, from: 'TRY' | 'USD' | 'EUR', to: 'TRY' | 'USD' | 'EUR') => {
-        if (!exchangeRates || from === to) {
-            return amount;
-        }
+  // CHANGED: `convertPrice` fonksiyonu gelen para birimi kodlarını önce standartlaştırmak için güncellendi.
+  // Parametre tipleri `string` olarak değiştirildi çünkü 'TL' gibi değerler gelebilir.
+  const convertPrice = useCallback((amount: number, from: string, to: string): number => {
+    const fromCurrency = normalizeCurrency(from);
+    const toCurrency = normalizeCurrency(to);
 
-        const rates = {
-            ...exchangeRates,
-            TRY: exchangeRates['TRY'] 
-        };
+    if (!exchangeRates || fromCurrency === toCurrency || !amount) {
+        return amount;
+    }
 
-        const getRate = (currency: 'TRY' | 'USD' | 'EUR') => {
-            return rates[currency];
-        };
+    const rateFrom = exchangeRates[fromCurrency];
+    const rateTo = exchangeRates[toCurrency];
 
-        const fromRate = getRate(from);
-        const toRate = getRate(to);
-        
-        if (typeof fromRate === 'undefined' || typeof toRate === 'undefined') {
-            return amount; 
-        }
+    if (typeof rateFrom === 'undefined' || typeof rateTo === 'undefined') {
+        console.warn(`Currency conversion failed: rate for ${fromCurrency} (from original: ${from}) or ${toCurrency} (from original: ${to}) not found.`);
+        return amount;
+    }
 
-        const amountInEur = amount / fromRate;
-        return amountInEur * toRate;
-    }, [exchangeRates]);
+    const amountInBaseCurrency = amount / rateFrom;
+    return amountInBaseCurrency * rateTo;
+  }, [exchangeRates]);
 
 
   // Update display prices whenever selected currency or timeslots change
@@ -153,7 +158,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     if (availableTimeSlots.length > 0 && exchangeRates) {
       const newDisplayPrices: { [key: string]: number } = {};
       availableTimeSlots.forEach(slot => {
-        // Use the currency from the categoryDetails if available, otherwise fallback to slot.currency
         const currencyForSlot = assignment?.serviceDetails?.categoryDetails?.currency || slot.currency;
         newDisplayPrices[slot.id] = convertPrice(slot.price, currencyForSlot, selectedCurrency);
       });
@@ -165,6 +169,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     }
   }, [availableTimeSlots, selectedCurrency, exchangeRates, assignment, convertPrice]);
   
+  // ... (Dosyanın geri kalanı aynı) ...
   // Load assigned vehicles for motor tours and transfer
   useEffect(() => {
     const loadAssignedVehicles = async () => {
@@ -282,8 +287,8 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     } else {
       setPersonCount(1);
     }
-    // Prioritize categoryDetails currency, fallback to timeSlot currency, then 'TRY'
-    setSelectedCurrency(assignment?.serviceDetails?.categoryDetails?.currency || timeSlot.currency || 'TRY');
+    const currency = assignment?.serviceDetails?.categoryDetails?.currency || timeSlot.currency || 'TRY';
+    setSelectedCurrency(normalizeCurrency(currency));
   };
   
   const handlePersonCountChange = (value: string) => {
@@ -318,8 +323,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   const handleVehicleCountChangeForTransfer = (vehicleId: string, count: number) => {
     if (count <= 0) {
       setSelectedVehicles(prev => prev.filter(sv => sv.vehicleId !== vehicleId));
-    }
- else {
+    } else {
       setSelectedVehicles(prev => prev.map(sv => sv.vehicleId === vehicleId ? { ...sv, count } : sv));
     }
   };
@@ -334,7 +338,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   const getTotalAmount = () => {
     if (!selectedTimeSlot) return 0;
     
-    // Use the currency from the categoryDetails if available, otherwise fallback to selectedTimeSlot.currency
     const originalCategoryCurrency = assignment?.serviceDetails?.categoryDetails?.currency || selectedTimeSlot.currency;
     const unitPrice = convertPrice(selectedTimeSlot.price, originalCategoryCurrency, selectedCurrency) || 0; 
 
@@ -344,7 +347,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     if (assignment?.serviceCategory === "transfer") {
       if (!exchangeRates) return 0;
       return selectedVehicles.reduce((total, sv) => {
-          // For transfer vehicles, their individual price and currency are already in sv.price and sv.currency
           const convertedPrice = convertPrice(sv.price, sv.currency, selectedCurrency);
           return total + (convertedPrice * sv.count);
       }, 0);
@@ -374,15 +376,11 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     setIsSubmitting(true);
     try {
         const totalAmountInSelectedCurrency = getTotalAmount();
-        
-        // Determine the original currency of the time slot price for commission calculation if needed
         const originalTimeSlotCurrency = assignment?.serviceDetails?.categoryDetails?.currency || selectedTimeSlot.currency;
 
-        // Convert all amounts to TRY for database storage
         const totalAmountInTRY = convertPrice(totalAmountInSelectedCurrency, selectedCurrency, 'TRY');
         const prepaymentAmountInTRY = paymentMethod === 'prepayment' ? convertPrice(displayPrepaymentAmount, selectedCurrency, 'TRY') : 0;
         const remainingAmountInTRY = paymentMethod === 'prepayment' ? totalAmountInTRY - prepaymentAmountInTRY : 0;
-        // Commission should be converted from its original currency (which is tied to the service's base price)
         const commissionInTRY = convertPrice(assignment.pricingSettings?.commissionAmount || 0, originalTimeSlotCurrency, 'TRY');
 
         const reservationData = {
@@ -395,21 +393,19 @@ export function useReservationState(isOpen: boolean, assignment: any) {
             locationName: assignment.locationName,
             customerName: customerName.trim(),
             customerSurname: customerSurname.trim(),
-            customerEmail: customerEmail.trim(), // Added this line
+            customerEmail: customerEmail.trim(),
             customerPhone: customerPhone.trim(),
             visitorNote: visitorNote.trim(),
-            flightCode: flightCode.trim(), // Flight code eklendi
+            flightCode: flightCode.trim(),
             reservationDate: selectedDate,
             timeSlot: { id: selectedTimeSlot.id, startTime: selectedTimeSlot.startTime, endTime: selectedTimeSlot.endTime },
             
-            // Store all monetary values in TRY
             totalAmount: totalAmountInTRY,
             prepaymentAmount: prepaymentAmountInTRY,
             remainingAmount: remainingAmountInTRY,
             currency: 'TRY',
             commissionAmount: commissionInTRY,
 
-            // Store original values for reference
             originalAmount: totalAmountInSelectedCurrency,
             originalCurrency: selectedCurrency,
             originalUnitPrice: selectedTimeSlot.price,
@@ -440,17 +436,42 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   const handleCalendarToggle = () => setIsCalendarExpanded(!isCalendarExpanded);
 
   return {
+    // State and Data
     selectedDate, availableDates, availableTimeSlots, selectedTimeSlot, personCount, vehicleCount, routeId,
     displayPrices, selectedVehicle, paymentMethod, isPaymentSettingsOpen, availablePaymentMethods,
     prepaymentAmount: displayPrepaymentAmount, isCalendarExpanded, categoryTheme, vehicles, assignedVehicles, filteredVehicles,
     personCountForTransfer, selectedVehicles, customerName, customerSurname, customerPhone, customerEmail,
-    visitorNote, flightCode, // flightCode buraya eklendi
-    customerErrors, isSuccessModalOpen, successData, isSubmitting, selectedCurrency,
-    setSelectedCurrency, handleDateSelect, handleTimeSlotSelect, handlePersonCountChange,
-    handlePersonCountForTransferChange, handleVehicleCountChange, handleVehicleSelect,
-    handleVehicleCountChangeForTransfer, removeVehicleFromSelection, getTotalCapacityForTransfer,
-    getTotalVehicleCountForTransfer, getTotalAmount, getPaymentBreakdown: () => {}, handleReservation, handleCalendarToggle,
-    setPaymentMethod, setIsPaymentSettingsOpen, setPrepaymentAmount, setCustomerName,
-    setCustomerSurname, setCustomerPhone, setVisitorNote, setFlightCode, setIsSuccessModalOpen, setCustomerEmail // setFlightCode buraya eklendi
+    visitorNote, flightCode, customerErrors, isSuccessModalOpen, successData, isSubmitting, selectedCurrency,
+    exchangeRates, 
+
+    // Helper Functions
+    convertPrice,
+    getTotalCapacityForTransfer,
+    getTotalVehicleCountForTransfer, 
+    getTotalAmount, 
+    getPaymentBreakdown: () => {}, 
+
+    // Event Handlers and Setters
+    setSelectedCurrency, 
+    handleDateSelect, 
+    handleTimeSlotSelect, 
+    handlePersonCountChange,
+    handlePersonCountForTransferChange, 
+    handleVehicleCountChange, 
+    handleVehicleSelect,
+    handleVehicleCountChangeForTransfer, 
+    removeVehicleFromSelection, 
+    handleReservation, 
+    handleCalendarToggle,
+    setPaymentMethod, 
+    setIsPaymentSettingsOpen, 
+    setPrepaymentAmount, 
+    setCustomerName,
+    setCustomerSurname, 
+    setCustomerPhone, 
+    setCustomerEmail,
+    setVisitorNote, 
+    setFlightCode, 
+    setIsSuccessModalOpen
   };
 }
