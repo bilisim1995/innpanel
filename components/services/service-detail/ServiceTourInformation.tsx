@@ -5,6 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Info, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import { ServiceData } from "@/lib/services";
+import { useTranslation } from 'react-i18next';
 
 interface ServiceTourInformationProps {
     assignment: AssignmentData;
@@ -34,6 +35,7 @@ const getTourInfoForCategory = (category: string, details: any): string | null =
 };
 
 export function ServiceTourInformation({ assignment, service, theme, isOpen, onToggle }: ServiceTourInformationProps) {
+    const { t } = useTranslation();
     const backgroundStyle = theme.customStyle?.background ?
         { background: theme.customStyle.background } :
         { backgroundColor: theme.customStyle?.backgroundColor || '#dc2626' };
@@ -68,7 +70,7 @@ export function ServiceTourInformation({ assignment, service, theme, isOpen, onT
                                 >
                                     <Info className="h-5 w-5 text-white" />
                                 </div>
-                                Tur Bilgisi
+                                {t('tour_information_title')}
                                 <Sparkles
                                     className="w-5 h-5 animate-pulse"
                                     style={{ color: textColor }}

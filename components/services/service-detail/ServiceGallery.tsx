@@ -5,6 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Camera, Sparkles, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
 
 interface ServiceGalleryProps {
   assignment: AssignmentData;
@@ -16,6 +17,7 @@ interface ServiceGalleryProps {
 }
 
 export function ServiceGallery({ assignment, service, theme, isOpen, onToggle, onImageClick }: ServiceGalleryProps) {
+  const { t } = useTranslation();
   const backgroundStyle = theme.customStyle?.background ? 
     { background: theme.customStyle.background } : 
     { backgroundColor: theme.customStyle?.backgroundColor || '#dc2626' };
@@ -64,7 +66,7 @@ export function ServiceGallery({ assignment, service, theme, isOpen, onToggle, o
                 >
                   <Camera className="h-5 w-5 text-white" />
                 </div>
-                Fotoğraf Galerisi
+                {t('photo_gallery_title')}
                 <Sparkles 
                   className="w-5 h-5 animate-pulse"
                   style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
@@ -86,7 +88,7 @@ export function ServiceGallery({ assignment, service, theme, isOpen, onToggle, o
                 >
                   <Image 
                     src={photo}
-                    alt={`${assignment.serviceName} - ${index + 1}`}
+                    alt={t('activity_photo_gallery_alt', { serviceName: assignment.serviceName, index: index + 1 })}
                     layout="fill"
                     objectFit="cover"
                     className="transition-transform duration-700 group-hover:scale-125"

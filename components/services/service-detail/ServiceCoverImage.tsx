@@ -3,6 +3,7 @@
 import { Sparkles, Eye, Banknote } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
 
 interface ServiceCoverImageProps {
   service: any;
@@ -11,6 +12,7 @@ interface ServiceCoverImageProps {
 }
 
 export function ServiceCoverImage({ service, assignment, onImageClick }: ServiceCoverImageProps) {
+  const { t } = useTranslation();
   if (!service.coverImage) return null;
 
   return (
@@ -18,7 +20,7 @@ export function ServiceCoverImage({ service, assignment, onImageClick }: Service
       <div className="relative overflow-hidden group h-80">
         <Image 
           src={service.coverImage} 
-          alt={assignment.serviceName}
+          alt={t('cover_image_alt', { serviceName: assignment.serviceName })}
           layout="fill"
           objectFit="cover"
           className="transition-transform duration-700 group-hover:scale-110 cursor-pointer"
@@ -38,7 +40,7 @@ export function ServiceCoverImage({ service, assignment, onImageClick }: Service
         <div className="absolute bottom-4 left-4">
           <div className="flex items-center gap-2 text-white bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full border border-white/30 shadow-lg">
             <Sparkles className="w-4 h-4 animate-pulse" />
-            <span className="font-medium text-sm">Premium Aktivite Deneyimi</span>
+            <span className="font-medium text-sm">{t('premium_activity_experience_text')}</span>
           </div>
         </div>
         

@@ -16,6 +16,7 @@ import { ServiceActionButtons } from "./ServiceActionButtons";
 import { getDisplayCategoryColors } from "../../services-display/utils/categoryUtils";
 import { useServiceModal } from "./hooks/useServiceModal";
 import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
 // Kaldırıldı: import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // Kaldırıldı: import { CarFront } from 'lucide-react';
 import { ServiceData } from "@/lib/services"; 
@@ -32,6 +33,7 @@ interface ServiceDetailModalProps {
 }
 
 export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetailModalProps) {
+  const { t } = useTranslation();
   const {
     isReservationModalOpen,
     setIsReservationModalOpen,
@@ -79,7 +81,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 bg-gradient-to-br from-gray-50 via-gray-50 to-gray-50 animate-in fade-in-0 zoom-in-95 duration-500">
         <DialogTitle>
-          <VisuallyHidden.Root>Hizmet Detayları</VisuallyHidden.Root>
+          <VisuallyHidden.Root>{t('service_details_title')}</VisuallyHidden.Root>
         </DialogTitle>
         
         <ServiceDetailHeader 
@@ -156,7 +158,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
           <Dialog open={isImageModalOpen} onOpenChange={() => setIsImageModalOpen(false)}>
             <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 bg-black/95 border-0">
               <DialogTitle>
-                <VisuallyHidden.Root>Fotoğraf Görüntüleyici</VisuallyHidden.Root>
+                <VisuallyHidden.Root>{t('image_viewer_title')}</VisuallyHidden.Root>
               </DialogTitle>
               
               <div className="absolute top-4 right-4 z-20">
@@ -171,7 +173,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
               <div className="w-full h-full flex items-center justify-center p-8">
                 <Image
                   src={selectedImage}
-                  alt="Aktivite Fotoğrafı"
+                  alt={t('activity_photo_alt')}
                   layout="fill"
                   objectFit="contain"
                   className="rounded-lg shadow-2xl"

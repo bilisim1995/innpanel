@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ServiceData } from "@/lib/services";
 import { CarFront, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ServiceVehicleFeaturesProps {
   service: ServiceData;
@@ -15,6 +16,7 @@ export function ServiceVehicleFeatures({
   service,
   theme,
 }: ServiceVehicleFeaturesProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const backgroundColor = theme?.customStyle?.backgroundColor || '#dc2626';
   const textColor = theme?.customStyle?.backgroundColor || '#dc2626';
@@ -47,7 +49,7 @@ export function ServiceVehicleFeatures({
                 >
                   <CarFront className="h-5 w-5 text-white" />
                 </div>
-                Araç Özellikleri
+                {t('vehicle_features_title')}
               </div>
               {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
             </CardTitle>

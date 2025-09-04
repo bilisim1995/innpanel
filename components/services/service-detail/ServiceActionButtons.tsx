@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar, XCircle } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface ServiceActionButtonsProps {
   service: any;
@@ -10,6 +11,7 @@ interface ServiceActionButtonsProps {
 }
 
 export function ServiceActionButtons({ service, theme, onReservationClick }: ServiceActionButtonsProps) {
+  const { t } = useTranslation();
   // Get the background color from theme
   const backgroundStyle = theme.customStyle?.background ? 
     { background: theme.customStyle.background, border: 'none' } : 
@@ -24,14 +26,14 @@ export function ServiceActionButtons({ service, theme, onReservationClick }: Ser
         style={{ ...backgroundStyle, fontFamily: 'Helvetica, Arial, sans-serif' }}
       >
         <Calendar className="w-6 h-6 mr-3" />
-        Rezervasyon Yap
+        {t('book_now_button')}
       </Button>
       
       {!service.isActive && (
         <div className="text-center mt-4 p-3 bg-red-50 border border-red-200 rounded-xl shadow-sm animate-pulse">
           <p className="text-red-700 font-bold flex items-center justify-center gap-2" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
             <XCircle className="w-5 h-5" />
-            ⚠️ Bu hizmet şu anda satışa kapalıdır
+            {t('service_closed_message')}
           </p>
         </div>
       )}

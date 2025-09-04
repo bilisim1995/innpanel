@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Phone, User, Building2, Heart, ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface ServiceContactProps {
   service: any;
@@ -12,6 +13,7 @@ interface ServiceContactProps {
 }
 
 export function ServiceContact({ service, theme, isOpen, onToggle }: ServiceContactProps) {
+  const { t } = useTranslation();
   // Get the background style from theme
   const backgroundStyle = theme.customStyle?.background ? 
     { background: theme.customStyle.background } : 
@@ -42,7 +44,7 @@ export function ServiceContact({ service, theme, isOpen, onToggle }: ServiceCont
                 >
                   <Phone className="h-5 w-5 text-white" />
                 </div>
-                İletişim ve Rezervasyon
+                {t('contact_reservation_title')}
                 <Heart 
                   className="w-5 h-5 fill-current animate-pulse"
                   style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
@@ -58,7 +60,7 @@ export function ServiceContact({ service, theme, isOpen, onToggle }: ServiceCont
               className="leading-relaxed font-medium"
               style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: textColor }}
             >
-              Bu hizmet hakkında daha fazla bilgi almak veya rezervasyon yapmak için aşağıdaki iletişim bilgilerini kullanabilirsiniz.
+              {t('contact_reservation_description')}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300">
@@ -72,7 +74,7 @@ export function ServiceContact({ service, theme, isOpen, onToggle }: ServiceCont
                   <p 
                     className="font-bold"
                     style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                  >Telefon</p>
+                  >{t('phone_label')}</p>
                   <p 
                     className="font-medium"
                     style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: textColor }}
@@ -90,7 +92,7 @@ export function ServiceContact({ service, theme, isOpen, onToggle }: ServiceCont
                   <p 
                     className="font-bold"
                     style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                  >Sorumlu</p>
+                  >{t('responsible_label')}</p>
                   <p 
                     className="font-medium"
                     style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: textColor }}
@@ -108,7 +110,7 @@ export function ServiceContact({ service, theme, isOpen, onToggle }: ServiceCont
                   <p 
                     className="font-bold"
                     style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                  >Firma</p>
+                  >{t('company_label')}</p>
                   <p 
                     className="font-medium"
                     style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: textColor }}

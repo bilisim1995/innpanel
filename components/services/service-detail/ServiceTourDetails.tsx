@@ -7,6 +7,7 @@ import {
   ChevronDown, ChevronUp, Info, Check, X
 } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
+import { useTranslation } from 'react-i18next';
 
 interface ServiceTourDetailsProps {
   assignment: AssignmentData;
@@ -17,6 +18,7 @@ interface ServiceTourDetailsProps {
 }
 
 export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggle }: ServiceTourDetailsProps) {
+  const { t } = useTranslation();
   // Get the background style from theme
   const backgroundStyle = theme.customStyle?.background ? 
     { background: theme.customStyle.background } : 
@@ -54,7 +56,7 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                 >
                   <Route className="h-5 w-5 text-white" />
                 </div>
-                Tur Detayları
+                {t('tour_details_title')}
                 <div className="flex items-center gap-1">
                   {theme.decorativeIcons.slice(0, 2).map((Icon: any, index: number) => (
                     <Icon 
@@ -92,20 +94,20 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                     <span 
                       className="font-bold"
                       style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                    >Süre</span>
+                    >{t('duration_label')}</span>
                   </div>
                   <p 
                     className="font-medium"
                     style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: textColor }}
                   >
                     {assignment.serviceCategory === "balloon" && service.categoryDetails.flightInfo?.duration && 
-                      `${service.categoryDetails.flightInfo.duration} dakika`}
+                      `${service.categoryDetails.flightInfo.duration} ${t('minutes_suffix')}`}
                     {assignment.serviceCategory === "motor-tours" && service.categoryDetails.routeDetails?.duration && 
-                      `${service.categoryDetails.routeDetails.duration} dakika`}
+                      `${service.categoryDetails.routeDetails.duration} ${t('minutes_suffix')}`}
                     {assignment.serviceCategory === "transfer" && service.categoryDetails.routeDetails?.duration && 
-                      `${service.categoryDetails.routeDetails.duration} dakika`}
+                      `${service.categoryDetails.routeDetails.duration} ${t('minutes_suffix')}`}
                     {assignment.serviceCategory === "other" && service.categoryDetails.serviceDuration?.value && 
-                      `${convertToMinutes(service.categoryDetails.serviceDuration.value)} dakika`}
+                      `${convertToMinutes(service.categoryDetails.serviceDuration.value)} ${t('minutes_suffix')}`}
                   </p>
                 </div>
               )}
@@ -125,7 +127,7 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                     <span 
                       className="font-bold"
                       style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                    >Başlangıç Noktası</span>
+                    >{t('departure_point_label')}</span>
                   </div>
                   <p 
                     className="font-medium"
@@ -152,7 +154,7 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                     <span 
                       className="font-bold"
                       style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                    >Bitiş Noktası</span>
+                    >{t('end_point_label')}</span>
                   </div>
                   <p 
                     className="font-medium"
@@ -178,14 +180,14 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                     <span 
                       className="font-bold"
                       style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                    >Mesafe</span>
+                    >{t('distance_label')}</span>
                   </div>
                   <p 
                     className="font-medium"
                     style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: textColor }}
                   >
-                    {assignment.serviceCategory === "motor-tours" && service.categoryDetails.routeDetails?.distance} km
-                    {assignment.serviceCategory === "transfer" && service.categoryDetails.routeDetails?.distance} km
+                    {assignment.serviceCategory === "motor-tours" && service.categoryDetails.routeDetails?.distance} {t('km_suffix')}
+                    {assignment.serviceCategory === "transfer" && service.categoryDetails.routeDetails?.distance} {t('km_suffix')}
                   </p>
                 </div>
               )}
@@ -203,15 +205,15 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                     <span 
                       className="font-bold"
                       style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                    >Zorluk Seviyesi</span>
+                    >{t('difficulty_level_label')}</span>
                   </div>
                   <p 
                     className="font-medium"
                     style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: textColor }}
                   >
-                    {service.categoryDetails.difficulty === "easy" ? "🟢 Kolay" :
-                     service.categoryDetails.difficulty === "medium" ? "🟡 Orta" :
-                     service.categoryDetails.difficulty === "hard" ? "🔴 Zor" : service.categoryDetails.difficulty}
+                    {service.categoryDetails.difficulty === "easy" ? t('difficulty_easy') :
+                     service.categoryDetails.difficulty === "medium" ? t('difficulty_medium') :
+                     service.categoryDetails.difficulty === "hard" ? t('difficulty_hard') : service.categoryDetails.difficulty}
                   </p>
                 </div>
               )}
@@ -229,12 +231,12 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                     <span 
                       className="font-bold"
                       style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                    >Minimum Katılımcı Yaşı</span>
+                    >{t('min_participant_age_label')}</span>
                   </div>
                   <p 
                     className="font-medium"
                     style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: textColor }}
-                  >{service.categoryDetails.minAge} yaş</p>
+                  >{service.categoryDetails.minAge} {t('age_suffix')}</p>
                 </div>
               )}
             </div>
@@ -250,7 +252,7 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                     className="w-6 h-6"
                     style={{ color: textColor }}
                   />
-                  Kalkış Saatleri ve Fiyatlar
+                  {t('departure_times_prices_title')}
                   <Sparkles 
                     className="w-5 h-5 animate-pulse"
                     style={{ color: textColor }}
@@ -308,7 +310,7 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                         className="w-6 h-6"
                         style={{ color: textColor }}
                       />
-                      Tur Bilgisi Açıklaması
+                      {t('tour_info_description_title')}
                     </p>
                     <div className="p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm">
                       <p 
@@ -332,7 +334,7 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                         className="w-6 h-6"
                         style={{ color: textColor }}
                       />
-                      Tura Dahil Olanlar
+                      {t('tour_included_title')}
                     </p>
                     <div className="p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm">
                       <p 
@@ -356,7 +358,7 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                         className="w-6 h-6"
                         style={{ color: textColor }}
                       />
-                      Turda Hariç Olanlar
+                      {t('tour_excluded_title')}
                     </p>
                     <div className="p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm">
                       <p 
@@ -378,8 +380,8 @@ export function ServiceTourDetails({ assignment, service, theme, isOpen, onToggl
                   <Award className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <span className="font-bold text-amber-900 text-lg">👑 VIP Tur - Özel Hizmet</span>
-                  <p className="text-amber-700 text-sm" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Premium deneyim ve özel ayrıcalıklar</p>
+                  <span className="font-bold text-amber-900 text-lg">{t('vip_tour_title')}</span>
+                  <p className="text-amber-700 text-sm" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{t('vip_tour_description')}</p>
                 </div>
                 <Sparkles className="w-6 h-6 text-amber-600 animate-spin" />
               </div>

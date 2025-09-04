@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FileText, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface ServiceGeneralNotesProps {
   service: any;
@@ -12,6 +13,7 @@ interface ServiceGeneralNotesProps {
 }
 
 export function ServiceGeneralNotes({ service, theme, isOpen, onToggle }: ServiceGeneralNotesProps) {
+  const { t } = useTranslation();
   if (!service.notes) return null;
 
   // Get the background style from theme
@@ -44,7 +46,7 @@ export function ServiceGeneralNotes({ service, theme, isOpen, onToggle }: Servic
                 >
                   <FileText className="h-5 w-5 text-white" />
                 </div>
-                Hizmet Notları
+                {t('service_notes_title')}
                 <Sparkles 
                   className="w-5 h-5 animate-pulse"
                   style={{ color: textColor }}
