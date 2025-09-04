@@ -1,1 +1,10 @@
-{ "welcome": "Uygulamamıza Hoş Geldiniz!", "whatsapp_button_text": "WhatsApp Bilgi Al", "whatsapp_message_text": "Merhaba, hizmetleriniz hakkında bilgi almak istiyorum." }
+{ 
+    "welcome": "Uygulamamıza Hoş Geldiniz!", 
+    "whatsapp_button_text": "WhatsApp Bilgi Al", 
+    "whatsapp_message_text": "Merhaba, hizmetleriniz hakkında bilgi almak istiyorum.",
+    "region-tours": "Bölge Turları",
+    "motor-tours": "Motorlu Turlar", 
+    "balloon": "Sıcak Balon",
+    "transfer": "Transfer",
+    "other": "Diğer"
+}

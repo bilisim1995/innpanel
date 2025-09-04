@@ -2,14 +2,8 @@ import { Route, Bike, Wind, Car, MoreHorizontal, Package2, Star, Heart, Sparkles
 import { getCategoryColors as getLibCategoryColors, getColorPreview, CategoryColorSettings } from "@/lib/categories";
 
 export const getCategoryLabel = (category: string) => {
-  const categories = {
-    "region-tours": "Bölge Turları",
-    "motor-tours": "Motorlu Turlar", 
-    "balloon": "Sıcak Balon",
-    "transfer": "Transfer",
-    "other": "Diğer",
-  };
-  return categories[category as keyof typeof categories] || category;
+  // Directly return the category ID as the translation key
+  return category;
 };
 
 export const getCategoryIcon = (category: string) => {
