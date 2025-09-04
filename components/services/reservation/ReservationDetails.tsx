@@ -21,6 +21,7 @@ import {
   Globe,
   Plane
 } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface ReservationDetailsProps {
   assignment: any;
@@ -125,7 +126,7 @@ export function ReservationDetails({
   selectedCurrency,
   setSelectedCurrency,
 }: ReservationDetailsProps) {
-    
+    const { t } = useTranslation();
   const formatCurrency = (amount: number) => {
     if (isNaN(amount) || amount === null) {
       amount = 0;
@@ -143,7 +144,7 @@ export function ReservationDetails({
           <CardContent className="p-8 text-center">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <p className="text-gray-600" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-              Rezervasyon yapmak için önce bir tarih seçin
+              {t('select_date_for_reservation')}
             </p>
           </CardContent>
         </Card>
@@ -156,21 +157,21 @@ export function ReservationDetails({
                 style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
               >
                
-                Saat Seçimi ({availableTimeSlots.length} Adet)
+                {t('time_selection_title', {count: availableTimeSlots.length})}
               </CardTitle>
               <div className="flex justify-start items-center text-sm text-gray-500 mt-2 px-1 gap-4">
               <Clock className="h-5 w-5" />
               {assignment.serviceCategory === 'transfer' ? (
                 <>
-                  <span className="font-medium">Alınış</span>
+                  <span className="font-medium">{t('pickup_label')}</span>
                   <span className="font-medium">-</span>
-                  <span className="font-medium">Varış</span>
+                  <span className="font-medium">{t('dropoff_label')}</span>
                 </>
               ) : (
                 <>
-                  <span className="font-medium">Başlangıç</span>
+                  <span className="font-medium">{t('start_label')}</span>
                   <span className="font-medium">-</span>
-                  <span className="font-medium">Bitiş</span>
+                  <span className="font-medium">{t('end_label')}</span>
                 </>
               )}
             </div>
@@ -181,7 +182,7 @@ export function ReservationDetails({
             <CardContent>
               {availableTimeSlots.length === 0 ? (
                 <p className="text-center text-gray-600 py-4" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                  Bu tarih için müsait saat bulunmuyor
+                  {t('no_available_time_slots')}
                 </p>
               ) : (
                 <div className="grid gap-2 max-h-[15rem] overflow-y-auto pr-2">
@@ -213,14 +214,14 @@ export function ReservationDetails({
                             </p>
                             {slot.quota && (
                               <p className="text-xs text-gray-600">
-                                Kalan kontenjan: {slot.quota}
+                                {t('remaining_quota', {quota: slot.quota})}
                               </p>
                             )}
                           </div>
                         </div>
                          <div className="text-right">
                           <p className="font-bold text-lg" style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                           {assignment.serviceCategory === 'transfer' ? 'Araç Seçin' : formatCurrency(displayPrices[slot.id] || 0)}
+                           {assignment.serviceCategory === 'transfer' ? t('select_vehicle_label') : formatCurrency(displayPrices[slot.id] || 0)}
                           </p>
                         </div>
                       </div>
@@ -243,9 +244,9 @@ export function ReservationDetails({
                   ) : (
                     <Users className="h-5 w-5" />
                   )}
-                  {assignment.serviceCategory === "motor-tours" ? "Araç Seçimi" :
-                   assignment.serviceCategory === "transfer" ? "Transfer Detayları" :
-                   "Kişi Sayısı"}
+                  {assignment.serviceCategory === "motor-tours" ? t('vehicle_selection_title') :
+                   assignment.serviceCategory === "transfer" ? t('transfer_details_title') :
+                   t('number_of_people_title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -253,7 +254,7 @@ export function ReservationDetails({
                 {assignment.serviceCategory === "motor-tours" && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Araç Sayısı</Label>
+                      <Label>{t('number_of_vehicles_label')}</Label>
                       <div className="flex items-center gap-3">
                         <Button
                           variant="outline"
@@ -274,7 +275,7 @@ export function ReservationDetails({
                         </Button>
                       </div>
                       <p className="text-sm text-gray-600">
-                        Maksimum {selectedTimeSlot.vehicleCount || 10} araç seçebilirsiniz
+                        {t('max_vehicle_selection_message', {count: selectedTimeSlot.vehicleCount || 10})}
                       </p>
                     </div>
                   </div>
@@ -284,7 +285,7 @@ export function ReservationDetails({
                 {assignment.serviceCategory === "transfer" && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Kişi Sayısı</Label>
+                      <Label>{t('number_of_people_label')}</Label>
                       <div className="flex items-center gap-3">
                         <Button
                           variant="outline"
@@ -306,7 +307,7 @@ export function ReservationDetails({
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Uygun Araçlar ({personCountForTransfer} kişi için)</Label>
+                      <Label>{t('available_vehicles_for_people', {count: personCountForTransfer})}</Label>
                       <div className="space-y-2">
                         {filteredVehicles.length > 0 ? (
                           filteredVehicles.map((vehicle: any) => {
@@ -333,35 +334,35 @@ export function ReservationDetails({
                                     <div>
                                       <p className="font-medium">{vehicle.vehicleTypeName}</p>
                                       <p className="text-sm text-gray-600">
-                                        Maksimum {vehicle.maxPassengerCapacity} kişi
+                                        {t('max_passenger_capacity', {capacity: vehicle.maxPassengerCapacity})}
                                       </p>
                                     </div>
                                   </div>
                                   <div className="text-right">
                                     <p className="font-bold" style={{ color: themeColor }}>{formatCurrency(vehicleSlot.price)}</p>
                                     {!isSelected && (
-                                      <Button size="sm" variant="outline" disabled={isDisabled}> {/* Butonu da devre dışı bırak */}
-                                        Seç
+                                      <Button size="sm" variant="outline" disabled={isDisabled}> 
+                                        {t('select_button')}
                                       </Button>
                                     )}
-                                    {isSelected && <Badge variant="secondary">Seçildi</Badge>}
+                                    {isSelected && <Badge variant="secondary">{t('selected_badge')}</Badge>}
                                   </div>
                                 </div>
                                 {isDisabled && (
-                                  <p className="text-red-500 text-xs mt-1">Bu araç, {personCountForTransfer} kişilik grubunuz için küçük.</p>
+                                  <p className="text-red-500 text-xs mt-1">{t('vehicle_too_small_message', {count: personCountForTransfer})}</p>
                                 )}
                               </div>
                             );
                           })
                         ) : (
-                           <p className="text-gray-600 text-sm">Bu saat dilimi için uygun araç bulunamadı.</p>
+                           <p className="text-gray-600 text-sm">{t('no_available_vehicles_for_timeslot')}</p>
                         )}
                       </div>
                     </div>
 
                     {selectedVehicles.length > 0 && (
                       <div className="space-y-2">
-                        <Label>Seçili Araçlar</Label>
+                        <Label>{t('selected_vehicles_title')}</Label>
                         <div className="space-y-2">
                           {selectedVehicles.map((sv) => (
                             <div key={sv.vehicleId} className="p-3 border rounded-lg bg-blue-50">
@@ -371,7 +372,7 @@ export function ReservationDetails({
                                   <div>
                                     <p className="font-medium">{sv.vehicle.vehicleTypeName}</p>
                                     <p className="text-sm text-gray-600">
-                                      {formatCurrency(sv.price)} / adet
+                                      {formatCurrency(sv.price)} / {t('per_unit_label')}
                                     </p>
                                   </div>
                                 </div>
@@ -409,9 +410,9 @@ export function ReservationDetails({
                         </div>
                         <div className="p-3 bg-green-50 rounded-lg">
                           <p className="text-sm text-green-800">
-                            <strong>Toplam Kapasite:</strong> {getTotalCapacityForTransfer()} kişi
+                            <strong>{t('total_capacity_label')}:</strong> {getTotalCapacityForTransfer()} {t('person_suffix')}
                             <br />
-                            <strong>Toplam Araç:</strong> {getTotalVehicleCountForTransfer()} adet
+                            <strong>{t('total_vehicle_label')}:</strong> {getTotalVehicleCountForTransfer()} {t('unit_suffix')}
                           </p>
                         </div>
                       </div>
@@ -422,7 +423,7 @@ export function ReservationDetails({
                 {/* Diğer Kategoriler - Kişi Sayısı */}
                 {assignment.serviceCategory !== "motor-tours" && assignment.serviceCategory !== "transfer" && (
                   <div className="space-y-2">
-                    <Label>Kişi Sayısı</Label>
+                    <Label>{t('number_of_people_label')}</Label>
                     <div className="flex items-center gap-3">
                       <Button
                         variant="outline"
@@ -443,7 +444,7 @@ export function ReservationDetails({
                       </Button>
                     </div>
                      <p className="text-sm text-gray-600">
-                      Maksimum {selectedTimeSlot.quota || assignment.serviceDetails?.quota || 999} kişi
+                      {t('max_person_count_message', {count: selectedTimeSlot.quota || assignment.serviceDetails?.quota || 999})}
                     </p>
                   </div>
                 )}
@@ -459,14 +460,14 @@ export function ReservationDetails({
                   style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
                 >
                   <Plane className="h-5 w-5" />
-                  Uçuş Bilgileri (İsteğe Bağlı)
+                  {t('flight_info_title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Label htmlFor="flight-code">Uçuş Kodu</Label>
+                <Label htmlFor="flight-code">{t('flight_code_label')}</Label>
                 <Input 
                   id="flight-code" 
-                  placeholder="Örn: TK1234"
+                  placeholder={t('flight_code_placeholder')}
                   className="mt-1.5"
                   value={flightCode}
                   onChange={(e) => setFlightCode(e.target.value)}
@@ -483,27 +484,27 @@ export function ReservationDetails({
                   style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
                 >
                   <CreditCard className="h-5 w-5" />
-                  Ödeme Bilgileri
+                  {t('payment_info_title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="currency-select" className="flex items-center gap-2"><Globe className="h-4 w-4" /> Para Birimi</Label>
+                    <Label htmlFor="currency-select" className="flex items-center gap-2"><Globe className="h-4 w-4" /> {t('currency_label')}</Label>
                     <Select value={selectedCurrency} onValueChange={(value) => setSelectedCurrency(value as any)}>
                         <SelectTrigger id="currency-select">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="TRY">Türk Lirası (₺)</SelectItem>
-                            <SelectItem value="USD">ABD Doları ($)</SelectItem>
-                            <SelectItem value="EUR">Euro (€)</SelectItem>
+                            <SelectItem value="TRY">{t('currency_try')}</SelectItem>
+                            <SelectItem value="USD">{t('currency_usd')}</SelectItem>
+                            <SelectItem value="EUR">{t('currency_eur')}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-lg">
-                    <span className="font-bold" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Toplam:</span>
+                    <span className="font-bold" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{t('total_label')}:</span>
                     <span className="font-bold text-xl" style={{ color: themeColor }}>
                       {formatCurrency(getTotalAmount())}
                     </span>
@@ -512,20 +513,20 @@ export function ReservationDetails({
 
                 <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
                   <div className="space-y-2">
-                    <Label>Ödeme Yöntemi</Label>
+                    <Label>{t('payment_method_label')}</Label>
                     <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {availablePaymentMethods.includes("full_start") && (
-                          <SelectItem value="full_start">Başlangıçta Tam Ödeme</SelectItem>
+                          <SelectItem value="full_start">{t('payment_full_start')}</SelectItem>
                         )}
                         {availablePaymentMethods.includes("prepayment") && (
-                          <SelectItem value="prepayment">Ön Ödeme ile Rezervasyon</SelectItem>
+                          <SelectItem value="prepayment">{t('payment_prepayment')}</SelectItem>
                         )}
                         {availablePaymentMethods.includes("full_location") && (
-                          <SelectItem value="full_location">Tamamını Yerinde Ödeme</SelectItem>
+                          <SelectItem value="full_location">{t('payment_full_location')}</SelectItem>
                         )}
                       </SelectContent>
                     </Select>
@@ -533,7 +534,7 @@ export function ReservationDetails({
 
                   {paymentMethod === "prepayment" && (
                     <div className="space-y-2">
-                      <Label>Ön Ödeme Tutarı ({selectedCurrency})</Label>
+                      <Label>{t('prepayment_amount_label', {currency: selectedCurrency})}</Label>
                       <Input
                         type="number"
                         min="0"
@@ -542,8 +543,8 @@ export function ReservationDetails({
                         onChange={(e) => setPrepaymentAmount(parseFloat(e.target.value) || 0)}
                       />
                       <div className="text-sm text-gray-600">
-                        <p>Ödenecek: {formatCurrency(Math.min(prepaymentAmount, getTotalAmount()))}</p>
-                        <p>Kalan: {formatCurrency(getTotalAmount() - Math.min(prepaymentAmount, getTotalAmount()))}</p>
+                        <p>{t('amount_to_pay', {amount: formatCurrency(Math.min(prepaymentAmount, getTotalAmount()))})}</p>
+                        <p>{t('remaining_amount', {amount: formatCurrency(getTotalAmount() - Math.min(prepaymentAmount, getTotalAmount()))})}</p>
                       </div>
                     </div>
                   )}
@@ -579,7 +580,7 @@ export function ReservationDetails({
                   disabled={isSubmitting}
                 >
                   <Calendar className="w-5 h-5 mr-2" />
-                  {isSubmitting ? "Rezervasyon Yapılıyor..." : `Rezervasyonu Tamamla - ${formatCurrency(getTotalAmount())}`}
+                  {isSubmitting ? t('submitting_reservation_button') : t('complete_reservation_button', {amount: formatCurrency(getTotalAmount())})}
                 </Button>
               </CardContent>
             </Card>

@@ -9,6 +9,7 @@ import { useReservationState } from "./hooks/useReservationState";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface ReservationModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ interface ReservationModalProps {
 }
 
 export function ReservationModal({ isOpen, onClose, assignment }: ReservationModalProps) {
+  const { t } = useTranslation();
   const reservationState = useReservationState(isOpen, assignment);
 
   const getThemeColor = () => {
@@ -34,9 +36,9 @@ export function ReservationModal({ isOpen, onClose, assignment }: ReservationMod
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="sticky top-0 z-50 flex items-center justify-between p-4 bg-white border-b flex-row">
            <DialogTitle className="text-lg font-bold" style={{ color: getThemeColor() }}>
-            Rezervasyon Yap
+            {t('make_reservation_title')}
           </DialogTitle>
-          <DialogDescription className="sr-only">Bir hizmet için rezervasyon oluşturun.</DialogDescription>
+          <DialogDescription className="sr-only">{t('make_reservation_description')}</DialogDescription>
           <Button onClick={onClose} variant="outline" size="icon">
             <X className="h-4 w-4" />
           </Button>

@@ -6,6 +6,7 @@ import { CardContent, CardHeader, CardTitle, Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, ChevronUp, ChevronDown } from "lucide-react";
 import { tr } from "date-fns/locale";
+import { useTranslation } from 'react-i18next';
 
 interface ReservationCalendarProps {
   selectedDate: Date | undefined;
@@ -24,6 +25,7 @@ export function ReservationCalendar({
   handleDateSelect,
   themeColor
 }: ReservationCalendarProps) {
+  const { t, i18n } = useTranslation(); // i18n nesnesi de çözümlendi
   
   // Hata düzeltmesi: availableDates'in bir dizi olduğundan emin ol
   const isDateAvailable = (date: Date) => {
@@ -43,7 +45,7 @@ export function ReservationCalendar({
           style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
         >
           <CalendarIcon className="h-5 w-5" />
-          Müsait Tarihler
+          {t('available_dates_title')}
           {selectedDate && (
             <Button
               variant="ghost"
@@ -54,12 +56,12 @@ export function ReservationCalendar({
               {isCalendarExpanded ? (
                 <>
                   <ChevronUp className="w-4 h-4 mr-1" />
-                  Küçült
+                  {t('collapse_button')}
                 </>
               ) : (
                 <>
                   <ChevronDown className="w-4 h-4 mr-1" style={{ color: themeColor }} />
-                  Takvimi Göster
+                  {t('show_calendar_button')}
                 </>
               )}
             </Button>
@@ -77,7 +79,7 @@ export function ReservationCalendar({
             mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}
-            locale={tr}
+            locale={i18n.language === 'tr' ? tr : undefined} // Dil'e göre locale ayarla
             disabled={(date) => {
               // Geçmiş tarihler ve müsait olmayan tarihler
               return date < new Date() || !isDateAvailable(date);
@@ -110,14 +112,14 @@ export function ReservationCalendar({
                 className="w-4 h-4 rounded border"
                 style={{ backgroundColor: `${themeColor}30` }}
               ></div>
-              <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Müsait tarihler</span>
+              <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{t('available_dates_label')}</span>
             </div>
             <div className="flex items-center gap-2 text-base">
               <div 
                 className="w-4 h-4 rounded border"
                 style={{ backgroundColor: themeColor }}
               ></div>
-              <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Seçili tarih</span>
+              <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{t('selected_date_label')}</span>
             </div>
           </div>
         </div>

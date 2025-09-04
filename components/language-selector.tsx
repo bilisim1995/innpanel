@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from 'react-i18next';
-import { FlagIcon } from 'react-flag-kit';
+import { FlagIcon, FlagIconCode } from 'react-flag-kit'; // FlagIconCode import edildi
 
 import {
   DropdownMenu,
@@ -13,10 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
+// Kullanılan ülke kodlarını içeren bir tip tanımlayalım
+type SupportedCountryCode = 'TR' | 'GB';
+
 interface Language {
   code: string;
   name: string;
-  countryCode: string;
+  countryCode: SupportedCountryCode; // Tipi SupportedCountryCode olarak güncellendi
 }
 
 const languages: Language[] = [
@@ -80,7 +83,7 @@ export function LanguageSelector() {
           <FlagIcon 
             code={currentDisplayLang.countryCode} 
             size={24} 
-            className="rounded-full overflow-hidden" // Added overflow-hidden
+            className="rounded-full overflow-hidden" 
           />
           <span className="sr-only">Change Language</span>
         </Button>
@@ -91,7 +94,7 @@ export function LanguageSelector() {
             <FlagIcon 
               code={lang.countryCode} 
               size={20} 
-              className="mr-2 rounded-full overflow-hidden" // Added overflow-hidden
+              className="mr-2 rounded-full overflow-hidden" 
             />
             <span>{lang.name}</span>
           </DropdownMenuItem>
