@@ -32,7 +32,7 @@ export function ServiceCoverImage({ service, assignment, onImageClick }: Service
           <div className="absolute top-4 right-4 z-10">
             <div className="flex items-center gap-1 text-white bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/30 shadow-lg">
               <Banknote className="w-4 h-4" />
-              <span className="font-medium text-base">{assignment.pricingSettings.displayPrice} ₺</span>
+              <span className="font-medium text-base">{assignment.pricingSettings.displayPrice} {assignment.pricingSettings.displayPriceCurrency}</span>
             </div>
           </div>
         )}
