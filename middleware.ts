@@ -1,54 +1,54 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_FILE = /\.(.*)$/; // Assets, favicons, etc.
-const locales = ['en', 'tr'];
-const defaultLocale = 'en';
+// Doğrudan tanımla, i18n dosyasından çekme
+let locales = ['en', 'tr'];
+let defaultLocale = 'en';
+
+function getLocale(request: NextRequest) {
+  const acceptLanguage = request.headers.get('accept-language');
+  if (acceptLanguage) {
+    const languages = acceptLanguage.split(',').map(lang => lang.split(';')[0].trim());
+    for (const lang of languages) {
+      if (locales.includes(lang)) {
+        return lang;
+      }
+    }
+  }
+  return defaultLocale;
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Yönetici paneli, API rotaları, Next.js iç rotaları ve public dosyaları i18n'den hariç tut
-  if (
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/_next') || 
-    PUBLIC_FILE.test(pathname)
-  ) {
-    return NextResponse.next();
-  }
+  // if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
+  //   return NextResponse.next();
+  // }
 
-  // 2. Dil öneki zaten var mı kontrol et (örneğin /tr/services/...) veya ana sayfa mı?
+  // Check if there is any locale in the pathname
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
-  let localeToUse = defaultLocale;
-
-  // Eğer URL'de bir dil öneki varsa, onu kullan
-  if (pathnameHasLocale) {
-    localeToUse = pathname.split('/')[1];
-  } else {
-    // Eğer URL'de dil öneki yoksa, Accept-Language başlığını kontrol et
-    const acceptLanguage = request.headers.get('accept-language');
-    localeToUse = acceptLanguage?.includes('tr') ? 'tr' : defaultLocale;
-
-    // Varsayılan dil ile yönlendirme yap (URL'e dil önekini ekle)
-    request.nextUrl.pathname = `/${localeToUse}${pathname}`;
+  // If no locale in pathname, redirect to default locale
+  if (!pathnameHasLocale) {
+    const locale = getLocale(request);
+    request.nextUrl.pathname = `/${locale}${pathname}`;
     return NextResponse.redirect(request.nextUrl);
   }
 
-  // x-current-locale başlığını ayarla
-  const response = NextResponse.next();
-  response.headers.set('x-current-locale', localeToUse);
-  return response;
+  // If pathname has a locale but it's not the default and not explicitly allowed, rewrite or handle as needed.
+  // This part of the logic might need adjustment based on specific routing requirements.
+  // For example, if you want '/tr' to be the canonical Turkish path, and prevent '/tr/tr' etc.
+
+  return NextResponse.next();
 }
 
 // Hangi yolların middleware tarafından işleneceğini belirler
 export const config = {
   matcher: [
     // Next.js'in dahili dosyalarını (/_next ile başlayanlar) ve API rotalarını (/api ile başlayanlar) hariç tutar.
-    // favicon.ico da hariç tutulur. Diğer tüm detaylı hariç tutmalar middleware fonksiyonu içinde yapılır.
-    '/((?!_next|api|favicon.ico).*)',
+    // favicon.ico da hariç tutulur. Ana sayfa, dashboard ve login de hariç tutulur.
+    '/((?!_next|api|favicon.ico|dashboard|login|$).*)',
   ],
 };
