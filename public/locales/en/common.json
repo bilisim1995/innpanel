@@ -6,5 +6,7 @@
     "motor-tours": "Motor Tours", 
     "balloon": "Hot Air Balloon",
     "transfer": "Transfer",
-    "other": "Other"
+    "other": "Other",
+    "qr_code_access_error_message": "Direct access to this page is not allowed. Please scan the QR code to access.",
+    "activity_details_button": "Activity Details"
 }

@@ -1,5 +1,8 @@
+'use client';
+
 import { ServicesDisplay } from "@/components/services-display";
 import { ErrorState } from "@/components/services-display/ErrorState";
+import { useTranslation } from 'react-i18next';
 
 // This is a public page that doesn't require authentication
 export default function ServicesPage({ 
@@ -9,13 +12,14 @@ export default function ServicesPage({
   params: { locationSlug: string },
   searchParams: { qr_scan?: string }
 }) {
+  const { t } = useTranslation();
   const { locationSlug } = params;
   const isQrScan = searchParams.qr_scan === 'true';
 
   // QR kod ile erişim kontrolü
   if (!isQrScan) {
     return (
-      <ErrorState error="Bu sayfaya doğrudan erişim izni yoktur. Lütfen QR kodu ile tarayarak erişin." />
+      <ErrorState error={t('qr_code_access_error_message')} />
     );
   }
 

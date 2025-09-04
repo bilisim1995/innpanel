@@ -6,5 +6,7 @@
     "motor-tours": "Motorlu Turlar", 
     "balloon": "Sıcak Balon",
     "transfer": "Transfer",
-    "other": "Diğer"
+    "other": "Diğer",
+    "qr_code_access_error_message": "Bu sayfaya doğrudan erişim izni yoktur. Lütfen QR kodu ile tarayarak erişin.",
+    "activity_details_button": "Aktivite Detayları"
 }

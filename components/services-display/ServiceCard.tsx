@@ -7,6 +7,7 @@ import { AssignmentData } from "@/lib/assignments";
 import { ServiceData } from "@/lib/services";
 import { getCategoryIcon, getCategoryColorsSync } from "./utils/categoryUtils";
 import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
 
 interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: ServiceData;
@@ -39,6 +40,7 @@ export function ServiceCard({
   onDragEnd,
   onDragMove
 }: ServiceCardProps) {
+  const { t } = useTranslation();
   const CategoryIcon = getCategoryIcon(assignment.serviceCategory);
   const colors = categoryColors[assignment.serviceCategory] || getCategoryColorsSync(assignment.serviceCategory);
   
@@ -175,7 +177,7 @@ export function ServiceCard({
             className="w-full hover:opacity-90 text-white font-bold py-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 border-0 text-lg tracking-wide"
             style={{ backgroundColor }}
           >
-            Aktivite Detayları
+            {t('activity_details_button')}
           </Button>
         </div>
       </CardContent>
