@@ -21,12 +21,14 @@ export interface AssignmentData {
     prepaymentEnabled: boolean;
     prepaymentAmount?: number;
     displayPrice?: number;
+    displayPriceCurrency?: 'TL' | 'USD' | 'EUR'; // Eklendi
     paymentMethods?: {
       fullPayment: boolean;
       prePayment: boolean;
       fullAtLocation: boolean;
     };
     commissionAmount?: number;
+    commissionAmountCurrency?: 'TL' | 'USD' | 'EUR'; // Eklendi
     dateRanges?: Array<{
       id: string;
       startDate: Date;

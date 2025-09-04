@@ -97,7 +97,7 @@ export function ServiceCard({
               <div className="absolute top-3 right-3 z-10">
                 <div className="flex items-center gap-1 text-xs text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/30 shadow-lg">
                   <Banknote className="w-3 h-3" />
-                  <span>{assignment.pricingSettings.displayPrice} ₺</span>
+                  <span>{assignment.pricingSettings.displayPrice} {assignment.pricingSettings.displayPriceCurrency}</span>
                 </div>
               </div>
             )}

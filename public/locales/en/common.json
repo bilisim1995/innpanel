@@ -63,6 +63,7 @@
     "vehicle_selection_title": "Vehicle Selection",
     "transfer_details_title": "Transfer Details",
     "number_of_people_title": "Number of People",
+    "number_of_people_label": "Number of People",
     "number_of_vehicles_label": "Number of Vehicles",
     "max_vehicle_selection_message": "You can select a maximum of {{count}} vehicles",
     "number_of_people_label_short": "People",

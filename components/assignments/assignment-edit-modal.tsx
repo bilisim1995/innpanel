@@ -89,6 +89,7 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
     prepaymentEnabled: boolean;
     prepaymentAmount: number;
     displayPrice: number;
+    displayPriceCurrency: 'TL' | 'USD' | 'EUR'; // Added currency for display price
     commissionAmount: number;
     paymentMethods: {
         fullPayment: boolean;
@@ -100,6 +101,7 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
     prepaymentEnabled: false,
     prepaymentAmount: 0,
     displayPrice: 0,
+    displayPriceCurrency: 'TL', // Default currency
     commissionAmount: 0,
     paymentMethods: {
       fullPayment: true,
@@ -163,6 +165,7 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
         prepaymentEnabled: assignment.pricingSettings?.prepaymentEnabled || false,
         prepaymentAmount: assignment.pricingSettings?.prepaymentAmount || 0,
         displayPrice: assignment.pricingSettings?.displayPrice || 0,
+        displayPriceCurrency: assignment.pricingSettings?.displayPriceCurrency || 'TL', // Set from assignment
         commissionAmount: assignment.pricingSettings?.commissionAmount || 0,
         paymentMethods: assignment.pricingSettings?.paymentMethods || {
           fullPayment: true,
@@ -290,8 +293,6 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
   if (!assignment) return null;
 
   const isTransferCategory = assignment.serviceCategory === "transfer";
-  const isBalloonCategory = assignment.serviceCategory.includes("balloon");
-
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -361,8 +362,31 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="displayPrice">Görünen Fiyat (₺)</Label>
-                      <Input id="displayPrice" type="number" value={pricingSettings.displayPrice} onChange={(e) => setPricingSettings(p => ({ ...p, displayPrice: parseFloat(e.target.value) || 0 }))} />
+                      <Label htmlFor="displayPrice">Görünen Fiyat</Label>
+                      <div className="grid grid-cols-5 gap-2">
+                        <Input 
+                          id="displayPrice" 
+                          type="number" 
+                          value={pricingSettings.displayPrice} 
+                          onChange={(e) => setPricingSettings(p => ({ ...p, displayPrice: parseFloat(e.target.value) || 0 }))}
+                          className="col-span-3"
+                        />
+                        <div className="col-span-2">
+                          <Select
+                            value={pricingSettings.displayPriceCurrency}
+                            onValueChange={(v) => setPricingSettings(p => ({ ...p, displayPriceCurrency: v as 'TL' | 'USD' | 'EUR' }))}
+                          >
+                            <SelectTrigger className="h-9 w-full">
+                              <SelectValue placeholder="Birim" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="TL">TL</SelectItem>
+                              <SelectItem value="USD">USD</SelectItem>
+                              <SelectItem value="EUR">EUR</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="commissionAmount">Komisyon Tutarı (₺)</Label>
@@ -435,66 +459,50 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                                       
                                       {assignment.serviceCategory !== "transfer" && (
                                         <>
-                                            {isBalloonCategory ? (
-                                              <div className="col-span-2 space-y-1">
-                                                <Label className="text-xs">Fiyat</Label>
-                                                <div className="grid grid-cols-5 gap-2">
-                                                  <Input
-                                                    className="h-9 col-span-3"
-                                                    type="number"
-                                                    min="0"
-                                                    value={slot.price}
-                                                    onChange={(e) =>
-                                                      updateTimeSlot(range.id, slot.id, "price", parseFloat(e.target.value) || 0)
-                                                    }
-                                                  />
-                                                  <div className="col-span-2">
-                                                    <Select
-                                                      value={slot.currency}
-                                                      onValueChange={(v) =>
-                                                        updateTimeSlot(range.id, slot.id, "currency", v)
-                                                      }
-                                                    >
-                                                      <SelectTrigger className="h-9 w-full">
-                                                        <SelectValue placeholder="Birim" />
-                                                      </SelectTrigger>
-                                                      <SelectContent>
-                                                        <SelectItem value="TL">TL</SelectItem>
-                                                        <SelectItem value="USD">USD</SelectItem>
-                                                        <SelectItem value="EUR">EUR</SelectItem>
-                                                      </SelectContent>
-                                                    </Select>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            ) : (
-                                              <div className="col-span-2 space-y-1">
-                                                <Label className="text-xs">Fiyat (TL)</Label>
-                                                <Input
-                                                  className="h-9"
-                                                  type="number"
-                                                  min="0"
-                                                  value={slot.price}
-                                                  onChange={(e) =>
-                                                    updateTimeSlot(range.id, slot.id, "price", parseFloat(e.target.value) || 0)
-                                                  }
-                                                />
-                                              </div>
-                                            )}
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">Kontenjan</Label>
+                                          <div className="col-span-2 space-y-1">
+                                            <Label className="text-xs">Fiyat</Label>
+                                            <div className="grid grid-cols-5 gap-2">
                                               <Input
-                                                className="h-9"
+                                                className="h-9 col-span-3"
                                                 type="number"
                                                 min="0"
-                                                value={slot.quota || ""}
+                                                value={slot.price}
                                                 onChange={(e) =>
-                                                  updateTimeSlot(range.id, slot.id, "quota", parseInt(e.target.value) || undefined)
+                                                  updateTimeSlot(range.id, slot.id, "price", parseFloat(e.target.value) || 0)
                                                 }
                                               />
+                                              <div className="col-span-2">
+                                                <Select
+                                                  value={slot.currency}
+                                                  onValueChange={(v) =>
+                                                    updateTimeSlot(range.id, slot.id, "currency", v)
+                                                  }
+                                                >
+                                                  <SelectTrigger className="h-9 w-full">
+                                                    <SelectValue placeholder="Birim" />
+                                                  </SelectTrigger>
+                                                  <SelectContent>
+                                                    <SelectItem value="TL">TL</SelectItem>
+                                                    <SelectItem value="USD">USD</SelectItem>
+                                                    <SelectItem value="EUR">EUR</SelectItem>
+                                                  </SelectContent>
+                                                </Select>
+                                              </div>
                                             </div>
-                                          </>
-
+                                          </div>
+                                          <div className="space-y-1">
+                                            <Label className="text-xs">Kontenjan</Label>
+                                            <Input
+                                              className="h-9"
+                                              type="number"
+                                              min="0"
+                                              value={slot.quota || ""}
+                                              onChange={(e) =>
+                                                updateTimeSlot(range.id, slot.id, "quota", parseInt(e.target.value) || undefined)
+                                              }
+                                            />
+                                          </div>
+                                        </>
                                       )}
                                       
                                       {assignment.serviceCategory === "transfer" && <div className="col-span-3"></div>}
@@ -522,8 +530,35 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                                                           </Select>
                                                       </div>
                                                       <div className="col-span-3 space-y-1">
-                                                          <Label className="text-xs">Fiyat (TL)</Label>
-                                                          <Input type="number" min="0" value={vehicle.price} onChange={(e) => updateVehicleInSlot(range.id, slot.id, vIndex, 'price', parseFloat(e.target.value) || 0)} className="h-9"/>
+                                                        <Label className="text-xs">Fiyat</Label>
+                                                        <div className="grid grid-cols-5 gap-2">
+                                                          <Input
+                                                            className="h-9 col-span-3"
+                                                            type="number"
+                                                            min="0"
+                                                            value={vehicle.price}
+                                                            onChange={(e) =>
+                                                              updateVehicleInSlot(range.id, slot.id, vIndex, "price", parseFloat(e.target.value) || 0)
+                                                            }
+                                                          />
+                                                          <div className="col-span-2">
+                                                            <Select
+                                                              value={vehicle.currency}
+                                                              onValueChange={(v) =>
+                                                                updateVehicleInSlot(range.id, slot.id, vIndex, "currency", v)
+                                                              }
+                                                            >
+                                                              <SelectTrigger className="h-9 w-full">
+                                                                <SelectValue placeholder="Birim" />
+                                                              </SelectTrigger>
+                                                              <SelectContent>
+                                                                <SelectItem value="TL">TL</SelectItem>
+                                                                <SelectItem value="USD">USD</SelectItem>
+                                                                <SelectItem value="EUR">EUR</SelectItem>
+                                                              </SelectContent>
+                                                            </Select>
+                                                          </div>
+                                                        </div>
                                                       </div>
                                                       <div className="col-span-2 space-y-1">
                                                           <Label className="text-xs">Kontenjan</Label>
