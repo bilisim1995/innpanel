@@ -23,35 +23,25 @@ export function middleware(request: NextRequest) {
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
-  // 3. Eğer dil öneki yoksa ve /services/ ile başlayan bir sayfa ise, varsayılan dil ile yönlendir
-  if (!pathnameHasLocale) {
-    // Sadece /services/[locationSlug] gibi rotalar için dil ekle
-    const isServicePage = pathname.startsWith('/services/');
-    
-    if (isServicePage) {
-      const acceptLanguage = request.headers.get('accept-language');
-      const preferredLocale = acceptLanguage?.includes('tr') ? 'tr' : defaultLocale;
+  let localeToUse = defaultLocale;
 
-      request.nextUrl.pathname = `/${preferredLocale}${pathname}`;
-      return NextResponse.redirect(request.nextUrl);
-    }
-  }
-
-  // 4. Eğer dil öneki varsa (örneğin /en/services/...) ve bu bir hizmet sayfası ise, dil önekini kaldırarak path rewrite et
-  // Örneğin, /en/services/istanbul -> /services/istanbul olarak rewrite edilir
+  // Eğer URL'de bir dil öneki varsa, onu kullan
   if (pathnameHasLocale) {
-    const locale = pathname.split('/')[1];
-    const newPathname = pathname.replace(`/${locale}`, '');
-    
-    // Yalnızca '/services' ile başlayan sayfalar için rewrite yap (ve ana sayfa hariç)
-    if (newPathname.startsWith('/services/')) {
-      request.nextUrl.pathname = newPathname;
-      return NextResponse.rewrite(request.nextUrl);
-    }
+    localeToUse = pathname.split('/')[1];
+  } else {
+    // Eğer URL'de dil öneki yoksa, Accept-Language başlığını kontrol et
+    const acceptLanguage = request.headers.get('accept-language');
+    localeToUse = acceptLanguage?.includes('tr') ? 'tr' : defaultLocale;
+
+    // Varsayılan dil ile yönlendirme yap (URL'e dil önekini ekle)
+    request.nextUrl.pathname = `/${localeToUse}${pathname}`;
+    return NextResponse.redirect(request.nextUrl);
   }
 
-  // Varsayılan olarak isteği olduğu gibi devam ettir
-  return NextResponse.next();
+  // x-current-locale başlığını ayarla
+  const response = NextResponse.next();
+  response.headers.set('x-current-locale', localeToUse);
+  return response;
 }
 
 // Hangi yolların middleware tarafından işleneceğini belirler

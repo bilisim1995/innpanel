@@ -1,23 +1,31 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-// LanguageDetector kaldırıldı
-import HttpBackend from 'i18next-http-backend';
 
-i18n
-  .use(HttpBackend)
-  // .use(LanguageDetector) // LanguageDetector kaldırıldı
-  .use(initReactI18next)
-  .init({
-    fallbackLng: 'en',
-    debug: process.env.NODE_ENV === 'development',
-    ns: ['common'], // 'common.json' dosyasını yüklemesini sağlar
-    defaultNS: 'common', // Varsayılan namespace'i 'common' olarak ayarlar
-    interpolation: {
-      escapeValue: false,
-    },
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
-    },
-  });
+let _i18nInstance: any = null;
 
-export default i18n;
+export async function getClientI18n(lng: string, resources: any) {
+  if (!_i18nInstance) {
+    _i18nInstance = i18n.createInstance();
+
+    await _i18nInstance
+      .use(initReactI18next)
+      .init({
+        lng,
+        resources,
+        fallbackLng: 'en',
+        debug: process.env.NODE_ENV === 'development',
+        ns: ['common'],
+        defaultNS: 'common',
+        interpolation: {
+          escapeValue: false,
+        },
+        react: {
+          useSuspense: false,
+        }
+      });
+  } else if (_i18nInstance.language !== lng) {
+    await _i18nInstance.changeLanguage(lng);
+  }
+
+  return _i18nInstance;
+}

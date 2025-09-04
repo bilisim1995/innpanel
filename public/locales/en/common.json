@@ -42,5 +42,6 @@
     "service_notes_title": "Service Notes",
     "vehicle_features_title": "Vehicle Features",
     "cover_image_alt": "Cover image for {{serviceName}}",
-    "premium_activity_experience_text": "Premium Activity Experience"
+    "premium_activity_experience_text": "Premium Activity Experience",
+    "book_now_button": "Book Now"
 }

@@ -1,31 +1,33 @@
 'use client';
 
 import { I18nextProvider } from 'react-i18next';
-import i18n from '@/i18n';
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { getClientI18n } from '@/i18n';
+import { useEffect, useState } from 'react';
 
-const locales = ['en', 'tr'];
-const defaultLocale = 'en';
+interface I18nProviderProps {
+  children: React.ReactNode;
+  locale: string;
+  resources: any;
+}
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+export function I18nProvider({ children, locale, resources }: I18nProviderProps) {
+  const [i18nInstance, setI18nInstance] = useState<any>(null);
 
   useEffect(() => {
-    const pathSegments = pathname.split('/').filter(Boolean);
-    let currentLocale = defaultLocale;
+    const initializeAndSetLanguage = async () => {
+      const instance = await getClientI18n(locale, resources);
+      setI18nInstance(instance);
+    };
 
-    if (pathSegments.length > 0 && locales.includes(pathSegments[0])) {
-      currentLocale = pathSegments[0];
-    }
+    initializeAndSetLanguage();
+  }, [locale, resources]); // locale veya resources değiştiğinde yeniden çalıştır
 
-    if (i18n.language !== currentLocale) {
-      i18n.changeLanguage(currentLocale);
-    }
-  }, [pathname]);
+  if (!i18nInstance) {
+    return null; // Veya bir yükleme göstergesi
+  }
 
   return (
-    <I18nextProvider i18n={i18n}>
+    <I18nextProvider i18n={i18nInstance}>
       {children}
     </I18nextProvider>
   );

@@ -5,15 +5,15 @@ import { ErrorState } from "@/components/services-display/ErrorState";
 import { useTranslation } from 'react-i18next';
 
 // This is a public page that doesn't require authentication
-export default function ServicesPage({ 
+export default function ServicesPage({
   params,
   searchParams
-}: { 
-  params: { locationSlug: string },
+}: {
+  params: { locale: string, locationSlug: string }, // locale eklendi
   searchParams: { qr_scan?: string }
 }) {
   const { t } = useTranslation();
-  const { locationSlug } = params;
+  const { locale, locationSlug } = params; // locale buradan alınacak
   const isQrScan = searchParams.qr_scan === 'true';
 
   // QR kod ile erişim kontrolü
