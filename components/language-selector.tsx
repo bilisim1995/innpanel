@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from 'react-i18next';
-import { FlagIcon, FlagIconCode } from 'react-flag-kit'; // FlagIconCode import edildi
+import { FlagIcon, FlagIconCode } from 'react-flag-kit';
 
 import {
   DropdownMenu,
@@ -13,13 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-// Kullanılan ülke kodlarını içeren bir tip tanımlayalım
 type SupportedCountryCode = 'TR' | 'GB';
 
 interface Language {
   code: string;
   name: string;
-  countryCode: SupportedCountryCode; // Tipi SupportedCountryCode olarak güncellendi
+  countryCode: SupportedCountryCode;
 }
 
 const languages: Language[] = [
@@ -29,7 +28,6 @@ const languages: Language[] = [
 
 const locales = ['en', 'tr'];
 
-// Helper to get the path without the locale prefix
 const getPathWithoutLocale = (currentPathname: string, availableLocales: string[]) => {
   const segment = currentPathname.split('/').filter(Boolean)[0];
   if (availableLocales.includes(segment)) {
@@ -44,7 +42,17 @@ export function LanguageSelector() {
   const searchParams = useSearchParams();
   const { i18n } = useTranslation();
 
-  const currentDisplayLang = languages.find(lang => lang.code === i18n.language) || languages.find(lang => lang.code === 'en') || languages[0];
+  // URL'den aktif dili al
+  const currentLocaleFromPath = pathname.split('/').filter(Boolean)[0];
+  const activeLanguageCode = locales.includes(currentLocaleFromPath) ? currentLocaleFromPath : 'en';
+
+  // Bayrağı, i18n.language yerine URL'deki aktif dile göre belirle
+  const currentDisplayLang = languages.find(lang => lang.code === activeLanguageCode) || languages[0];
+
+  // Debugging için konsola yazdır
+  console.log('LanguageSelector - i18n.language:', i18n.language);
+  console.log('LanguageSelector - activeLanguageCode (from path):', activeLanguageCode);
+  console.log('LanguageSelector - currentDisplayLang:', currentDisplayLang);
 
   const handleLanguageChange = (langCode: string) => {
     const currentPathWithoutLocale = getPathWithoutLocale(pathname, locales);
@@ -53,13 +61,11 @@ export function LanguageSelector() {
     let newPath = `/${langCode}${currentPathWithoutLocale}`;
     const params = new URLSearchParams(currentSearchParams);
 
-    // Sadece hizmet sayfaları için qr_scan=true parametresini ekle/koru
     if (currentPathWithoutLocale.startsWith('/services/')) {
       if (!params.has('qr_scan')) {
         params.set('qr_scan', 'true');
       }
     } else {
-      // Diğer rotalar için qr_scan parametresini kaldır
       params.delete('qr_scan');
     }
     
@@ -69,7 +75,6 @@ export function LanguageSelector() {
       newPath += `?${updatedSearchParams}`;
     }
     
-    // Sayfanın tamamen yeniden yüklenmesini sağlayın
     window.location.href = newPath;
   };
 

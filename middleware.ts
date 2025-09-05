@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Doğrudan tanımla, i18n dosyasından çekme
 let locales = ['en', 'tr'];
 let defaultLocale = 'en';
 
@@ -21,24 +20,42 @@ function getLocale(request: NextRequest) {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if there is any locale in the pathname
+  // Eğer ana dizin ise, yönlendirme yapmadan devam et
+  if (pathname === '/') {
+    const response = NextResponse.next();
+    // Ana dizinde de defaultLocale'yi set et
+    response.headers.set('x-current-locale', defaultLocale);
+    console.log('Middleware - Root path, setting x-current-locale:', defaultLocale);
+    return response;
+  }
+
+  // Pathname'in zaten bir locale içerip içermediğini kontrol et
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
-  // If no locale in pathname, redirect to default locale
-  if (!pathnameHasLocale) {
-    const locale = getLocale(request);
-    request.nextUrl.pathname = `/${locale}${pathname}`;
-    return NextResponse.redirect(request.nextUrl);
-  }
+  let localeToUse: string;
 
-  return NextResponse.next();
+  if (pathnameHasLocale) {
+    // Eğer pathname zaten bir locale içeriyorsa, o locale'yi kullan
+    localeToUse = pathname.split('/')[1];
+    const response = NextResponse.next();
+    response.headers.set('x-current-locale', localeToUse);
+    console.log('Middleware - Path has locale, setting x-current-locale:', localeToUse);
+    return response;
+  } else {
+    // Eğer pathname bir locale içermiyorsa, varsayılan locale'yi belirle ve yönlendir
+    localeToUse = getLocale(request);
+    request.nextUrl.pathname = `/${localeToUse}${pathname}`;
+    const response = NextResponse.redirect(request.nextUrl);
+    response.headers.set('x-current-locale', localeToUse);
+    console.log('Middleware - Path without locale, redirecting and setting x-current-locale:', localeToUse);
+    return response;
+  }
 }
 
-// Hangi yolların middleware tarafından işleneceğini belirler
 export const config = {
   matcher: [
-    '/((?!_next|api|favicon.ico|dashboard|login|[\w-]+\.\w+$).*)'
+    '/((?!_next|api|favicon.ico|dashboard|login|[\w-]+\.\w+$).*)',
   ],
 };

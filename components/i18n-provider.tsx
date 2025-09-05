@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 interface I18nProviderProps {
   children: React.ReactNode;
   locale: string;
-  resources: any;
+  resources: { [key: string]: { common: any } }; 
 }
 
 export function I18nProvider({ children, locale, resources }: I18nProviderProps) {
@@ -20,10 +20,18 @@ export function I18nProvider({ children, locale, resources }: I18nProviderProps)
     };
 
     initializeAndSetLanguage();
-  }, [locale, resources]); // locale veya resources değiştiğinde yeniden çalıştır
+  }, [locale, resources]); 
+
+  // Debugging: I18nProvider içinde algılanan locale ve i18n instance dili
+  useEffect(() => {
+    if (i18nInstance) {
+      console.log('I18nProvider - prop locale:', locale);
+      console.log('I18nProvider - i18nInstance.language:', i18nInstance.language);
+    }
+  }, [i18nInstance, locale]);
 
   if (!i18nInstance) {
-    return null; // Veya bir yükleme göstergesi
+    return null; 
   }
 
   return (

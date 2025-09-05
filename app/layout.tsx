@@ -36,6 +36,9 @@ export default async function RootLayout({
   const headersList = headers();
   const currentLocale = headersList.get('x-current-locale') || 'en';
 
+  // Debugging: app/layout.tsx içinde algılanan mevcut dil
+  console.log('app/layout.tsx - currentLocale from headers:', currentLocale);
+
   // Load all translations for all supported locales on the server
   const resources: { [key: string]: { common: any } } = {};
   for (const locale of supportedLocales) {

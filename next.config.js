@@ -29,6 +29,8 @@ const nextConfig = {
   
   // Output ayarları
   output: 'standalone',
+
+
   
   // Headers for security
   async headers() {
@@ -54,7 +56,4 @@ const nextConfig = {
   },
 }
 
-const withNextI18Next = require('next-i18next/dist/commonjs/withNextI18Next').default;
-const nextI18NextConfig = require('./next-i18next.config');
-
-module.exports = withNextI18Next(nextI18NextConfig)(nextConfig);
+module.exports = nextConfig;
