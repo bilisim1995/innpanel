@@ -1,3 +1,4 @@
+// app/layout.tsx - DOĞRU VE TAM HALİ
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Poppins } from 'next/font/google';
@@ -5,8 +6,15 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { I18nProvider } from '@/components/i18n-provider';
 import { headers } from 'next/headers';
-import { promises as fs } from 'fs';
-import path from 'path';
+
+// 1. ADIM: Node.js'in 'fs' ve 'path' modüllerini siliyoruz.
+// Artık diskten manuel dosya okumayacağız.
+
+// 2. ADIM: Çeviri dosyalarını doğrudan import ediyoruz.
+// Bu, Next.js'e bu dosyaların projenin bir parçası olduğunu ve
+// build işlemine dahil edilmesi gerektiğini söyler.
+import enTranslations from '@/public/locales/en/common.json';
+import trTranslations from '@/public/locales/tr/common.json';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,8 +34,6 @@ export const metadata: Metadata = {
   description: 'Tatil Ajansı için özel olarak tasarlanmış yönetim paneli',
 };
 
-const supportedLocales = ['en', 'tr'];
-
 export default async function RootLayout({
   children,
 }: {
@@ -36,16 +42,12 @@ export default async function RootLayout({
   const headersList = headers();
   const currentLocale = headersList.get('x-current-locale') || 'en';
 
-  // Debugging: app/layout.tsx içinde algılanan mevcut dil
-  console.log('app/layout.tsx - currentLocale from headers:', currentLocale);
-
-  // Load all translations for all supported locales on the server
-  const resources: { [key: string]: { common: any } } = {};
-  for (const locale of supportedLocales) {
-    const commonTranslationsPath = path.join(process.cwd(), `public/locales/${locale}/common.json`);
-    const commonTranslations = JSON.parse(await fs.readFile(commonTranslationsPath, 'utf8'));
-    resources[locale] = { common: commonTranslations };
-  }
+  // 3. ADIM: 'resources' objesini, import ettiğimiz verileri kullanarak oluşturuyoruz.
+  // Dinamik olarak dosya okumaya çalışan döngüyü tamamen kaldırıyoruz.
+  const resources = {
+    en: { common: enTranslations },
+    tr: { common: trTranslations },
+  };
 
   return (
     <html lang={currentLocale} suppressHydrationWarning>
