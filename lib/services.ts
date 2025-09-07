@@ -22,6 +22,7 @@ export interface ServiceData {
     [key: string]: any; // Diğer categoryDetails alanları için
   };
   notes?: string;
+  language: string; // Add language field
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +60,7 @@ export const getServices = async (): Promise<ServiceData[]> => {
         ...data,
         createdAt: data.createdAt?.toDate() || new Date(),
         updatedAt: data.updatedAt?.toDate() || new Date(),
+        language: data.language || 'tr', // Default to 'tr' if language is not set
         // Convert all nested Timestamps in categoryDetails
         categoryDetails: convertTimestampsToDate(data.categoryDetails),
       };

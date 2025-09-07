@@ -21,7 +21,8 @@ import {
   Bike,
   Wind,
   Car,
-  MoreHorizontal
+  MoreHorizontal,
+  Languages
 } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { ImageUpload } from "@/components/ui/image-upload";
@@ -70,6 +71,7 @@ export function ServiceModal({ isOpen, onClose, editingService }: ServiceModalPr
     isActive: false,
     quota: "",
     coverImage: null as string | null,
+    language: "tr", // Yeni dil alanı
   });
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [categoryDetails, setCategoryDetails] = useState<any>({});
@@ -88,6 +90,7 @@ export function ServiceModal({ isOpen, onClose, editingService }: ServiceModalPr
         isActive: editingService.isActive,
         quota: editingService.quota.toString(),
         coverImage: editingService.coverImage || null,
+        language: editingService.language || "tr", // Dil alanını yükle
       });
       setCategoryDetails(editingService.categoryDetails || {});
       setNotes(editingService.notes || "");
@@ -108,6 +111,7 @@ export function ServiceModal({ isOpen, onClose, editingService }: ServiceModalPr
       isActive: false,
       quota: "",
       coverImage: null,
+      language: "tr", // Formu sıfırlarken dili de sıfırla
     });
     setCategoryDetails({});
     setNotes("");
@@ -119,6 +123,7 @@ export function ServiceModal({ isOpen, onClose, editingService }: ServiceModalPr
     const newErrors: {[key: string]: string} = {};
 
     if (currentStep === 0) {
+      if (!formData.language) newErrors.language = "Dil seçimi zorunludur"; // Dil alanı için doğrulama
       if (!formData.category) newErrors.category = "Kategori seçimi zorunludur";
       if (!formData.serviceName) newErrors.serviceName = "Hizmet adı zorunludur";
       if (!formData.companyName) newErrors.companyName = "Firma adı zorunludur";
@@ -168,6 +173,7 @@ export function ServiceModal({ isOpen, onClose, editingService }: ServiceModalPr
         paymentOptions: [],
         categoryDetails: categoryDetails,
         notes: notes,
+        language: formData.language, // Dil alanını serviceData'ya ekle
       };
 
       if (editingService?.id) {
@@ -273,6 +279,30 @@ export function ServiceModal({ isOpen, onClose, editingService }: ServiceModalPr
             <div className="flex-1 p-6 overflow-y-auto">
               {currentStep === 0 && (
                 <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="language" className="flex items-center gap-2">
+                      <Languages className="h-4 w-4" />
+                      Dil
+                    </Label>
+                    <Select
+                      value={formData.language}
+                      onValueChange={(value) => setFormData({...formData, language: value})}
+                    >
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Dil seçin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tr">Türkçe</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.language && (
+                      <p className="text-sm text-destructive mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-4 w-4" />
+                        {errors.language}
+                      </p>
+                    )}
+                  </div>
                   <div>
                     <Label>Hizmet Kategorisi</Label>
                     <Select
