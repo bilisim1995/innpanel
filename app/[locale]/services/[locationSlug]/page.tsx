@@ -17,37 +17,35 @@ export default function ServicesPage({
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Sayfa ilk yüklendiğinde qr_code parametresini kontrol et
-  const initialIsQrScan = searchParams.get('qr_code') === 'true';
-
-  // QR kodu ile erişim sağlanıp sağlanmadığını tutan state
-  const [hasAccessedViaQr, setHasAccessedViaQr] = useState(initialIsQrScan);
+  // QR kodu kontrolü - Geçici olarak kaldırıldı.
+  // Bu kısım, sayfanın QR kodu ile erişilip erişilmediğini kontrol ediyordu.
+  // const initialIsQrScan = searchParams.get('qr_code') === 'true';
+  // const [hasAccessedViaQr, setHasAccessedViaQr] = useState(initialIsQrScan);
 
   useEffect(() => {
-    // Eğer ilk yüklemede qr_code=true varsa ve henüz URL'den kaldırılmadıysa
-    if (initialIsQrScan && searchParams.has('qr_code')) {
-      const newSearchParams = new URLSearchParams(searchParams.toString());
-      newSearchParams.delete('qr_code');
-      
-      // URL'yi güncelle (qr_code parametresi olmadan)
-      router.replace(`/${locale}/services/${locationSlug}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`);
-      
-      // Erişimin QR kodu ile sağlandığını işaretle
-      setHasAccessedViaQr(true);
-    }
-  }, [initialIsQrScan, locale, locationSlug, searchParams, router]);
+    // QR kodu parametresi temizleme - Geçici olarak kaldırıldı.
+    // Eğer ilk yüklemede qr_code=true varsa ve henüz URL'den kaldırılmadıysa,
+    // URL'yi temizleyip erişimin QR ile sağlandığını işaretliyordu.
+    // if (initialIsQrScan && searchParams.has('qr_code')) {
+    //   const newSearchParams = new URLSearchParams(searchParams.toString());
+    //   newSearchParams.delete('qr_code');
+    //   router.replace(`/${locale}/services/${locationSlug}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`);
+    //   setHasAccessedViaQr(true);
+    // }
+    // [initialIsQrScan, locale, locationSlug, searchParams, router]
+  }, []);
 
-  // QR kod ile erişim kontrolü
-  // Eğer başlangıçta QR ile erişilmediyse (veya hiç QR koduyla erişilmediyse), hata göster.
-  // Aksi takdirde (yani QR koduyla erişildiyse ve parametre kaldırılmış olsa bile) hizmetleri göster.
-  if (!hasAccessedViaQr) {
-    return (
-      <ErrorState error={t('qr_code_access_error_message')} />
-    );
-  }
+  // QR kod ile erişim kontrolü - Geçici olarak kaldırıldı.
+  // Eğer başlangıçta QR ile erişilmediyse (veya hiç QR koduyla erişilmediyse), hata gösteriyordu.
+  // Aksi takdirde (yani QR koduyla erişildiyse ve parametre kaldırılmış olsa bile) hizmetleri gösteriyordu.
+  // if (!hasAccessedViaQr) {
+  //   return (
+  //     <ErrorState error={t('qr_code_access_error_message')} />
+  //   );
+  // }
 
-  // QR kodu kontrolü başarılıysa hizmetleri göster
+  // QR kodu kontrolü artık devre dışı bırakıldığı için doğrudan hizmetleri gösteriyoruz.
   return (
-    <ServicesDisplay locationSlug={locationSlug} />
+    <ServicesDisplay locationSlug={locationSlug} locale={locale} />
   );
 }

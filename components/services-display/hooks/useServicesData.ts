@@ -8,7 +8,7 @@ interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: ServiceData;
 }
 
-export function useServicesData(locationSlug: string) {
+export function useServicesData(locationSlug: string, locale: string) { // locale parametresi eklendi
   const [location, setLocation] = useState<LocationData | null>(null);
   const [assignments, setAssignments] = useState<EnhancedAssignmentData[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<EnhancedAssignmentData[]>([]);
@@ -47,7 +47,8 @@ export function useServicesData(locationSlug: string) {
         }).filter(assignment => 
           assignment.serviceDetails && 
           assignment.isActive && 
-          assignment.serviceDetails.isActive
+          assignment.serviceDetails.isActive &&
+          assignment.serviceDetails.language === locale // Dil filtresi eklendi
         );
 
         setAssignments(enhancedAssignments);
@@ -62,7 +63,7 @@ export function useServicesData(locationSlug: string) {
     } finally {
       setLoading(false);
     }
-  }, [locationSlug]);
+  }, [locationSlug, locale]); // locale bağımlılıklara eklendi
 
   useEffect(() => {
     loadData();

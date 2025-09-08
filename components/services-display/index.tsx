@@ -24,9 +24,10 @@ interface EnhancedAssignmentData extends AssignmentData {
 
 interface ServicesDisplayProps {
   locationSlug: string;
+  locale: string; // locale prop'u eklendi
 }
 
-export function ServicesDisplay({ locationSlug }: ServicesDisplayProps) {
+export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) {
   const router = useRouter();
   
   useEffect(() => {
@@ -48,7 +49,7 @@ export function ServicesDisplay({ locationSlug }: ServicesDisplayProps) {
     categoryColors,
     handleCategorySelect,
     handleClearFilter
-  } = useServicesData(locationSlug);
+  } = useServicesData(locationSlug, locale); // locale useServicesData hook'una iletildi
 
   const {
     selectedImage,
