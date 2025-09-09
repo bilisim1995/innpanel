@@ -51,7 +51,7 @@ const STEPS = [
 
 const SERVICE_CATEGORIES = [
   { id: "region-tours", label: "Bölge Turları", icon: Map },
-  { id: "motor-tours", label: "Motorlu Turlar", icon: Bike },
+  { id: "motor-tours", label: "Aktiviteler", icon: Bike },
   { id: "balloon", label: "Sıcak Balon", icon: Wind },
   { id: "transfer", label: "Transfer", icon: Car },
   { id: "other", label: "Diğer", icon: MoreHorizontal },

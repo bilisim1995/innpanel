@@ -19,7 +19,7 @@ const CATEGORY_COLORS_COLLECTION = 'category_colors';
 // Default categories from the system
 export const DEFAULT_CATEGORIES = [
   { id: "region-tours", label: "Bölge Turları" },
-  { id: "motor-tours", label: "Motorlu Turlar" },
+  { id: "motor-tours", label: "Aktiviteler" },
   { id: "balloon", label: "Sıcak Balon" },
   { id: "transfer", label: "Transfer" },
   { id: "other", label: "Diğer" },

@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recha
 // Sample data for the pie chart
 const sampleData = [
   { name: "Bölge Turları", value: 35, color: "#8884d8" },
-  { name: "Motorlu Turlar", value: 25, color: "#82ca9d" },
+  { name: "Aktiviteler", value: 25, color: "#82ca9d" },
   { name: "Sıcak Balon", value: 20, color: "#ffc658" },
   { name: "Transfer", value: 15, color: "#ff7c7c" },
   { name: "Diğer", value: 5, color: "#8dd1e1" },

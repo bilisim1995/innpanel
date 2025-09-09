@@ -124,7 +124,7 @@ export default function ReservationsPage() {
   const getCategoryLabel = (category: string) => {
     const categories = {
       "region-tours": "Bölge Turları",
-      "motor-tours": "Motorlu Turlar",
+      "motor-tours": "Aktiviteler",
       "balloon": "Sıcak Balon",
       "transfer": "Transfer",
       "other": "Diğer",

@@ -403,8 +403,8 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                         <div key={method} className="flex items-center justify-between">
                           <Label htmlFor={method} className="text-sm font-normal">
                             {method === 'fullPayment' && 'Başlangıçta Tam Ödeme'}
-                            {method === 'prePayment' && 'Ön Ödeme ile Rezervasyon'}
-                            {method === 'fullAtLocation' && 'Tamamını Yerinde Ödeme'}
+                            {method === 'prePayment' && 'Resepsiyon Ödeme'}
+                            {method === 'fullAtLocation' && 'Araçta Ödeme'}
                           </Label>
                           <Switch id={method} checked={basicData.paymentMethods[method as keyof typeof basicData.paymentMethods]} onCheckedChange={(c) => setBasicData(p => ({...p, paymentMethods: {...p.paymentMethods, [method]: c}}))} />
                         </div>

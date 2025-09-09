@@ -241,7 +241,7 @@ export default function ReportsPage() {
   };
 
   const getCategoryLabel = (category: string) => {
-    const categories = { "region-tours": "Bölge Turları", "motor-tours": "Motorlu Turlar", "balloon": "Sıcak Balon", "transfer": "Transfer", "other": "Diğer" };
+    const categories = { "region-tours": "Bölge Turları", "motor-tours": "Aktiviteler", "balloon": "Sıcak Balon", "transfer": "Transfer", "other": "Diğer" };
     return categories[category as keyof typeof categories] || category;
   };
 
