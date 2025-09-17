@@ -24,7 +24,7 @@ interface EnhancedAssignmentData extends AssignmentData {
 
 interface ServicesDisplayProps {
   locationSlug: string;
-  locale: string; // locale prop'u eklendi
+  locale: string; 
 }
 
 export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) {
@@ -49,7 +49,7 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
     categoryColors,
     handleCategorySelect,
     handleClearFilter
-  } = useServicesData(locationSlug, locale); // locale useServicesData hook'una iletildi
+  } = useServicesData(locationSlug, locale); 
 
   const {
     selectedImage,
@@ -135,6 +135,7 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
         isOpen={isServiceModalOpen}
         onClose={() => setIsServiceModalOpen(false)}
         assignment={selectedService}
+        locale={locale} // locale prop'u eklendi
       />
     </div>
   );

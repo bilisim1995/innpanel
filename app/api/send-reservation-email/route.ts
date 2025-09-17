@@ -166,6 +166,7 @@ export async function POST(req: NextRequest) {
   });
 
   const locale = reservationData.locale || 'en'; // Default to 'en' if not provided
+  console.log('Received locale:', locale); // Eklenen loglama satırı
   const t = await loadTranslations(locale);
 
   // 1. Yöneticiye E-posta Gönder

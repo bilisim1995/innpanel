@@ -17,10 +17,8 @@ import { getDisplayCategoryColors } from "../../services-display/utils/categoryU
 import { useServiceModal } from "./hooks/useServiceModal";
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
-// Kaldırıldı: import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// Kaldırıldı: import { CarFront } from 'lucide-react';
 import { ServiceData } from "@/lib/services"; 
-import { ServiceVehicleFeatures } from "./ServiceVehicleFeatures"; // Yeni eklendi
+import { ServiceVehicleFeatures } from "./ServiceVehicleFeatures"; 
 
 interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: ServiceData; 
@@ -30,10 +28,12 @@ interface ServiceDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   assignment: EnhancedAssignmentData | null;
+  locale: string; 
 }
 
-export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetailModalProps) {
+export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: ServiceDetailModalProps) {
   const { t } = useTranslation();
+  
   const {
     isReservationModalOpen,
     setIsReservationModalOpen,
@@ -98,7 +98,6 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
             />
 
             <div className="px-8 space-y-8">
-              {/* Araç Özellikleri kartı ServiceVehicleFeatures bileşeni ile gösterilir */}
               {assignment.serviceCategory === "transfer" && (
                 <ServiceVehicleFeatures 
                   service={service}
@@ -187,6 +186,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment }: ServiceDetai
           isOpen={isReservationModalOpen}
           onClose={() => setIsReservationModalOpen(false)}
           assignment={assignment}
+          locale={locale} 
         />
       </DialogContent>
     </Dialog>

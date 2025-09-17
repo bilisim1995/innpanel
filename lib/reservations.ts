@@ -56,6 +56,9 @@ export interface ReservationData {
   // Timestamps
   createdAt: Date;
   updatedAt: Date;
+
+  // Locale
+  locale?: string;
 }
 
 const RESERVATIONS_COLLECTION = 'reservations';
@@ -67,7 +70,7 @@ interface SaveReservationData extends Omit<ReservationData, 'id' | 'createdAt' |
 export const saveReservation = async (reservationData: SaveReservationData): Promise<string> => {
   try {
     const now = new Date();
-    const { currency, ...dbData } = reservationData;
+    const { currency, locale, ...dbData } = reservationData;
 
     const dataToSave = {
       ...dbData,
@@ -98,6 +101,7 @@ export const saveReservation = async (reservationData: SaveReservationData): Pro
           phone: cleanedData.customerPhone,
           notes: cleanedData.visitorNote || '',
         },
+        locale: locale, // locale eklendi
       };
 
       fetch('/api/send-reservation-email', {

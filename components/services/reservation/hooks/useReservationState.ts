@@ -16,17 +16,13 @@ interface SelectedVehicle extends VehicleInSlot {
     vehicle: VehicleData;
 }
 
-// DEFINED: Para birimi kodlarını standartlaştırmak için bir yardımcı fonksiyon eklendi.
-// Bu, "TL" gibi veritabanından gelebilecek değerleri "TRY" gibi standart kodlara çevirir.
 const normalizeCurrency = (currency: string): 'TRY' | 'USD' | 'EUR' => {
     const upperCurrency = currency.toUpperCase();
     if (upperCurrency === 'TL') return 'TRY';
-    // Gelecekte başka standart dışı kodlar eklenirse buraya eklenebilir.
     return upperCurrency as 'TRY' | 'USD' | 'EUR';
 };
 
-
-export function useReservationState(isOpen: boolean, assignment: any) {
+export function useReservationState(isOpen: boolean, assignment: any, locale: string) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<Array<{id: string, startTime: string, endTime: string, price: number, quota: number, currency: 'TRY' | 'USD' | 'EUR', vehicleId?: string, vehicleCount?: number, vehicles?: VehicleInSlot[]}>>([]);
@@ -77,7 +73,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   const [exchangeRates, setExchangeRates] = useState<{[key in 'TRY' | 'USD' | 'EUR']?: number} | null>(null);
   const { toast } = useToast();
 
-  // Fetch exchange rates when modal opens
   useEffect(() => {
     if (isOpen) {
       const fetchRates = async () => {
@@ -85,12 +80,12 @@ export function useReservationState(isOpen: boolean, assignment: any) {
           const response = await fetch('https://api.frankfurter.app/latest?from=EUR&to=TRY,USD');
           if (!response.ok) throw new Error('Network response was not ok');
           const data = await response.json();
-          setExchangeRates({ ...data.rates, EUR: 1 }); // Base currency is EUR
+          setExchangeRates({ ...data.rates, EUR: 1 });
         } catch (error) {
           console.error("Failed to fetch exchange rates:", error);
           toast({
             title: "Kur Bilgisi Alınamadı",
-            description: "Fiyatlar varsayılan kur üzerinden gösterilecektir. Lütfen daha sonra tekrar deneyin.",
+            description: "Fiyatlar varsayılan kur üzerinden gösterilecektir.",
             variant: "destructive",
           });
         }
@@ -99,7 +94,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     }
   }, [isOpen, toast]);
   
-  // Reset state when modal opens/closes or assignment changes
   useEffect(() => {
     if (!isOpen) {
       setSelectedDate(undefined);
@@ -126,12 +120,10 @@ export function useReservationState(isOpen: boolean, assignment: any) {
       setDisplayPrepaymentAmount(0);
     } else {
       const defaultCurrency = assignment?.serviceDetails?.categoryDetails?.currency || assignment?.pricingSettings?.dateRanges?.[0]?.timeSlots?.[0]?.currency || 'TRY';
-      setSelectedCurrency(normalizeCurrency(defaultCurrency)); // Use normalizer here as well
+      setSelectedCurrency(normalizeCurrency(defaultCurrency));
     }
   }, [isOpen, assignment]);
 
-  // CHANGED: `convertPrice` fonksiyonu gelen para birimi kodlarını önce standartlaştırmak için güncellendi.
-  // Parametre tipleri `string` olarak değiştirildi çünkü 'TL' gibi değerler gelebilir.
   const convertPrice = useCallback((amount: number, from: string, to: string): number => {
     const fromCurrency = normalizeCurrency(from);
     const toCurrency = normalizeCurrency(to);
@@ -144,7 +136,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     const rateTo = exchangeRates[toCurrency];
 
     if (typeof rateFrom === 'undefined' || typeof rateTo === 'undefined') {
-        console.warn(`Currency conversion failed: rate for ${fromCurrency} (from original: ${from}) or ${toCurrency} (from original: ${to}) not found.`);
+        console.warn(`Currency conversion failed: rate for ${fromCurrency} or ${toCurrency} not found.`);
         return amount;
     }
 
@@ -152,8 +144,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     return amountInBaseCurrency * rateTo;
   }, [exchangeRates]);
 
-
-  // Update display prices whenever selected currency or timeslots change
   useEffect(() => {
     if (availableTimeSlots.length > 0 && exchangeRates) {
       const newDisplayPrices: { [key: string]: number } = {};
@@ -169,8 +159,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     }
   }, [availableTimeSlots, selectedCurrency, exchangeRates, assignment, convertPrice]);
   
-  // ... (Dosyanın geri kalanı aynı) ...
-  // Load assigned vehicles for motor tours and transfer
   useEffect(() => {
     const loadAssignedVehicles = async () => {
       if (!assignment?.serviceCategory) return;
@@ -196,7 +184,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     if (isOpen) loadAssignedVehicles();
   }, [isOpen, assignment]);
 
-  // Load category colors
   useEffect(() => {
     const loadColors = async () => {
       if (assignment?.serviceCategory) {
@@ -211,7 +198,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     if (isOpen) loadColors();
   }, [isOpen, assignment?.serviceCategory]);
 
-  // Set available payment methods and prepayment amount
   useEffect(() => {
     if (isOpen && assignment?.pricingSettings) {
       const { paymentMethods, prepaymentEnabled, prepaymentAmount } = assignment.pricingSettings;
@@ -227,7 +213,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     }
   }, [isOpen, assignment?.pricingSettings]);
 
-  // Load available dates from assignment
   useEffect(() => {
     if (assignment?.pricingSettings?.dateRanges) {
       const dates: Date[] = [];
@@ -370,7 +355,7 @@ export function useReservationState(isOpen: boolean, assignment: any) {
 
   const handleReservation = async () => {
     if (!validateCustomerInfo() || !selectedDate || !selectedTimeSlot || !exchangeRates) {
-        toast({ title: "Hata", description: "Lütfen tüm zorunlu alanları doldurun veya kur verilerinin yüklenmesini bekleyin.", variant: "destructive" });
+        toast({ title: "Hata", description: "Lütfen tüm zorunlu alanları doldurun.", variant: "destructive" });
         return;
     }
     setIsSubmitting(true);
@@ -412,9 +397,12 @@ export function useReservationState(isOpen: boolean, assignment: any) {
             originalUnitCurrency: originalTimeSlotCurrency,
 
             paymentMethod: paymentMethod,
+            adults: assignment.serviceCategory !== 'transfer' ? personCount : personCountForTransfer,
+            children: 0,
             personCount: assignment.serviceCategory !== 'transfer' ? personCount : personCountForTransfer,
             vehicleCount: assignment.serviceCategory === 'motor-tours' ? vehicleCount : (assignment.serviceCategory === 'transfer' ? getTotalVehicleCountForTransfer() : undefined),
             selectedVehicles: assignment.serviceCategory === 'transfer' ? selectedVehicles.map(sv => ({ ...sv, vehicle: undefined })) : undefined,
+            locale: locale,
         };
 
         const reservationId = await saveReservation(reservationData as any);
@@ -436,7 +424,6 @@ export function useReservationState(isOpen: boolean, assignment: any) {
   const handleCalendarToggle = () => setIsCalendarExpanded(!isCalendarExpanded);
 
   return {
-    // State and Data
     selectedDate, availableDates, availableTimeSlots, selectedTimeSlot, personCount, vehicleCount, routeId,
     displayPrices, selectedVehicle, paymentMethod, isPaymentSettingsOpen, availablePaymentMethods,
     prepaymentAmount: displayPrepaymentAmount, isCalendarExpanded, categoryTheme, vehicles, assignedVehicles, filteredVehicles,
@@ -444,14 +431,12 @@ export function useReservationState(isOpen: boolean, assignment: any) {
     visitorNote, flightCode, customerErrors, isSuccessModalOpen, successData, isSubmitting, selectedCurrency,
     exchangeRates, 
 
-    // Helper Functions
     convertPrice,
     getTotalCapacityForTransfer,
     getTotalVehicleCountForTransfer, 
     getTotalAmount, 
     getPaymentBreakdown: () => {}, 
 
-    // Event Handlers and Setters
     setSelectedCurrency, 
     handleDateSelect, 
     handleTimeSlotSelect, 

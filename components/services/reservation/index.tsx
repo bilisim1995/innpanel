@@ -15,11 +15,12 @@ interface ReservationModalProps {
   isOpen: boolean;
   onClose: () => void;
   assignment: any;
+  locale: string; // locale prop'u eklendi
 }
 
-export function ReservationModal({ isOpen, onClose, assignment }: ReservationModalProps) {
+export function ReservationModal({ isOpen, onClose, assignment, locale }: ReservationModalProps) {
   const { t } = useTranslation();
-  const reservationState = useReservationState(isOpen, assignment);
+  const reservationState = useReservationState(isOpen, assignment, locale); // locale useReservationState hook'una iletildi
 
   const getThemeColor = () => {
     return assignment?.theme?.primaryColor || '#dc2626';
