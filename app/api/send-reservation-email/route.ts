@@ -38,7 +38,7 @@ const createAdminEmailHtml = (data: any, t: any): string => `
         <p><strong>${t['admin_email_service_name']}:</strong> ${data.serviceName}</p>
         <h3>${t['admin_email_reservation_details_title']}</h3>
         <ul>
-          <li><strong>${t['admin_email_date']}:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR')}</li>
+          <li><strong>${t['admin_email_date']}:</strong> ${data.reservationDetails.date ? new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR', { timeZone: 'Europe/Istanbul' }) : 'Tarih belirtilmedi'}</li>
           <li><strong>${t['admin_email_time']}:</strong> ${data.reservationDetails.timeSlot}</li>
           <li><strong>${t['admin_email_participants']}:</strong> ${data.reservationDetails.adults} ${t['admin_email_adults']}, ${data.reservationDetails.children || 0} ${t['admin_email_children']}</li>
           ${data.reservationDetails.flightCode ? `<li><strong>${t['admin_email_flight_code']}:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
@@ -72,7 +72,7 @@ const createCustomerEmailHtml = (data: any, t: any): string => `
         <p>${t['customer_email_greeting'].replace('{{customerName}}', data.customerInfo.name)},</p>
         <p>${t['customer_email_confirmation_message'].replace('{{serviceName}}', data.serviceName)}</p>
         <ul>
-          <li><strong>${t['customer_email_date']}:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR')}</li>
+          <li><strong>${t['customer_email_date']}:</strong> ${data.reservationDetails.date ? new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR', { timeZone: 'Europe/Istanbul' }) : 'Tarih belirtilmedi'}</li>
           <li><strong>${t['customer_email_time']}:</strong> ${data.reservationDetails.timeSlot}</li>
           <li><strong>${t['customer_email_participants']}:</strong> ${data.reservationDetails.adults} ${t['customer_email_adults']}, ${data.reservationDetails.children || 0} ${t['customer_email_children']}</li>
           ${data.reservationDetails.flightCode ? `<li><strong>${t['customer_email_flight_code']}:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
@@ -94,15 +94,15 @@ const formatAdminWhatsAppMessage = (data: any, t: any): string => {
   
   return `*${t['admin_whatsapp_new_reservation_title']}*
 
-*${t['admin_whatsapp_service']}:* ${serviceName}
-*${t['admin_whatsapp_customer']}:* ${customerInfo.name} ${customerInfo.surname || ''}
-*${t['admin_whatsapp_phone']}:* ${customerInfo.phone}
-*${t['admin_whatsapp_date']}:* ${new Date(reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR')}
-*${t['admin_whatsapp_time']}:* ${reservationDetails.timeSlot}
-*${t['admin_whatsapp_participants']}:* ${adultsText}${childrenText}
-${reservationDetails.flightCode ? `*${t['admin_whatsapp_flight_code']}:* ${reservationDetails.flightCode}\n` : ''}*${t['admin_whatsapp_total_amount']}:* ${totalAmount} ${currency}
+*${t['admin_whatsapp_service']}*: ${serviceName}
+*${t['admin_whatsapp_customer']}*: ${customerInfo.name} ${customerInfo.surname || ''}
+*${t['admin_whatsapp_phone']}*: ${customerInfo.phone}
+*${t['admin_whatsapp_date']}*: ${data.reservationDetails.date ? new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR', { timeZone: 'Europe/Istanbul' }) : 'Tarih belirtilmedi'}
+*${t['admin_whatsapp_time']}*: ${reservationDetails.timeSlot}
+*${t['admin_whatsapp_participants']}*: ${adultsText}${childrenText}
+${reservationDetails.flightCode ? `*${t['admin_whatsapp_flight_code']}*: ${reservationDetails.flightCode}\n` : ''}*${t['admin_whatsapp_total_amount']}*: ${totalAmount} ${currency}
 
-*${t['admin_whatsapp_customer_note']}:*
+*${t['admin_whatsapp_customer_note']}*:
 _${customerInfo.notes || t['admin_whatsapp_no_note']}_`;
 };
 
@@ -115,11 +115,11 @@ const formatCustomerWhatsAppMessage = (data: any, t: any): string => {
 
 ${t['customer_whatsapp_reservation_confirmed']}
 
-*${t['customer_whatsapp_service']}:* ${serviceName}
-*${t['customer_whatsapp_date']}:* ${new Date(reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR')}
-*${t['customer_whatsapp_time']}:* ${reservationDetails.timeSlot}
-*${t['customer_whatsapp_participants']}:* ${adultsText}${childrenText}
-${reservationDetails.flightCode ? `*${t['customer_whatsapp_flight_code']}:* ${reservationDetails.flightCode}\n` : ''}*${t['customer_whatsapp_total_amount']}:* *${totalAmount} ${currency}*
+*${t['customer_whatsapp_service']}*: ${serviceName}
+*${t['customer_whatsapp_date']}*: ${data.reservationDetails.date ? new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR', { timeZone: 'Europe/Istanbul' }) : 'Tarih belirtilmedi'}
+*${t['customer_whatsapp_time']}*: ${reservationDetails.timeSlot}
+*${t['customer_whatsapp_participants']}*: ${adultsText}${childrenText}
+${reservationDetails.flightCode ? `*${t['customer_whatsapp_flight_code']}*: ${reservationDetails.flightCode}\n` : ''}*${t['customer_whatsapp_total_amount']}*: *${totalAmount} ${currency}*
 
 ${t['customer_whatsapp_contact_us']}`;
 };
