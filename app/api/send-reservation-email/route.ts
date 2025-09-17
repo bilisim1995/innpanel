@@ -3,11 +3,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { getNotificationEmail, getWhatsAppNotificationNumber } from '@/lib/settings';
 import { formatPhoneNumberForWhatsApp } from '@/lib/utils';
+import path from 'path';
+import fs from 'fs/promises';
+
+// Function to load translations
+async function loadTranslations(locale: string) {
+  const filePath = path.join(process.cwd(), `public/locales/${locale}/common.json`);
+  try {
+    const fileContents = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(fileContents);
+  } catch (error) {
+    console.error(`Error loading translations for locale ${locale}:`, error);
+    // Fallback to English if translation fails
+    const fallbackFilePath = path.join(process.cwd(), `public/locales/en/common.json`);
+    const fallbackFileContents = await fs.readFile(fallbackFilePath, 'utf8');
+    return JSON.parse(fallbackFileContents);
+  }
+}
 
 // --- E-POSTA ŞABLONLARI ---
 
-const createAdminEmailHtml = (data: any): string => `
-  <html lang="tr">
+const createAdminEmailHtml = (data: any, t: any): string => `
+  <html lang="${data.locale || 'en'}">
     <head>
         <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
@@ -17,31 +34,31 @@ const createAdminEmailHtml = (data: any): string => `
     </head>
     <body>
       <div class="container">
-        <h1>INNGET - Yeni Rezervasyon Bildirimi</h1>
-        <p><strong>Hizmet Adı:</strong> ${data.serviceName}</p>
-        <h3>Rezervasyon Detayları</h3>
+        <h1>${t['admin_email_title']}</h1>
+        <p><strong>${t['admin_email_service_name']}:</strong> ${data.serviceName}</p>
+        <h3>${t['admin_email_reservation_details_title']}</h3>
         <ul>
-          <li><strong>Tarih:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString('tr-TR')}</li>
-          <li><strong>Saat:</strong> ${data.reservationDetails.timeSlot}</li>
-          <li><strong>Katılımcılar:</strong> ${data.reservationDetails.adults} Yetişkin, ${data.reservationDetails.children || 0} Çocuk</li>
-          ${data.reservationDetails.flightCode ? `<li><strong>Uçuş Kodu:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
+          <li><strong>${t['admin_email_date']}:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR')}</li>
+          <li><strong>${t['admin_email_time']}:</strong> ${data.reservationDetails.timeSlot}</li>
+          <li><strong>${t['admin_email_participants']}:</strong> ${data.reservationDetails.adults} ${t['admin_email_adults']}, ${data.reservationDetails.children || 0} ${t['admin_email_children']}</li>
+          ${data.reservationDetails.flightCode ? `<li><strong>${t['admin_email_flight_code']}:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
         </ul>
-        <h3>Müşteri Bilgileri</h3>
+        <h3>${t['admin_email_customer_info_title']}</h3>
         <ul>
-          <li><strong>Adı Soyadı:</strong> ${data.customerInfo.name}</li>
-          <li><strong>Telefon:</strong> ${data.customerInfo.phone}</li>
-          <li><strong>E-posta:</strong> ${data.customerInfo.email}</li>
-          ${data.customerInfo.notes ? `<li><strong>Notlar:</strong> ${data.customerInfo.notes}</li>` : ''}
+          <li><strong>${t['admin_email_name_surname']}:</strong> ${data.customerInfo.name} ${data.customerInfo.surname}</li>
+          <li><strong>${t['admin_email_phone']}:</strong> ${data.customerInfo.phone}</li>
+          <li><strong>${t['admin_email_email']}:</strong> ${data.customerInfo.email}</li>
+          ${data.customerInfo.notes ? `<li><strong>${t['admin_email_notes']}:</strong> ${data.customerInfo.notes}</li>` : ''}
         </ul>
         <hr>
-        <h3>Toplam Tutar: ${data.totalAmount} ${data.currency}</h3>
+        <h3>${t['admin_email_total_amount']}: ${data.totalAmount} ${data.currency}</h3>
       </div>
     </body>
   </html>
 `;
 
-const createCustomerEmailHtml = (data: any): string => `
-  <html lang="tr">
+const createCustomerEmailHtml = (data: any, t: any): string => `
+  <html lang="${data.locale || 'en'}">
      <head>
         <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
@@ -51,17 +68,17 @@ const createCustomerEmailHtml = (data: any): string => `
     </head>
     <body>
       <div class="container">
-        <h1>Rezervasyon Onayınız</h1>
-        <p>Sayın ${data.customerInfo.name},</p>
-        <p><strong>${data.serviceName}</strong> hizmeti için yaptığınız rezervasyon başarıyla onaylanmıştır. Detayları aşağıda bulabilirsiniz:</p>
+        <h1>${t['customer_email_title']}</h1>
+        <p>${t['customer_email_greeting'].replace('{{customerName}}', data.customerInfo.name)},</p>
+        <p>${t['customer_email_confirmation_message'].replace('{{serviceName}}', data.serviceName)}</p>
         <ul>
-          <li><strong>Tarih:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString('tr-TR')}</li>
-          <li><strong>Saat:</strong> ${data.reservationDetails.timeSlot}</li>
-          <li><strong>Katılımcılar:</strong> ${data.reservationDetails.adults} Yetişkin, ${data.reservationDetails.children || 0} Çocuk</li>
-          ${data.reservationDetails.flightCode ? `<li><strong>Uçuş Kodu:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
-          <li><strong>Toplam Tutar:</strong> ${data.totalAmount} ${data.currency}</li>
+          <li><strong>${t['customer_email_date']}:</strong> ${new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR')}</li>
+          <li><strong>${t['customer_email_time']}:</strong> ${data.reservationDetails.timeSlot}</li>
+          <li><strong>${t['customer_email_participants']}:</strong> ${data.reservationDetails.adults} ${t['customer_email_adults']}, ${data.reservationDetails.children || 0} ${t['customer_email_children']}</li>
+          ${data.reservationDetails.flightCode ? `<li><strong>${t['customer_email_flight_code']}:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
+          <li><strong>${t['customer_email_total_amount']}:</strong> ${data.totalAmount} ${data.currency}</li>
         </ul>
-        <p>İyi eğlenceler dileriz!</p>
+        <p>${t['customer_email_enjoy_message']}</p>
       </div>
     </body>
   </html>
@@ -70,35 +87,41 @@ const createCustomerEmailHtml = (data: any): string => `
 
 // --- WHATSAPP ŞABLONLARI ---
 
-const formatAdminWhatsAppMessage = (data: any): string => {
+const formatAdminWhatsAppMessage = (data: any, t: any): string => {
   const { serviceName, reservationDetails, customerInfo, totalAmount, currency } = data;
-  return `*Yeni Rezervasyon Bildirimi!*
+  const adultsText = `${reservationDetails.adults} ${t['admin_whatsapp_adults']}`;
+  const childrenText = reservationDetails.children > 0 ? `, ${reservationDetails.children} ${t['admin_whatsapp_children']}` : '';
+  
+  return `*${t['admin_whatsapp_new_reservation_title']}*
 
-*Hizmet:* ${serviceName}
-*Müşteri:* ${customerInfo.name}
-*Telefon:* ${customerInfo.phone}
-*Tarih:* ${new Date(reservationDetails.date).toLocaleDateString('tr-TR')}
-*Saat:* ${reservationDetails.timeSlot}
-*Katılımcılar:* ${reservationDetails.adults} Yetişkin, ${reservationDetails.children || 0} Çocuk
-${reservationDetails.flightCode ? `*Uçuş Kodu:* ${reservationDetails.flightCode}\n` : ''}*Toplam Tutar:* ${totalAmount} ${currency}
+*${t['admin_whatsapp_service']}:* ${serviceName}
+*${t['admin_whatsapp_customer']}:* ${customerInfo.name} ${customerInfo.surname || ''}
+*${t['admin_whatsapp_phone']}:* ${customerInfo.phone}
+*${t['admin_whatsapp_date']}:* ${new Date(reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR')}
+*${t['admin_whatsapp_time']}:* ${reservationDetails.timeSlot}
+*${t['admin_whatsapp_participants']}:* ${adultsText}${childrenText}
+${reservationDetails.flightCode ? `*${t['admin_whatsapp_flight_code']}:* ${reservationDetails.flightCode}\n` : ''}*${t['admin_whatsapp_total_amount']}:* ${totalAmount} ${currency}
 
-*Müşteri Notu:*
-_${customerInfo.notes || 'Not bırakılmadı'}_`;
+*${t['admin_whatsapp_customer_note']}:*
+_${customerInfo.notes || t['admin_whatsapp_no_note']}_`;
 };
 
-const formatCustomerWhatsAppMessage = (data: any): string => {
+const formatCustomerWhatsAppMessage = (data: any, t: any): string => {
   const { serviceName, reservationDetails, customerInfo, totalAmount, currency } = data;
-  return `Sayın *${customerInfo.name}*,
+  const adultsText = `${reservationDetails.adults} ${t['customer_whatsapp_adults']}`;
+  const childrenText = reservationDetails.children > 0 ? `, ${reservationDetails.children} ${t['customer_whatsapp_children']}` : '';
 
-INNGET aracılığıyla yapmış olduğunuz rezervasyonunuz başarıyla onaylanmıştır. ✅
+  return `${t['customer_whatsapp_greeting'].replace('{{customerName}}', customerInfo.name)}
 
-*Hizmet:* ${serviceName}
-*Tarih:* ${new Date(reservationDetails.date).toLocaleDateString('tr-TR')}
-*Saat:* ${reservationDetails.timeSlot}
-*Katılımcılar:* ${reservationDetails.adults} Yetişkin, ${reservationDetails.children || 0} Çocuk
-${reservationDetails.flightCode ? `*Uçuş Kodu:* ${reservationDetails.flightCode}\n` : ''}*Toplam Tutar:* *${totalAmount} ${currency}*
+${t['customer_whatsapp_reservation_confirmed']}
 
-Herhangi bir sorunuz olursa lütfen bizimle iletişime geçin.`;
+*${t['customer_whatsapp_service']}:* ${serviceName}
+*${t['customer_whatsapp_date']}:* ${new Date(reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR')}
+*${t['customer_whatsapp_time']}:* ${reservationDetails.timeSlot}
+*${t['customer_whatsapp_participants']}:* ${adultsText}${childrenText}
+${reservationDetails.flightCode ? `*${t['customer_whatsapp_flight_code']}:* ${reservationDetails.flightCode}\n` : ''}*${t['customer_whatsapp_total_amount']}:* *${totalAmount} ${currency}*
+
+${t['customer_whatsapp_contact_us']}`;
 };
 
 
@@ -142,14 +165,17 @@ export async function POST(req: NextRequest) {
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
 
+  const locale = reservationData.locale || 'en'; // Default to 'en' if not provided
+  const t = await loadTranslations(locale);
+
   // 1. Yöneticiye E-posta Gönder
   const adminEmail = await getNotificationEmail();
   if (adminEmail) {
     notificationPromises.push(transporter.sendMail({
         from: `"INNGET Rezervasyon" <${process.env.SMTP_USER}>`,
         to: adminEmail,
-        subject: `INNGET Yeni Rezervasyon: ${reservationData.serviceName}`,
-        html: createAdminEmailHtml(reservationData),
+        subject: t['admin_email_subject'].replace('{{serviceName}}', reservationData.serviceName),
+        html: createAdminEmailHtml(reservationData, t),
     }).catch(err => console.error("Yönetici e-postası gönderilemedi:", err)));
   }
 
@@ -159,8 +185,8 @@ export async function POST(req: NextRequest) {
     notificationPromises.push(transporter.sendMail({
         from: `"INNGET Rezervasyon Onayı" <${process.env.SMTP_USER}>`,
         to: customerEmail,
-        subject: `Rezervasyon Onayınız: ${reservationData.serviceName}`,
-        html: createCustomerEmailHtml(reservationData),
+        subject: t['customer_email_subject'].replace('{{serviceName}}', reservationData.serviceName),
+        html: createCustomerEmailHtml(reservationData, t),
     }).catch(err => console.error("Müşteri e-postası gönderilemedi:", err)));
   }
 
@@ -169,7 +195,7 @@ export async function POST(req: NextRequest) {
   if (adminWhatsAppNumber) {
     const formattedAdminNumber = formatPhoneNumberForWhatsApp(adminWhatsAppNumber);
     if (formattedAdminNumber) {
-        notificationPromises.push(sendGreenApiMessage(formattedAdminNumber, formatAdminWhatsAppMessage(reservationData)));
+        notificationPromises.push(sendGreenApiMessage(formattedAdminNumber, formatAdminWhatsAppMessage(reservationData, t)));
     }
   }
 
@@ -178,7 +204,7 @@ export async function POST(req: NextRequest) {
   if (customerPhoneNumber) {
     const formattedCustomerPhone = formatPhoneNumberForWhatsApp(customerPhoneNumber);
     if (formattedCustomerPhone) {
-        notificationPromises.push(sendGreenApiMessage(formattedCustomerPhone, formatCustomerWhatsAppMessage(reservationData)));
+        notificationPromises.push(sendGreenApiMessage(formattedCustomerPhone, formatCustomerWhatsAppMessage(reservationData, t)));
     }
   }
   

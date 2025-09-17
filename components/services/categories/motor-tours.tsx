@@ -84,7 +84,7 @@ export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountC
     <div className="space-y-6">
       <h3 className="text-lg font-medium flex items-center gap-2">
         <Route className="h-5 w-5" />
-        Motorlu Tur Detayları
+        Aktivite Detayları
       </h3>
 
       <div>
