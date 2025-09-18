@@ -15,6 +15,7 @@ function getLocale(request: NextRequest) {
     }
   }
   return defaultLocale;
+  
 }
 
 export function middleware(request: NextRequest) {
