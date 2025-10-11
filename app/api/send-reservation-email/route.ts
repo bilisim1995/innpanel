@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: process.env.SMTP_SECURE === 'true',
+    secure: process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465',
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
 
@@ -170,10 +170,10 @@ export async function POST(req: NextRequest) {
   const t = await loadTranslations(locale);
 
   // 1. Yöneticiye E-posta Gönder
-  const adminEmail = await getNotificationEmail();
+  const adminEmail = await getNotificationEmail() || process.env.RECEIVER_EMAIL;
   if (adminEmail) {
     notificationPromises.push(transporter.sendMail({
-        from: `"INNGET Rezervasyon" <${process.env.SMTP_USER}>`,
+        from: `"${process.env.SENDER_NAME || 'INNGET Rezervasyon'}" <${process.env.SMTP_USER}>`,
         to: adminEmail,
         subject: t['admin_email_subject'].replace('{{serviceName}}', reservationData.serviceName),
         html: createAdminEmailHtml(reservationData, t),
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
   const customerEmail = reservationData.customerInfo.email;
   if (customerEmail) {
     notificationPromises.push(transporter.sendMail({
-        from: `"INNGET Rezervasyon Onayı" <${process.env.SMTP_USER}>`,
+        from: `"${process.env.SENDER_NAME || 'INNGET'} Rezervasyon Onayı" <${process.env.SMTP_USER}>`,
         to: customerEmail,
         subject: t['customer_email_subject'].replace('{{serviceName}}', reservationData.serviceName),
         html: createCustomerEmailHtml(reservationData, t),
