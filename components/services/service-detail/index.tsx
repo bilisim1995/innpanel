@@ -289,7 +289,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 bg-gradient-to-br from-gray-50 via-gray-50 to-gray-50 animate-in fade-in-0 zoom-in-95 duration-500">
+      <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 bg-gradient-to-br from-gray-50 via-gray-50 to-gray-50 animate-in fade-in-0 zoom-in-95 duration-500 [&>button.absolute]:hidden">
         <DialogTitle>
           <VisuallyHidden.Root>{t('service_details_title')}</VisuallyHidden.Root>
         </DialogTitle>
