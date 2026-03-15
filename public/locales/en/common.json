@@ -49,6 +49,7 @@
     "available_dates_title": "Available Dates",
     "collapse_button": "Collapse",
     "show_calendar_button": "Show Calendar",
+    "show_time_button": "Show Time",
     "available_dates_label": "Available Dates",
     "selected_date_label": "Selected Date",
     "select_date_for_reservation": "Select a date to make a reservation",

@@ -5,7 +5,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { CardContent, CardHeader, CardTitle, Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, ChevronUp, ChevronDown } from "lucide-react";
-import { tr } from "date-fns/locale";
+import { tr, enUS } from "date-fns/locale";
+import { format } from "date-fns";
 import { useTranslation } from 'react-i18next';
 
 interface ReservationCalendarProps {
@@ -67,6 +68,16 @@ export function ReservationCalendar({
             </Button>
           )}
         </CardTitle>
+        {selectedDate && !isCalendarExpanded && (
+          <div className="flex items-center gap-3 mt-2 p-3 rounded-xl border-2" style={{ borderColor: themeColor, backgroundColor: `${themeColor}10` }}>
+            <div className="w-8 h-8 rounded-md flex items-center justify-center text-white" style={{ backgroundColor: themeColor }}>
+              <CalendarIcon className="w-4 h-4" />
+            </div>
+            <p className="font-bold text-md">
+              {format(selectedDate, 'd MMMM yyyy, EEEE', { locale: i18n.language === 'tr' ? tr : enUS })}
+            </p>
+          </div>
+        )}
       </CardHeader>
       <CardContent className={isCalendarExpanded ? "pb-6" : "pb-0"}>
         {/* Takvim - Koşullu Görünüm */}

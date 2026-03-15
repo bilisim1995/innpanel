@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ReservationCustomerInfo } from "./ReservationCustomerInfo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,9 @@ import {
   Minus,
   X,
   Globe,
-  Plane
+  Plane,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 
@@ -127,6 +129,18 @@ export function ReservationDetails({
   setSelectedCurrency,
 }: ReservationDetailsProps) {
     const { t } = useTranslation();
+  const [isTimeExpanded, setIsTimeExpanded] = useState(true);
+
+  useEffect(() => {
+    if (selectedTimeSlot) {
+      setIsTimeExpanded(false);
+    }
+  }, [selectedTimeSlot]);
+
+  useEffect(() => {
+    setIsTimeExpanded(true);
+  }, [selectedDate]);
+
   const formatCurrency = (amount: number) => {
     if (isNaN(amount) || amount === null) {
       amount = 0;
@@ -156,79 +170,107 @@ export function ReservationDetails({
                 className="flex items-center gap-2 text-lg"
                 style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
               >
-               
                 {t('time_selection_title', {count: availableTimeSlots.length})}
+                {selectedTimeSlot && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsTimeExpanded(!isTimeExpanded)}
+                    className="text-base"
+                  >
+                    {isTimeExpanded ? (
+                      <>
+                        <ChevronUp className="w-4 h-4 mr-1" />
+                        {t('collapse_button')}
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4 mr-1" style={{ color: themeColor }} />
+                        {t('show_time_button')}
+                      </>
+                    )}
+                  </Button>
+                )}
               </CardTitle>
-              <div className="flex justify-start items-center text-sm text-gray-500 mt-2 px-1 gap-4">
-              <Clock className="h-5 w-5" />
-              {assignment.serviceCategory === 'transfer' ? (
-                <>
-                  <span className="font-medium">{t('pickup_label')}</span>
-                  <span className="font-medium">-</span>
-                  <span className="font-medium">{t('dropoff_label')}</span>
-                </>
-              ) : (
-                <>
-                  <span className="font-medium">{t('start_label')}</span>
-                  <span className="font-medium">-</span>
-                  <span className="font-medium">{t('end_label')}</span>
-                </>
-              )}
-            </div>
-              
-
-
-            </CardHeader>
-            <CardContent>
-              {availableTimeSlots.length === 0 ? (
-                <p className="text-center text-gray-600 py-4" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                  {t('no_available_time_slots')}
-                </p>
-              ) : (
-                <div className="grid gap-2 max-h-[15rem] overflow-y-auto pr-2">
-                  {availableTimeSlots.map((slot) => (
-                    <div
-                      key={slot.id}
-                      onClick={() => handleTimeSlotSelect(slot)}
-                      className={`p-3 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md ${
-                        selectedTimeSlot?.id === slot.id
-                          ? 'border-current shadow-lg'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      style={{
-                        borderColor: selectedTimeSlot?.id === slot.id ? themeColor : undefined,
-                        backgroundColor: selectedTimeSlot?.id === slot.id ? `${themeColor}10` : undefined
-                      }}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                           <div 
-                            className="w-8 h-8 rounded-md flex items-center justify-center text-white"
-                            style={{ backgroundColor: themeColor }}
-                          >
-                            <Clock className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-md" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                              {slot.startTime} - {slot.endTime}
-                            </p>
-                            {slot.quota && (
-                              <p className="text-xs text-gray-600">
-                                {t('remaining_quota', {quota: slot.quota})}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                         <div className="text-right">
-                          <p className="font-bold text-lg" style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                           {assignment.serviceCategory === 'transfer' ? t('select_vehicle_label') : formatCurrency(displayPrices[slot.id] || 0)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              {selectedTimeSlot && !isTimeExpanded && (
+                <div className="flex items-center gap-3 mt-2 p-3 rounded-xl border-2" style={{ borderColor: themeColor, backgroundColor: `${themeColor}10` }}>
+                  <div className="w-8 h-8 rounded-md flex items-center justify-center text-white" style={{ backgroundColor: themeColor }}>
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <p className="font-bold text-md">{selectedTimeSlot.startTime} - {selectedTimeSlot.endTime}</p>
                 </div>
               )}
+              {isTimeExpanded && (
+                <div className="flex justify-start items-center text-sm text-gray-500 mt-2 px-1 gap-4">
+                  <Clock className="h-5 w-5" />
+                  {assignment.serviceCategory === 'transfer' ? (
+                    <>
+                      <span className="font-medium">{t('pickup_label')}</span>
+                      <span className="font-medium">-</span>
+                      <span className="font-medium">{t('dropoff_label')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-medium">{t('start_label')}</span>
+                      <span className="font-medium">-</span>
+                      <span className="font-medium">{t('end_label')}</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </CardHeader>
+            <CardContent className={isTimeExpanded ? "pb-6" : "pb-0"}>
+              <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isTimeExpanded ? 'max-h-[20rem] opacity-100' : 'max-h-0 opacity-0'}`}>
+                {availableTimeSlots.length === 0 ? (
+                  <p className="text-center text-gray-600 py-4" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                    {t('no_available_time_slots')}
+                  </p>
+                ) : (
+                  <div className="grid gap-2 max-h-[15rem] overflow-y-auto pr-2">
+                    {availableTimeSlots.map((slot) => (
+                      <div
+                        key={slot.id}
+                        onClick={() => handleTimeSlotSelect(slot)}
+                        className={`p-3 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md ${
+                          selectedTimeSlot?.id === slot.id
+                            ? 'border-current shadow-lg'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        style={{
+                          borderColor: selectedTimeSlot?.id === slot.id ? themeColor : undefined,
+                          backgroundColor: selectedTimeSlot?.id === slot.id ? `${themeColor}10` : undefined
+                        }}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-8 h-8 rounded-md flex items-center justify-center text-white"
+                              style={{ backgroundColor: themeColor }}
+                            >
+                              <Clock className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-md" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                                {slot.startTime} - {slot.endTime}
+                              </p>
+                              {slot.quota && (
+                                <p className="text-xs text-gray-600">
+                                  {t('remaining_quota', {quota: slot.quota})}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-lg" style={{ color: themeColor, fontFamily: 'Helvetica, Arial, sans-serif' }}>
+                              {assignment.serviceCategory === 'transfer' ? t('select_vehicle_label') : formatCurrency(displayPrices[slot.id] || 0)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 

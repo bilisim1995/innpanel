@@ -50,6 +50,7 @@
     "available_dates_title": "Müsait Tarihler",
     "collapse_button": "Küçült",
     "show_calendar_button": "Takvimi Göster",
+    "show_time_button": "Saati Göster",
     "available_dates_label": "Müsait tarihler",
     "selected_date_label": "Seçili tarih",
     "select_date_for_reservation": "Rezervasyon yapmak için önce bir tarih seçin",
