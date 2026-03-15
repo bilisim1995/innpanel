@@ -85,11 +85,11 @@ export function ServiceCard({
           <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
           
           <div className="flex items-center justify-center gap-3">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg border border-white/30">
-              <CategoryIcon className="w-5 h-5 text-white drop-shadow-sm" />
+            <div className="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0 border border-white/20">
+              <CategoryIcon className="w-4.5 h-4.5 text-white" />
             </div>
             <div className="flex-1 min-w-0 text-center">
-              <h3 className="font-bold text-xl text-white leading-tight mb-1 drop-shadow-lg tracking-wide" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
+              <h3 className="font-semibold text-lg text-white leading-snug">
                 {assignment.serviceName}
               </h3>
             </div>
@@ -97,10 +97,10 @@ export function ServiceCard({
         </div>
 
         {allImages.length > 0 && (
-          <div className="relative group/image">
+          <div className="relative group/image px-3 pt-3">
             {assignment.pricingSettings?.displayPrice && assignment.pricingSettings.displayPrice > 0 && (
-              <div className="absolute top-3 right-3 z-10">
-                <div className="flex items-center gap-1 text-xs text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/30 shadow-lg">
+              <div className="absolute top-5 right-5 z-10">
+                <div className="flex items-center gap-1 text-xs text-white bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full">
                   <Banknote className="w-3 h-3" />
                   <span>{assignment.pricingSettings.displayPrice} {assignment.pricingSettings.displayPriceCurrency}</span>
                 </div>
@@ -108,14 +108,14 @@ export function ServiceCard({
             )}
             
             {allImages.length > 1 && (
-              <div className="absolute top-3 left-3 z-10">
-                <div className="flex items-center gap-1 text-xs text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/30 shadow-lg">
+              <div className="absolute top-5 left-5 z-10">
+                <div className="flex items-center gap-1 text-xs text-white bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full">
                   <span>{currentIndex + 1}/{allImages.length}</span>
                 </div>
               </div>
             )}
             
-            <div className="relative w-full h-48 overflow-hidden bg-gray-100">
+            <div className="relative w-full h-48 overflow-hidden bg-gray-100 rounded-xl">
               <Image 
                 src={currentImage}
                 alt={assignment.serviceName}
@@ -179,7 +179,7 @@ export function ServiceCard({
         <div className="p-4 pt-6 space-y-3">
           <Button 
             onClick={() => onServiceSelect(assignment)}
-            className="w-full hover:opacity-90 text-white font-bold py-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 border-0 text-lg tracking-wide"
+            className="w-full hover:opacity-90 text-white font-semibold py-5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md border-0 text-sm"
             style={{ backgroundColor }}
           >
             {t('activity_details_button')}
