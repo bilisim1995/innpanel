@@ -4,6 +4,7 @@ import { Info } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import { ServiceData } from "@/lib/services";
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
 
 interface ServiceTourInformationProps {
   assignment: AssignmentData;
@@ -47,9 +48,11 @@ export function ServiceTourInformation({ assignment, service, theme }: ServiceTo
         <Info className="w-4 h-4" style={{ color: accentColor }} />
         <span className="text-sm font-semibold text-gray-800">{t('tour_information_title')}</span>
       </div>
-      <p className="text-gray-700 leading-relaxed text-sm">
-        {tourInfoText}
-      </p>
+      <div className="text-gray-700 leading-relaxed text-sm prose prose-sm max-w-none prose-headings:text-gray-800 prose-headings:font-semibold prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-800 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+        <ReactMarkdown>
+          {tourInfoText}
+        </ReactMarkdown>
+      </div>
     </div>
   );
 }

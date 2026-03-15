@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -13,11 +12,14 @@ import {
   Camera,
   Clock,
   MapPin,
-  DollarSign // Eklenen icon
+  DollarSign
 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { getVehicles, VehicleData } from "@/lib/vehicles";
 import { getTransferPrices, TransferPriceData } from "@/lib/transfer-prices";
+import dynamic from "next/dynamic";
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 interface TransferProps {
   categoryDetails: any;
@@ -206,12 +208,17 @@ export function Transfer({ categoryDetails, onCategoryDetailsChange }: TransferP
             />
           </div>
         </div>
-        <Textarea 
-          placeholder="Araç özellikleri hakkında detaylı bilgi..."
-          className="mt-4"
-          value={vehicleDetails.features}
-          onChange={(e) => setVehicleDetails({...vehicleDetails, features: e.target.value})}
-        />
+        <div className="mt-4" data-color-mode="light">
+          <MDEditor
+            value={vehicleDetails.features || ""}
+            onChange={(val) => setVehicleDetails({...vehicleDetails, features: val || ""})}
+            preview="edit"
+            height={250}
+            textareaProps={{
+              placeholder: "Araç özellikleri hakkında detaylı bilgi... (Markdown destekli)"
+            }}
+          />
+        </div>
       </div>
 
       <div>

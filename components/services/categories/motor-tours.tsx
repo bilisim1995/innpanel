@@ -5,7 +5,6 @@ import { getVehicles, VehicleData } from "@/lib/vehicles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Clock,
@@ -16,6 +15,9 @@ import {
   DollarSign // Eklenen icon
 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
+import dynamic from "next/dynamic";
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 interface MotorToursProps {
   selectedPayments: Array<{id: string, amount: string}>;
@@ -168,11 +170,15 @@ export function MotorTours({ selectedPayments, onPaymentChange, onPaymentAmountC
           Tur Detayları
         </Label>
         <div className="space-y-4 mt-2">
-          <Textarea 
-            placeholder="Tur güzergahı ve duraklar hakkında bilgi..."
-            value={tourDetails}
-            onChange={(e) => setTourDetails(e.target.value)}
-          />
+          <div data-color-mode="light">
+            <MDEditor
+              value={tourDetails}
+              onChange={(val) => setTourDetails(val || "")}
+              preview="edit"
+              height={200}
+              textareaProps={{ placeholder: "Tur güzergahı ve duraklar hakkında bilgi... (Markdown destekli)" }}
+            />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Zorluk Seviyesi</Label>

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
 
 interface ServiceTourDetailsProps {
   assignment: AssignmentData;
@@ -140,9 +141,9 @@ export function ServiceTourDetails({ assignment, service, theme }: ServiceTourDe
             <Info className="w-4 h-4" style={{ color: accentColor }} />
             <span className="text-sm font-semibold text-gray-800">{t('tour_info_description_title')}</span>
           </div>
-          <p className="text-gray-700 leading-relaxed text-sm">
-            {service.categoryDetails.tourInfo}
-          </p>
+          <div className="text-gray-700 leading-relaxed text-sm prose prose-sm max-w-none prose-headings:text-gray-800 prose-headings:font-semibold prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-800 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+            <ReactMarkdown>{service.categoryDetails.tourInfo}</ReactMarkdown>
+          </div>
         </div>
       )}
 
@@ -157,9 +158,9 @@ export function ServiceTourDetails({ assignment, service, theme }: ServiceTourDe
                 </div>
                 <span className="text-sm font-semibold text-emerald-700">{t('tour_included_title')}</span>
               </div>
-              <p className="text-gray-700 leading-relaxed text-sm">
-                {service.categoryDetails.included}
-              </p>
+              <div className="text-gray-700 leading-relaxed text-sm prose prose-sm max-w-none prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-800 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+                <ReactMarkdown>{service.categoryDetails.included}</ReactMarkdown>
+              </div>
             </div>
           )}
           {service.categoryDetails?.excluded && (
@@ -170,9 +171,9 @@ export function ServiceTourDetails({ assignment, service, theme }: ServiceTourDe
                 </div>
                 <span className="text-sm font-semibold text-rose-600">{t('tour_excluded_title')}</span>
               </div>
-              <p className="text-gray-700 leading-relaxed text-sm">
-                {service.categoryDetails.excluded}
-              </p>
+              <div className="text-gray-700 leading-relaxed text-sm prose prose-sm max-w-none prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-800 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+                <ReactMarkdown>{service.categoryDetails.excluded}</ReactMarkdown>
+              </div>
             </div>
           )}
         </div>

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -14,6 +13,9 @@ import {
   DollarSign // Eklenen icon
 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
+import dynamic from "next/dynamic";
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 interface RegionToursProps {
   selectedPayments: Array<{id: string, amount: string}>;
@@ -81,32 +83,41 @@ export function RegionTours({ selectedPayments, onPaymentChange, onPaymentAmount
 
       <div>
         <Label>Tur Bilgisi Açıklaması</Label>
-        <Textarea 
-          className="mt-1.5" 
-          placeholder="Tur hakkında genel bilgiler..."
-          value={tourInfo}
-          onChange={(e) => setTourInfo(e.target.value)}
-        />
+        <div className="mt-1.5" data-color-mode="light">
+          <MDEditor
+            value={tourInfo}
+            onChange={(val) => setTourInfo(val || "")}
+            preview="edit"
+            height={200}
+            textareaProps={{ placeholder: "Tur hakkında genel bilgiler... (Markdown destekli)" }}
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>Tura Dahil Olanlar</Label>
-          <Textarea 
-            className="mt-1.5" 
-            placeholder="Tura dahil olan hizmetler..."
-            value={included}
-            onChange={(e) => setIncluded(e.target.value)}
-          />
+          <div className="mt-1.5" data-color-mode="light">
+            <MDEditor
+              value={included}
+              onChange={(val) => setIncluded(val || "")}
+              preview="edit"
+              height={200}
+              textareaProps={{ placeholder: "Tura dahil olan hizmetler... (Markdown destekli)" }}
+            />
+          </div>
         </div>
         <div>
           <Label>Turda Hariç Olanlar</Label>
-          <Textarea 
-            className="mt-1.5" 
-            placeholder="Tura dahil olmayan hizmetler..."
-            value={excluded}
-            onChange={(e) => setExcluded(e.target.value)}
-          />
+          <div className="mt-1.5" data-color-mode="light">
+            <MDEditor
+              value={excluded}
+              onChange={(val) => setExcluded(val || "")}
+              preview="edit"
+              height={200}
+              textareaProps={{ placeholder: "Tura dahil olmayan hizmetler... (Markdown destekli)" }}
+            />
+          </div>
         </div>
       </div>
 

@@ -29,6 +29,9 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
 import { saveService, updateService, ServiceData } from "@/lib/services";
 import { bunnyStorage } from "@/lib/bunny-storage";
+import dynamic from "next/dynamic";
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 // Import category components
 import { RegionTours } from "./categories/region-tours";
@@ -487,13 +490,17 @@ export function ServiceModal({ isOpen, onClose, editingService }: ServiceModalPr
                   <h3 className="text-lg font-medium">Ekstra Özellikler</h3>
                   <div>
                     <Label htmlFor="notes">Özel Notlar</Label>
-                    <Textarea
-                      id="notes"
-                      placeholder="Hizmet ile ilgili özel notlar..."
-                      className="mt-1.5"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                    />
+                    <div className="mt-1.5" data-color-mode="light">
+                      <MDEditor
+                        value={notes}
+                        onChange={(val) => setNotes(val || "")}
+                        preview="edit"
+                        height={250}
+                        textareaProps={{
+                          placeholder: "Hizmet ile ilgili özel notlar... (Markdown destekli)"
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               )}

@@ -3,6 +3,7 @@
 import { ServiceData } from "@/lib/services";
 import { CarFront } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
 
 interface ServiceVehicleFeaturesProps {
   service: ServiceData;
@@ -26,9 +27,11 @@ export function ServiceVehicleFeatures({ service, theme }: ServiceVehicleFeature
         <CarFront className="w-4 h-4" style={{ color: accentColor }} />
         <span className="text-sm font-semibold text-gray-800">{t('vehicle_features_title')}</span>
       </div>
-      <p className="text-gray-700 leading-relaxed text-sm">
-        {service.categoryDetails.vehicleDetails.features}
-      </p>
+      <div className="text-gray-700 leading-relaxed text-sm prose prose-sm max-w-none prose-headings:text-gray-800 prose-headings:font-semibold prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-800 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+        <ReactMarkdown>
+          {service.categoryDetails.vehicleDetails.features}
+        </ReactMarkdown>
+      </div>
     </div>
   );
 }

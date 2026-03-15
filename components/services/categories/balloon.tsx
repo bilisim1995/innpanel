@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { 
   Wind,
   Clock,
@@ -13,6 +12,9 @@ import {
   Camera,
 } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
+import dynamic from "next/dynamic";
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 interface BalloonProps {
   selectedPayments: Array<{id: string, amount: string}>;
@@ -135,12 +137,15 @@ export function Balloon({ onCategoryDetailsChange, categoryDetails }: BalloonPro
           <Mountain className="h-4 w-4" />
           Uçuş Bölgesi
         </Label>
-        <Textarea 
-          placeholder="Uçuş rotası ve görülecek yerler hakkında bilgi..."
-          className="mt-1.5"
-          value={flightInfo.flightArea}
-          onChange={(e) => setFlightInfo({...flightInfo, flightArea: e.target.value})}
-        />
+        <div className="mt-1.5" data-color-mode="light">
+          <MDEditor
+            value={flightInfo.flightArea || ""}
+            onChange={(val) => setFlightInfo({...flightInfo, flightArea: val || ""})}
+            preview="edit"
+            height={200}
+            textareaProps={{ placeholder: "Uçuş rotası ve görülecek yerler hakkında bilgi... (Markdown destekli)" }}
+          />
+        </div>
       </div>
 
       <div>
