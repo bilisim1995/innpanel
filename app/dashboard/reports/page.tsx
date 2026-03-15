@@ -44,24 +44,25 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 // --- FONT YÜKLEME FONKSİYONU ---
-// Bu fonksiyon, font dosyasını URL'den alıp Base64 formatına çevirir.
-// jsPDF'in özel fontları işlemesi için bu gereklidir.
-const loadFontAsBase64 = async (url: string) => {
+// Font dosyasını URL'den alıp Base64 formatına çevirir. Tam URL kullanarak path sorunlarını önler.
+const loadFontAsBase64 = async (path: string) => {
   try {
+    const url = typeof window !== 'undefined'
+      ? `${window.location.origin}${path.startsWith('/') ? path : '/' + path}`
+      : path;
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Font yüklenemedi: ${response.statusText}`);
+      throw new Error(`Font yüklenemedi: ${response.status} ${response.statusText}`);
     }
     const blob = await response.blob();
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1] || '');
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
   } catch (error) {
     console.error("Font yükleme hatası:", error);
-    // Yedek bir çözüm olarak boş string dönebilir veya hatayı yukarıya taşıyabilirsiniz.
     return '';
   }
 };
@@ -255,21 +256,22 @@ export default function ReportsPage() {
     try {
       setIsExporting(true);
 
-      // Mevcut, güvenilir font yükleme fonksiyonunu kullan
       const fontBase64 = await loadFontAsBase64('/fonts/Roboto-Regular.ttf');
-      
-      // Font yüklenemezse işlemi durdur ve hata ver
-      if (!fontBase64) {
-        throw new Error("PDF için gerekli font dosyası yüklenemedi.");
-      }
-
       const doc = new jsPDF();
-      const fontName = 'Roboto';
+      let fontName = 'Helvetica'; // Varsayılan (Türkçe karakter desteği sınırlı)
 
-      // Add Roboto font
-      doc.addFileToVFS('Roboto-Regular.ttf', fontBase64);
-      doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
-      doc.setFont('Roboto'); // Fontu tüm doküman için varsayılan olarak ayarla
+      if (fontBase64) {
+        try {
+          doc.addFileToVFS('Roboto-Regular.ttf', fontBase64);
+          doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+          doc.setFont('Roboto');
+          fontName = 'Roboto';
+        } catch (fontErr) {
+          console.warn('Roboto fontu eklenemedi, varsayılan font kullanılıyor:', fontErr);
+        }
+      } else {
+        console.warn('Font dosyası yüklenemedi, varsayılan font kullanılıyor.');
+      }
 
       const title = type === 'reservations' ? 'Rezervasyon Raporu' : 
                     type === 'statistics' ? 'İstatistik Raporu' : 
