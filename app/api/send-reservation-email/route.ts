@@ -21,6 +21,18 @@ async function loadTranslations(locale: string) {
   }
 }
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  TRY: '₺',
+  USD: '$',
+  EUR: '€',
+  TL: '₺',
+};
+
+function formatAmount(amount: number, currency: string): string {
+  const symbol = CURRENCY_SYMBOLS[currency?.toUpperCase()] || currency;
+  return `${parseFloat(amount.toFixed(2)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
+}
+
 // --- E-POSTA ŞABLONLARI ---
 
 const createAdminEmailHtml = (data: any, t: any): string => `
@@ -51,7 +63,7 @@ const createAdminEmailHtml = (data: any, t: any): string => `
           ${data.customerInfo.notes ? `<li><strong>${t['admin_email_notes']}:</strong> ${data.customerInfo.notes}</li>` : ''}
         </ul>
         <hr>
-        <h3>${t['admin_email_total_amount']}: ${data.totalAmount} ${data.currency}</h3>
+        <h3>${t['admin_email_total_amount']}: ${formatAmount(data.totalAmount, data.currency)}</h3>
       </div>
     </body>
   </html>
@@ -76,7 +88,7 @@ const createCustomerEmailHtml = (data: any, t: any): string => `
           <li><strong>${t['customer_email_time']}:</strong> ${data.reservationDetails.timeSlot}</li>
           <li><strong>${t['customer_email_participants']}:</strong> ${data.reservationDetails.adults} ${t['customer_email_adults']}, ${data.reservationDetails.children || 0} ${t['customer_email_children']}</li>
           ${data.reservationDetails.flightCode ? `<li><strong>${t['customer_email_flight_code']}:</strong> ${data.reservationDetails.flightCode}</li>` : ''}
-          <li><strong>${t['customer_email_total_amount']}:</strong> ${data.totalAmount} ${data.currency}</li>
+          <li><strong>${t['customer_email_total_amount']}:</strong> ${formatAmount(data.totalAmount, data.currency)}</li>
         </ul>
         <p>${t['customer_email_enjoy_message']}</p>
       </div>
@@ -100,7 +112,7 @@ const formatAdminWhatsAppMessage = (data: any, t: any): string => {
 *${t['admin_whatsapp_date']}*: ${data.reservationDetails.date ? new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR', { timeZone: 'Europe/Istanbul' }) : 'Tarih belirtilmedi'}
 *${t['admin_whatsapp_time']}*: ${reservationDetails.timeSlot}
 *${t['admin_whatsapp_participants']}*: ${adultsText}${childrenText}
-${reservationDetails.flightCode ? `*${t['admin_whatsapp_flight_code']}*: ${reservationDetails.flightCode}\n` : ''}*${t['admin_whatsapp_total_amount']}*: ${totalAmount} ${currency}
+${reservationDetails.flightCode ? `*${t['admin_whatsapp_flight_code']}*: ${reservationDetails.flightCode}\n` : ''}*${t['admin_whatsapp_total_amount']}*: ${formatAmount(totalAmount, currency)}
 
 *${t['admin_whatsapp_customer_note']}*:
 _${customerInfo.notes || t['admin_whatsapp_no_note']}_`;
@@ -119,7 +131,7 @@ ${t['customer_whatsapp_reservation_confirmed']}
 *${t['customer_whatsapp_date']}*: ${data.reservationDetails.date ? new Date(data.reservationDetails.date).toLocaleDateString(data.locale || 'tr-TR', { timeZone: 'Europe/Istanbul' }) : 'Tarih belirtilmedi'}
 *${t['customer_whatsapp_time']}*: ${reservationDetails.timeSlot}
 *${t['customer_whatsapp_participants']}*: ${adultsText}${childrenText}
-${reservationDetails.flightCode ? `*${t['customer_whatsapp_flight_code']}*: ${reservationDetails.flightCode}\n` : ''}*${t['customer_whatsapp_total_amount']}*: *${totalAmount} ${currency}*
+${reservationDetails.flightCode ? `*${t['customer_whatsapp_flight_code']}*: ${reservationDetails.flightCode}\n` : ''}*${t['customer_whatsapp_total_amount']}*: *${formatAmount(totalAmount, currency)}*
 
 ${t['customer_whatsapp_contact_us']}`;
 };

@@ -65,12 +65,14 @@ const RESERVATIONS_COLLECTION = 'reservations';
 
 interface SaveReservationData extends Omit<ReservationData, 'id' | 'createdAt' | 'updatedAt' | 'status'> {
     currency: string;
+    originalAmount?: number;
+    originalCurrency?: string;
 }
 
 export const saveReservation = async (reservationData: SaveReservationData): Promise<string> => {
   try {
     const now = new Date();
-    const { currency, locale, ...dbData } = reservationData;
+    const { currency, locale, originalAmount, originalCurrency, ...dbData } = reservationData;
 
     const dataToSave = {
       ...dbData,
@@ -84,10 +86,13 @@ export const saveReservation = async (reservationData: SaveReservationData): Pro
     const docRef = await addDoc(collection(db, RESERVATIONS_COLLECTION), cleanedData);
 
     try {
+      const displayAmount = originalAmount != null ? parseFloat(originalAmount.toFixed(2)) : parseFloat(cleanedData.totalAmount.toFixed(2));
+      const displayCurrency = originalCurrency || currency;
+
       const emailPayload = {
         serviceName: cleanedData.serviceName,
-        totalAmount: cleanedData.totalAmount,
-        currency: currency,
+        totalAmount: displayAmount,
+        currency: displayCurrency,
         reservationDetails: {
           date: cleanedData.reservationDate,
           timeSlot: `${cleanedData.timeSlot.startTime} - ${cleanedData.timeSlot.endTime}`,
