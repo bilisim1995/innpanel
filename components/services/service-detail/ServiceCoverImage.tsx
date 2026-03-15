@@ -17,7 +17,7 @@ export function ServiceCoverImage({ service, assignment, onImageClick }: Service
 
   return (
     <div className="relative animate-in fade-in-0 slide-in-from-top-4 duration-500">
-      <div className="relative overflow-hidden group h-80">
+      <div className="relative overflow-hidden group h-80 rounded-2xl mx-4 md:mx-8 shadow-xl">
         <Image 
           src={service.coverImage} 
           alt={t('cover_image_alt', { serviceName: assignment.serviceName })}

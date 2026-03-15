@@ -49,7 +49,7 @@ export function WhatsAppButton({
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`group inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3.5 py-2.5 shadow-lg transition-all duration-200 hover:scale-[1.01] ${fullWidth ? "w-full justify-center rounded-t-2xl" : "rounded-xl hover:scale-105"}`}
+        className={`group inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3.5 py-2.5 shadow-lg transition-all duration-200 ${fullWidth ? "w-full justify-center rounded-t-2xl md:w-auto md:justify-start md:rounded-xl md:hover:scale-105" : "rounded-xl hover:scale-105"}`}
       >
         {/* WhatsApp Icon */}
         <div className="w-4.5 h-4.5 flex items-center justify-center">

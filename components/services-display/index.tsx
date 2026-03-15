@@ -125,7 +125,7 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
       <Footer />
 
       {!isServiceModalOpen && (
-        <WhatsAppButton className="bottom-0 left-0 right-0 z-[60]" fullWidth />
+        <WhatsAppButton className="bottom-0 left-0 right-0 z-[60] md:bottom-6 md:right-6 md:left-auto" fullWidth />
       )}
 
       <ImageModal
