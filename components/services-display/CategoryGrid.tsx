@@ -84,6 +84,14 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
 
   const availableCategories = getAvailableCategories();
   const currentAssignment = sliderAssignments[currentSlide];
+  const getCurrencySymbol = (currency?: string) => {
+    if (!currency) return "₺";
+    const normalized = currency.toUpperCase();
+    if (normalized === "EUR") return "€";
+    if (normalized === "USD") return "$";
+    if (normalized === "TL" || normalized === "TRY") return "₺";
+    return currency;
+  };
 
   return (
     <div className="space-y-6">
@@ -170,7 +178,7 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
               {currentAssignment.pricingSettings?.displayPrice && currentAssignment.pricingSettings.displayPrice > 0 && (
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-600/80 backdrop-blur-sm text-white border border-green-500/50 shadow-lg">
                   <Banknote className="w-3 h-3" />
-                  {currentAssignment.pricingSettings.displayPrice} ₺
+                  {currentAssignment.pricingSettings.displayPrice} {getCurrencySymbol(currentAssignment.pricingSettings.displayPriceCurrency)}
                 </span>
               )}
             </div>
