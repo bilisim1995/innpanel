@@ -311,18 +311,18 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
             />
 
             <div className="px-6 md:px-8 space-y-6">
+              <ServiceTourDetails 
+                assignment={assignment}
+                service={service}
+                theme={currentTheme}
+              />
+
               {assignment.serviceCategory === "transfer" && (
                 <ServiceVehicleFeatures 
                   service={service}
                   theme={currentTheme}
                 />
               )}
-
-              <ServiceTourDetails 
-                assignment={assignment}
-                service={service}
-                theme={currentTheme}
-              />
 
               <ServiceTourInformation
                 assignment={assignment}
