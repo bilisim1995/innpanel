@@ -31,7 +31,7 @@ import {
   PlusCircle,
   Edit3
 } from "lucide-react";
-import { createSlug, updateSlug } from "@/lib/utils";
+import { createSlug } from "@/lib/utils";
 
 const Map = dynamic(() => import("@/components/ui/map").then(mod => ({ default: mod.Map })), {
   ssr: false
@@ -159,18 +159,12 @@ export function LocationModal({ isOpen, onClose, editingLocation }: LocationModa
     if (isEditingSlug && customSlug) {
       return customSlug;
     }
-    
-    if (editingLocation && editingLocation.slug && formData.name === editingLocation.name) {
+    if (editingLocation?.slug) {
       return editingLocation.slug;
     }
-    
     if (formData.name) {
-      if (editingLocation && editingLocation.slug) {
-        return updateSlug(formData.name, editingLocation.slug);
-      }
       return createSlug(formData.name);
     }
-    
     return "";
   }, [isEditingSlug, customSlug, editingLocation, formData.name]);
 

@@ -1,6 +1,6 @@
 import { db } from './firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { createSlug, updateSlug } from './utils';
+import { createSlug } from './utils';
 
 export interface LocationData {
   id?: string;
@@ -78,15 +78,9 @@ export const updateLocation = async (id: string, locationData: Partial<LocationD
       ...locationData,
       updatedAt: new Date(),
     };
-    
-    // Eğer name değişiyorsa slug'ı güncelle (mevcut rakamı koru)
-    if (locationData.name && locationData.slug) {
-      updateData.slug = updateSlug(locationData.name, locationData.slug);
-    } else if (locationData.name) {
-      // Eğer slug yoksa yeni oluştur
-      updateData.slug = createSlug(locationData.name);
+    if (locationData.slug !== undefined) {
+      updateData.slug = locationData.slug;
     }
-    
     await updateDoc(locationRef, updateData);
   } catch (error) {
     console.error('Error updating location:', error);
