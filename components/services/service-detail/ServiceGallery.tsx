@@ -1,8 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Camera, Sparkles, Eye, ChevronDown, ChevronUp } from "lucide-react";
+import { Camera, Search } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
@@ -11,32 +9,26 @@ interface ServiceGalleryProps {
   assignment: AssignmentData;
   service: any;
   theme: any;
-  isOpen: boolean;
-  onToggle: (open: boolean) => void;
   onImageClick: (imageUrl: string) => void;
 }
 
-export function ServiceGallery({ assignment, service, theme, isOpen, onToggle, onImageClick }: ServiceGalleryProps) {
+export function ServiceGallery({ assignment, service, theme, onImageClick }: ServiceGalleryProps) {
   const { t } = useTranslation();
-  const backgroundStyle = theme.customStyle?.background ? 
-    { background: theme.customStyle.background } : 
-    { backgroundColor: theme.customStyle?.backgroundColor || '#dc2626' };
-  
-  const textColor = theme.customStyle?.backgroundColor || '#dc2626';
-  
+  const accentColor = theme.customStyle?.backgroundColor || '#dc2626';
+
   const getAllImages = () => {
     const images: string[] = [];
-    
+
     if (service.coverImage) {
       images.push(service.coverImage);
     }
-    
+
     if (service.categoryDetails?.photos) {
       const galleryImages = service.categoryDetails.photos
         .filter((photo: string | null) => photo && photo !== service.coverImage);
       images.push(...galleryImages);
     }
-    
+
     return images;
   };
 
@@ -45,69 +37,32 @@ export function ServiceGallery({ assignment, service, theme, isOpen, onToggle, o
   if (allImages.length === 0) return null;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={onToggle}>
-      <Card 
-        className="backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-500 animate-in fade-in-0 slide-in-from-right-4 delay-500 border-2"
-        style={{ 
-          backgroundColor: `${textColor}10`,
-          borderColor: `${textColor}20`
-        }}
-      >
-        <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-white/20 transition-colors duration-200">
-            <CardTitle 
-              className="flex items-center justify-between text-lg"
-              style={{ color: textColor }}
-            >
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md"
-                  style={backgroundStyle}
-                >
-                  <Camera className="h-5 w-5 text-white" />
-                </div>
-                {t('photo_gallery_title')}
-                <Sparkles 
-                  className="w-5 h-5 animate-pulse"
-                  style={{ color: textColor, fontFamily: 'Helvetica, Arial, sans-serif' }}
-                />
-              </div>
-              {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </CardTitle>
-          </CardHeader>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {allImages.map((photo: string, index: number) => (
-                <div 
-                  key={index} 
-                  className="relative aspect-square rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-110 group animate-in zoom-in-95 cursor-pointer" 
-                  style={{ animationDelay: `${index * 100}ms` }}
-                  onClick={() => onImageClick(photo)}
-                >
-                  <Image 
-                    src={photo}
-                    alt={t('activity_photo_gallery_alt', { serviceName: assignment.serviceName, index: index + 1 })}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transition-transform duration-700 group-hover:scale-125"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div 
-                      className="w-12 h-12 rounded-full flex items-center justify-center shadow-xl border border-white/50"
-                      style={backgroundStyle}
-                    >
-                      <Eye className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                </div>
-              ))}
+    <div className="space-y-3">
+      <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+        <Camera className="w-4 h-4" style={{ color: accentColor }} />
+        {t('photo_gallery_title')}
+        <span className="text-xs text-gray-400 font-normal">({allImages.length})</span>
+      </h3>
+      <div className="grid grid-cols-3 gap-3">
+        {allImages.map((photo: string, index: number) => (
+          <div
+            key={index}
+            className="relative aspect-square rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 group cursor-pointer"
+            onClick={() => onImageClick(photo)}
+          >
+            <Image
+              src={photo}
+              alt={t('activity_photo_gallery_alt', { serviceName: assignment.serviceName, index: index + 1 })}
+              layout="fill"
+              objectFit="cover"
+              className="transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+              <Search className="w-3 h-3 text-white" />
             </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

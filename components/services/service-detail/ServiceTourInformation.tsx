@@ -1,98 +1,57 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Info, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Info } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import { ServiceData } from "@/lib/services";
 import { useTranslation } from 'react-i18next';
 
 interface ServiceTourInformationProps {
-    assignment: AssignmentData;
-    service: ServiceData;
-    theme: any;
-    isOpen: boolean;
-    onToggle: (open: boolean) => void;
+  assignment: AssignmentData;
+  service: ServiceData;
+  theme: any;
 }
 
 const getTourInfoForCategory = (category: string, details: any): string | null => {
-    if (!details) return null;
+  if (!details) return null;
 
-    switch (category) {
-        case "region-tours":
-            return details.tourInfo || null;
-        case "motor-tours":
-            return details.routeDetails?.description || details.tourDetails || null;
-        case "balloon":
-            return details.flightInfo?.flightArea || null;
-        case "transfer":
-            return details.routeDetails?.notes || null;
-        case "other":
-            return details.tourDetails || null;
-        default:
-            return null;
-    }
+  switch (category) {
+    case "region-tours":
+      return details.tourInfo || null;
+    case "motor-tours":
+      return details.routeDetails?.description || details.tourDetails || null;
+    case "balloon":
+      return details.flightInfo?.flightArea || null;
+    case "transfer":
+      return details.routeDetails?.notes || null;
+    case "other":
+      return details.tourDetails || null;
+    default:
+      return null;
+  }
 };
 
-export function ServiceTourInformation({ assignment, service, theme, isOpen, onToggle }: ServiceTourInformationProps) {
-    const { t } = useTranslation();
-    const backgroundStyle = theme.customStyle?.background ?
-        { background: theme.customStyle.background } :
-        { backgroundColor: theme.customStyle?.backgroundColor || '#dc2626' };
+export function ServiceTourInformation({ assignment, service, theme }: ServiceTourInformationProps) {
+  const { t } = useTranslation();
+  const accentColor = theme.customStyle?.backgroundColor || '#dc2626';
 
-    const textColor = theme.customStyle?.backgroundColor || '#dc2626';
+  const tourInfoText = getTourInfoForCategory(assignment.serviceCategory, service.categoryDetails);
 
-    const tourInfoText = getTourInfoForCategory(assignment.serviceCategory, service.categoryDetails);
+  if (!tourInfoText) return null;
 
-    if (!tourInfoText) {
-        return null;
-    }
-
-    return (
-        <Collapsible open={isOpen} onOpenChange={onToggle}>
-            <Card
-                className="backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-500 animate-in fade-in-0 slide-in-from-right-4 delay-200 border-2"
-                style={{
-                    backgroundColor: `${textColor}10`,
-                    borderColor: `${textColor}20`
-                }}
-            >
-                <CollapsibleTrigger asChild>
-                    <CardHeader className="cursor-pointer hover:bg-white/20 transition-colors duration-200">
-                        <CardTitle
-                            className="flex items-center justify-between text-lg"
-                            style={{ color: textColor }}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md"
-                                    style={backgroundStyle}
-                                >
-                                    <Info className="h-5 w-5 text-white" />
-                                </div>
-                                {t('tour_information_title')}
-                                <Sparkles
-                                    className="w-5 h-5 animate-pulse"
-                                    style={{ color: textColor }}
-                                />
-                            </div>
-                            {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                        </CardTitle>
-                    </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                    <CardContent>
-                        <p
-                            className="leading-relaxed font-medium text-lg"
-                            style={{ color: 'red', fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '1.1rem' }}
-                        >
-                            {tourInfoText}
-                        </p>
-                    </CardContent>
-                </CollapsibleContent>
-            </Card>
-        </Collapsible>
-    );
+  return (
+    <div
+      className="bg-gray-50/80 rounded-r-xl py-4 px-5 border-l-4"
+      style={{ borderLeftColor: accentColor }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <Info className="w-4 h-4" style={{ color: accentColor }} />
+        <span className="text-sm font-semibold text-gray-800">{t('tour_information_title')}</span>
+      </div>
+      <p className="text-gray-700 leading-relaxed text-sm">
+        {tourInfoText}
+      </p>
+    </div>
+  );
 }
 
 export default ServiceTourInformation;

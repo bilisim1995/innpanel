@@ -41,16 +41,6 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
     selectedImage,
     isImageModalOpen,
     setIsImageModalOpen,
-    isGeneralNotesOpen,
-    setIsGeneralNotesOpen,
-    isTourDetailsOpen,
-    setIsTourDetailsOpen,
-    isTourInformationOpen,
-    setIsTourInformationOpen,
-    isGalleryOpen,
-    setIsGalleryOpen,
-    isContactOpen,
-    setIsContactOpen,
     handleImageClick
   } = useServiceModal();
 
@@ -91,14 +81,14 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
         />
         
         <div className="flex-1 h-[calc(100vh-140px)] overflow-y-auto">
-          <div className="space-y-8 pb-32">
+          <div className="space-y-6 pb-32">
             <ServiceCoverImage 
               service={service}
               assignment={assignment}
               onImageClick={handleImageClick}
             />
 
-            <div className="px-8 space-y-8">
+            <div className="px-6 md:px-8 space-y-6">
               {assignment.serviceCategory === "transfer" && (
                 <ServiceVehicleFeatures 
                   service={service}
@@ -110,39 +100,29 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
                 assignment={assignment}
                 service={service}
                 theme={currentTheme}
-                isOpen={isTourDetailsOpen}
-                onToggle={setIsTourDetailsOpen}
               />
 
               <ServiceTourInformation
                 assignment={assignment}
                 service={service}
                 theme={currentTheme}
-                isOpen={isTourInformationOpen}
-                onToggle={setIsTourInformationOpen}
               />
               
               <ServiceGeneralNotes 
                 service={service}
                 theme={currentTheme}
-                isOpen={isGeneralNotesOpen}
-                onToggle={setIsGeneralNotesOpen}
               />
 
               <ServiceGallery 
                 assignment={assignment}
                 service={service}
                 theme={currentTheme}
-                isOpen={isGalleryOpen}
-                onToggle={setIsGalleryOpen}
                 onImageClick={handleImageClick}
               />
 
               <ServiceContact 
                 service={service}
                 theme={currentTheme}
-                isOpen={isContactOpen}
-                onToggle={setIsContactOpen}
               />
             </div>
           </div>

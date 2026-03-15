@@ -4,11 +4,6 @@ export function useServiceModal() {
   const [isReservationModalOpen, setIsReservationModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [isGeneralNotesOpen, setIsGeneralNotesOpen] = useState(false);
-  const [isTourDetailsOpen, setIsTourDetailsOpen] = useState(false);
-  const [isTourInformationOpen, setIsTourInformationOpen] = useState(false);
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [isContactOpen, setIsContactOpen] = useState(false);
 
   const handleImageClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -21,16 +16,6 @@ export function useServiceModal() {
     selectedImage,
     isImageModalOpen,
     setIsImageModalOpen,
-    isGeneralNotesOpen,
-    setIsGeneralNotesOpen,
-    isTourDetailsOpen,
-    setIsTourDetailsOpen,
-    isTourInformationOpen,
-    setIsTourInformationOpen,
-    isGalleryOpen,
-    setIsGalleryOpen,
-    isContactOpen,
-    setIsContactOpen,
     handleImageClick
   };
 }
