@@ -335,13 +335,6 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
                 theme={currentTheme}
               />
 
-              <ServiceGallery 
-                assignment={assignment}
-                service={service}
-                theme={currentTheme}
-                onImageClick={handleSingleImageClick}
-              />
-
               <ServiceContact 
                 service={service}
                 theme={currentTheme}
