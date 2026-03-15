@@ -92,7 +92,7 @@ export function ReservationCustomerInfo({
           <PhoneInput
             value={customerPhone}
             onChange={onCustomerPhoneChange}
-            className={errors.customerPhone ? '[&>input]:border-red-500' : ''}
+            className={errors.customerPhone ? '[&_input]:border-red-500' : ''}
           />
           {errors.customerPhone && <p className="text-sm text-red-600">{errors.customerPhone}</p>}
         </div>

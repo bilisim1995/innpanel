@@ -343,7 +343,11 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
     const errors: {[key: string]: string} = {};
     if (!customerName.trim()) errors.customerName = "Ad alanı zorunludur";
     if (!customerSurname.trim()) errors.customerSurname = "Soyad alanı zorunludur";
-    if (!customerPhone.trim()) errors.customerPhone = "Telefon numarası zorunludur";
+    if (!customerPhone.trim()) {
+      errors.customerPhone = "Telefon numarası zorunludur";
+    } else if (customerPhone.length < 8) {
+      errors.customerPhone = "Geçerli bir telefon numarası girin";
+    }
     if (!customerEmail.trim()) {
         errors.customerEmail = "E-posta alanı zorunludur";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
