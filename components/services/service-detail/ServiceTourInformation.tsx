@@ -16,7 +16,7 @@ const getTourInfoForCategory = (category: string, details: any): string | null =
 
   switch (category) {
     case "region-tours":
-      return details.tourInfo || null;
+      return null;
     case "motor-tours":
       return details.routeDetails?.description || details.tourDetails || null;
     case "balloon":
