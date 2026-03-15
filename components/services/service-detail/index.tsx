@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AssignmentData } from "@/lib/assignments";
 import { ReservationModal } from "../reservation";
@@ -45,6 +45,14 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
   } = useServiceModal();
 
   const [theme, setTheme] = useState<any>(null);
+  const [showHeaderBack, setShowHeaderBack] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current) {
+      setShowHeaderBack(scrollRef.current.scrollTop > 340);
+    }
+  }, []);
 
   useEffect(() => {
     const loadTheme = async () => {
@@ -77,15 +85,17 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
         
         <ServiceDetailHeader 
           assignment={assignment}
+          showBackButton={showHeaderBack}
           onClose={onClose}
         />
         
-        <div className="flex-1 h-[calc(100vh-140px)] overflow-y-auto">
+        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 h-[calc(100vh-140px)] overflow-y-auto">
           <div className="space-y-6 pb-32">
             <ServiceCoverImage 
               service={service}
               assignment={assignment}
               onImageClick={handleImageClick}
+              onClose={onClose}
             />
 
             <div className="px-6 md:px-8 space-y-6">

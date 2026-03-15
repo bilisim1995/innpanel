@@ -1,31 +1,29 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
-import { useTranslation } from 'react-i18next';
 
 interface ServiceDetailHeaderProps {
   assignment: AssignmentData;
-  onClose: () => void;
+  showBackButton?: boolean;
+  onClose?: () => void;
 }
 
-export function ServiceDetailHeader({ assignment, onClose }: ServiceDetailHeaderProps) {
-  const { t } = useTranslation();
+export function ServiceDetailHeader({ assignment, showBackButton = false, onClose }: ServiceDetailHeaderProps) {
   return (
-    <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 shadow-sm">
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          onClick={onClose}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium shadow-sm hover:shadow-md transition-all duration-300"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          {t('back_button')}
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{assignment.serviceName}</h1>
-          <p className="text-sm text-gray-600" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>{assignment.companyName}</p>
+    <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-5 py-3 shadow-sm">
+      <div className="flex items-center gap-3">
+        {showBackButton && onClose && (
+          <button
+            onClick={onClose}
+            className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 hover:bg-gray-200"
+          >
+            <ArrowLeft className="w-4 h-4 text-gray-700" />
+          </button>
+        )}
+        <div className="min-w-0">
+          <h1 className="text-sm font-semibold text-gray-900 truncate">{assignment.serviceName}</h1>
+          <p className="text-xs text-gray-500 truncate">{assignment.companyName}</p>
         </div>
       </div>
     </div>

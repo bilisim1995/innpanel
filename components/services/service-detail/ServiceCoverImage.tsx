@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Eye, Banknote } from "lucide-react";
+import { Sparkles, Eye, Banknote, ArrowLeft } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
@@ -9,9 +9,10 @@ interface ServiceCoverImageProps {
   service: any;
   assignment: AssignmentData;
   onImageClick: (imageUrl: string) => void;
+  onClose: () => void;
 }
 
-export function ServiceCoverImage({ service, assignment, onImageClick }: ServiceCoverImageProps) {
+export function ServiceCoverImage({ service, assignment, onImageClick, onClose }: ServiceCoverImageProps) {
   const { t } = useTranslation();
   if (!service.coverImage) return null;
 
@@ -27,6 +28,14 @@ export function ServiceCoverImage({ service, assignment, onImageClick }: Service
           onClick={() => onImageClick(service.coverImage)}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+
+        {/* Geri Butonu */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 left-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:bg-white hover:shadow-lg"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-700" />
+        </button>
         
         {assignment.pricingSettings?.displayPrice && assignment.pricingSettings.displayPrice > 0 && (
           <div className="absolute top-4 right-4 z-10">
