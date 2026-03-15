@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from 'react-i18next';
 import { FlagIcon, FlagIconCode } from 'react-flag-kit';
+import { Check } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -49,11 +50,6 @@ export function LanguageSelector() {
   // Bayrağı, i18n.language yerine URL'deki aktif dile göre belirle
   const currentDisplayLang = languages.find(lang => lang.code === activeLanguageCode) || languages[0];
 
-  // Debugging için konsola yazdır
-  console.log('LanguageSelector - i18n.language:', i18n.language);
-  console.log('LanguageSelector - activeLanguageCode (from path):', activeLanguageCode);
-  console.log('LanguageSelector - currentDisplayLang:', currentDisplayLang);
-
   const handleLanguageChange = (langCode: string) => {
     const currentPathWithoutLocale = getPathWithoutLocale(pathname, locales);
     const currentSearchParams = searchParams.toString();
@@ -83,25 +79,39 @@ export function LanguageSelector() {
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
-          className="w-10 h-10 p-0 rounded-full border border-gray-300 shadow-sm hover:bg-gray-50 flex items-center justify-center"
+          className="relative w-11 h-11 p-0 rounded-2xl border border-white/80 bg-white/90 shadow-lg backdrop-blur-sm hover:bg-white transition-all duration-200 hover:scale-105 flex items-center justify-center"
         >
-          <FlagIcon 
-            code={currentDisplayLang.countryCode} 
-            size={24} 
-            className="rounded-full overflow-hidden" 
-          />
+          <span className="w-8 h-8 rounded-full overflow-hidden ring-1 ring-black/10 shadow-sm">
+            <FlagIcon 
+              code={currentDisplayLang.countryCode} 
+              size={32} 
+              className="w-full h-full" 
+            />
+          </span>
+          <span className="absolute -bottom-1 -right-1 text-[9px] font-bold uppercase bg-white text-gray-700 border border-gray-200 rounded-full px-1.5 py-0.5 shadow-sm">
+            {activeLanguageCode}
+          </span>
           <span className="sr-only">Change Language</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="min-w-40 p-1.5">
         {languages.map((lang) => (
-          <DropdownMenuItem key={lang.code} onClick={() => handleLanguageChange(lang.code)} className="flex items-center">
-            <FlagIcon 
-              code={lang.countryCode} 
-              size={20} 
-              className="mr-2 rounded-full overflow-hidden" 
-            />
-            <span>{lang.name}</span>
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => handleLanguageChange(lang.code)}
+            className="flex items-center justify-between rounded-md px-2 py-1.5"
+          >
+            <span className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full overflow-hidden ring-1 ring-black/10">
+                <FlagIcon 
+                  code={lang.countryCode} 
+                  size={24}
+                  className="w-full h-full" 
+                />
+              </span>
+              <span>{lang.name}</span>
+            </span>
+            {activeLanguageCode === lang.code && <Check className="w-4 h-4 text-primary" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
