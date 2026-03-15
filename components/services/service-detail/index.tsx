@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import { ServiceData } from "@/lib/services"; 
 import { ServiceVehicleFeatures } from "./ServiceVehicleFeatures"; 
+import { WhatsAppButton } from "@/components/services-display/WhatsAppButton";
 
 interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: ServiceData; 
@@ -152,6 +153,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
           theme={currentTheme}
           onReservationClick={() => setIsReservationModalOpen(true)}
         />
+        <WhatsAppButton className="bottom-24 right-4 z-[60]" compactLabel="Info" />
 
         {isImageModalOpen && selectedImage && (
           <Dialog open={isImageModalOpen} onOpenChange={() => setIsImageModalOpen(false)}>

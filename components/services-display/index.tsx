@@ -123,10 +123,10 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
       </div>
 
       <Footer />
-      
-      <div className="h-16"></div>
-      
-      <WhatsAppButton />
+
+      {!isServiceModalOpen && (
+        <WhatsAppButton className="bottom-0 left-0 right-0 z-[60]" fullWidth />
+      )}
 
       <ImageModal
         isOpen={isImageModalOpen}
