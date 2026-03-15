@@ -73,26 +73,20 @@ export function ServiceCard({
 
   return (
     <Card 
-      className="group overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-500 bg-white animate-in slide-in-from-bottom-4 duration-700 shadow-lg border-2"
-      style={{ borderColor: backgroundColor }}
+      className="group overflow-hidden hover:shadow-xl transition-all duration-300 bg-white animate-in slide-in-from-bottom-4 duration-700 shadow-lg border border-gray-100 rounded-2xl"
     >
       <CardContent className="p-0">
-        <div 
-          className="p-4 relative overflow-hidden"
-          style={{ backgroundColor }}
-        >
-          <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
-          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
-          
-          <div className="flex items-center justify-center gap-3">
-            <div className="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0 border border-white/20">
-              <CategoryIcon className="w-4.5 h-4.5 text-white" />
+        <div className="px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: `${backgroundColor}15` }}
+            >
+              <CategoryIcon className="w-4 h-4" style={{ color: backgroundColor }} />
             </div>
-            <div className="flex-1 min-w-0 text-center">
-              <h3 className="font-semibold text-lg text-white leading-snug">
-                {assignment.serviceName}
-              </h3>
-            </div>
+            <h3 className="font-semibold text-sm text-gray-900 leading-snug">
+              {assignment.serviceName}
+            </h3>
           </div>
         </div>
 
@@ -122,7 +116,7 @@ export function ServiceCard({
                 layout="fill"
                 objectFit="cover"
                 className={`transition-transform duration-300 group-hover:scale-105 ${isDragging[assignment.id!] ? 'cursor-grabbing' : 'cursor-pointer'}`}
-                onClick={() => onImageClick(currentImage)}
+                onClick={() => onServiceSelect(assignment)}
                 onMouseDown={(e) => onDragStart(assignment.id!, e)}
                 onMouseUp={(e) => onDragEnd(assignment.id!, allImages.length, e)}
                 onMouseMove={(e) => onDragMove(assignment.id!, e)}
@@ -140,18 +134,18 @@ export function ServiceCard({
                     e.stopPropagation();
                     onPrevImage(assignment.id!, allImages.length);
                   }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center opacity-90 group-hover/image:opacity-100 transition-all duration-300 hover:bg-red-700 hover:scale-110 z-30 shadow-xl border border-white"
+                  className="absolute left-5 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 backdrop-blur-sm text-gray-700 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 hover:bg-white z-30"
                 >
-                  <ChevronLeft className="w-5 h-5 drop-shadow-lg font-bold" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onNextImage(assignment.id!, allImages.length);
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center opacity-90 group-hover/image:opacity-100 transition-all duration-300 hover:bg-red-700 hover:scale-110 z-30 shadow-xl border border-white"
+                  className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 backdrop-blur-sm text-gray-700 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 hover:bg-white z-30"
                 >
-                  <ChevronRight className="w-5 h-5 drop-shadow-lg font-bold" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </>
             )}
@@ -176,11 +170,12 @@ export function ServiceCard({
           </div>
         )}
 
-        <div className="p-4 pt-6 space-y-3">
+        <div className="px-3 pb-3 pt-2">
           <Button 
             onClick={() => onServiceSelect(assignment)}
-            className="w-full hover:opacity-90 text-white font-semibold py-5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md border-0 text-sm"
-            style={{ backgroundColor }}
+            variant="outline"
+            className="w-full font-medium py-4 rounded-xl transition-all duration-200 text-sm border-0 hover:opacity-80"
+            style={{ backgroundColor: `${backgroundColor}15`, color: backgroundColor }}
           >
             {t('activity_details_button')}
           </Button>
