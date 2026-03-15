@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { ArrowLeft, ImageIcon } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
@@ -118,14 +118,6 @@ export function ServiceCoverImage({ service, assignment, onImageClick, onClose, 
         </div>
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-
-        {/* Geri Butonu */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 left-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:bg-white hover:shadow-lg"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </button>
 
         {/* Sayaç */}
         {allImages.length > 1 && (

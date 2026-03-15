@@ -34,7 +34,7 @@ export function ReservationModal({ isOpen, onClose, assignment, locale }: Reserv
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 bg-white">
         <DialogHeader className="sticky top-0 z-50 flex items-center justify-between p-4 bg-white border-b flex-row">
            <DialogTitle className="text-lg font-bold" style={{ color: getThemeColor() }}>
             {t('make_reservation_title')}
