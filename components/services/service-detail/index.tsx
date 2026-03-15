@@ -32,20 +32,204 @@ interface ServiceDetailModalProps {
   locale: string; 
 }
 
+function FullImageSlider({
+  images,
+  startIndex,
+  onClose,
+}: {
+  images: string[];
+  startIndex: number;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const [currentIndex, setCurrentIndex] = useState(startIndex);
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragStartX = useRef<number | null>(null);
+  const isDragging = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const goTo = (index: number) => {
+    setCurrentIndex(Math.max(0, Math.min(index, images.length - 1)));
+    setDragOffset(0);
+  };
+
+  const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
+    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
+    dragStartX.current = x;
+    isDragging.current = false;
+    setDragOffset(0);
+  };
+
+  const handlePointerMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (dragStartX.current === null) return;
+    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const diff = x - dragStartX.current;
+    if (Math.abs(diff) > 5) isDragging.current = true;
+    if (isDragging.current) setDragOffset(diff);
+  };
+
+  const handlePointerUp = () => {
+    if (dragStartX.current === null) return;
+
+    if (isDragging.current && Math.abs(dragOffset) > 50) {
+      if (dragOffset < 0 && currentIndex < images.length - 1) goTo(currentIndex + 1);
+      else if (dragOffset > 0 && currentIndex > 0) goTo(currentIndex - 1);
+      else setDragOffset(0);
+    } else {
+      setDragOffset(0);
+    }
+
+    dragStartX.current = null;
+    isDragging.current = false;
+  };
+
+  const containerWidth = containerRef.current?.offsetWidth || 0;
+  const step = 100 / images.length;
+  const dragPercent = containerWidth > 0 ? (dragOffset / containerWidth) * step : 0;
+  const translateX = -(currentIndex * step) + dragPercent;
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 bg-black/95 border-0 [&>h2]:hidden">
+        <DialogTitle>
+          <VisuallyHidden.Root>{t('image_viewer_title')}</VisuallyHidden.Root>
+        </DialogTitle>
+
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition-colors"
+        >
+          ✕
+        </button>
+
+        {images.length > 1 && (
+          <div className="absolute top-4 left-4 z-20 text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+            {currentIndex + 1} / {images.length}
+          </div>
+        )}
+
+        <div
+          ref={containerRef}
+          className="w-full h-full select-none"
+          onMouseDown={handlePointerDown}
+          onMouseMove={handlePointerMove}
+          onMouseUp={handlePointerUp}
+          onMouseLeave={() => { if (dragStartX.current !== null) { setDragOffset(0); dragStartX.current = null; } }}
+          onTouchStart={handlePointerDown}
+          onTouchMove={handlePointerMove}
+          onTouchEnd={handlePointerUp}
+        >
+          <div
+            className={`flex h-full ${dragOffset === 0 ? 'transition-transform duration-500 ease-out' : ''}`}
+            style={{ transform: `translateX(${translateX}%)`, width: `${images.length * 100}%` }}
+          >
+            {images.map((img, index) => (
+              <div key={index} className="relative h-full shrink-0 p-6 md:p-12" style={{ width: `${100 / images.length}%` }}>
+                <Image
+                  src={img}
+                  alt={t('activity_photo_alt')}
+                  layout="fill"
+                  objectFit="contain"
+                  className="pointer-events-none"
+                  draggable={false}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {images.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goTo(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex ? 'bg-white w-5' : 'bg-white/40 w-2'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function GalleryGridModal({
+  images,
+  onClose,
+  onImageSelect,
+}: {
+  images: string[];
+  onClose: () => void;
+  onImageSelect: (imageUrl: string) => void;
+}) {
+  const { t } = useTranslation();
+
+  const leftCol = images.filter((_, i) => i % 2 === 0);
+  const rightCol = images.filter((_, i) => i % 2 === 1);
+
+  const renderImage = (img: string, originalIndex: number, tall: boolean) => (
+    <div
+      key={originalIndex}
+      className={`relative overflow-hidden rounded-2xl cursor-pointer group ${tall ? 'aspect-[3/4]' : 'aspect-square'}`}
+      onClick={() => onImageSelect(img)}
+    >
+      <Image
+        src={img}
+        alt={t('activity_photo_alt')}
+        layout="fill"
+        objectFit="cover"
+        className="transition-transform duration-300 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
+    </div>
+  );
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="w-screen h-screen max-w-none max-h-none  py-12 border-0 overflow-hidden bg-white [&>h2]:hidden">
+        <DialogTitle>
+          <VisuallyHidden.Root>{t('image_viewer_title')}</VisuallyHidden.Root>
+        </DialogTitle>
+
+        <button
+          onClick={onClose}
+          className="absolute top-1.5 left-2 z-20 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors shadow-sm text-xs"
+        >
+          ✕
+        </button>
+
+        <div className="overflow-y-auto px-2 pt-0 pb-3 h-full">
+          <div className="flex gap-2">
+            <div className="flex-1 flex flex-col gap-2">
+              {leftCol.map((img, i) => renderImage(img, i * 2, i % 3 === 0))}
+            </div>
+            <div className="flex-1 flex flex-col gap-2">
+              {rightCol.map((img, i) => renderImage(img, i * 2 + 1, i % 3 === 1))}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: ServiceDetailModalProps) {
   const { t } = useTranslation();
   
   const {
     isReservationModalOpen,
     setIsReservationModalOpen,
-    selectedImage,
-    isImageModalOpen,
-    setIsImageModalOpen,
     handleImageClick
   } = useServiceModal();
 
   const [theme, setTheme] = useState<any>(null);
   const [showHeaderBack, setShowHeaderBack] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [fullImageIndex, setFullImageIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = useCallback(() => {
@@ -53,6 +237,33 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
       setShowHeaderBack(scrollRef.current.scrollTop > 340);
     }
   }, []);
+
+  const handleGalleryOpen = useCallback((images: string[]) => {
+    setGalleryImages(images);
+    setIsGalleryOpen(true);
+  }, []);
+
+  const getAllServiceImages = useCallback(() => {
+    if (!assignment?.serviceDetails) return [];
+    const s = assignment.serviceDetails;
+    const imgs: string[] = [];
+    if (s.coverImage) imgs.push(s.coverImage);
+    if (s.categoryDetails?.photos) {
+      const extras = s.categoryDetails.photos.filter(
+        (p: string | null) => p && p !== s.coverImage
+      );
+      imgs.push(...extras);
+    }
+    return imgs;
+  }, [assignment]);
+
+  const handleSingleImageClick = useCallback((_?: string) => {
+    const imgs = getAllServiceImages();
+    if (imgs.length > 0) {
+      setGalleryImages(imgs);
+      setIsGalleryOpen(true);
+    }
+  }, [getAllServiceImages]);
 
   useEffect(() => {
     const loadTheme = async () => {
@@ -94,8 +305,9 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
             <ServiceCoverImage 
               service={service}
               assignment={assignment}
-              onImageClick={handleImageClick}
+              onImageClick={handleSingleImageClick}
               onClose={onClose}
+              onGalleryOpen={handleGalleryOpen}
             />
 
             <div className="px-6 md:px-8 space-y-6">
@@ -127,7 +339,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
                 assignment={assignment}
                 service={service}
                 theme={currentTheme}
-                onImageClick={handleImageClick}
+                onImageClick={handleSingleImageClick}
               />
 
               <ServiceContact 
@@ -145,33 +357,20 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
         />
         <WhatsAppButton className="bottom-24 right-4 z-[60]" compactLabel="Info" />
 
-        {isImageModalOpen && selectedImage && (
-          <Dialog open={isImageModalOpen} onOpenChange={() => setIsImageModalOpen(false)}>
-            <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 bg-black/95 border-0">
-              <DialogTitle>
-                <VisuallyHidden.Root>{t('image_viewer_title')}</VisuallyHidden.Root>
-              </DialogTitle>
-              
-              <div className="absolute top-4 right-4 z-20">
-                <button
-                  onClick={() => setIsImageModalOpen(false)}
-                  className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 w-10 h-10 rounded-lg flex items-center justify-center"
-                >
-                  ✕
-                </button>
-              </div>
+        {isGalleryOpen && galleryImages.length > 0 && (
+          <GalleryGridModal
+            images={galleryImages}
+            onClose={() => setIsGalleryOpen(false)}
+            onImageSelect={(url) => { const idx = galleryImages.indexOf(url); setFullImageIndex(idx >= 0 ? idx : 0); }}
+          />
+        )}
 
-              <div className="w-full h-full flex items-center justify-center p-8">
-                <Image
-                  src={selectedImage}
-                  alt={t('activity_photo_alt')}
-                  layout="fill"
-                  objectFit="contain"
-                  className="rounded-lg shadow-2xl"
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
+        {fullImageIndex !== null && galleryImages.length > 0 && (
+          <FullImageSlider
+            images={galleryImages}
+            startIndex={fullImageIndex}
+            onClose={() => setFullImageIndex(null)}
+          />
         )}
 
         <ReservationModal
