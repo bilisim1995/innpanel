@@ -1,5 +1,19 @@
 import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from 'firebase/firestore';
+
+export interface CategoryDefinition {
+  id?: string;
+  slug: string;
+  labels: {
+    tr: string;
+    en: string;
+  };
+  iconKey: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface CategoryColorSettings {
   id?: string;
@@ -14,16 +28,68 @@ export interface CategoryColorSettings {
   updatedAt: Date;
 }
 
+const CATEGORIES_COLLECTION = 'categories';
 const CATEGORY_COLORS_COLLECTION = 'category_colors';
 
-// Default categories from the system
-export const DEFAULT_CATEGORIES = [
-  { id: "region-tours", label: "Bölge Turları" },
-  { id: "motor-tours", label: "Aktiviteler" },
-  { id: "balloon", label: "Sıcak Balon" },
-  { id: "transfer", label: "Transfer" },
-  { id: "other", label: "Diğer" },
-];
+export const saveCategory = async (
+  categoryData: Omit<CategoryDefinition, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<string> => {
+  try {
+    const now = new Date();
+    const docRef = await addDoc(collection(db, CATEGORIES_COLLECTION), {
+      ...categoryData,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return docRef.id;
+  } catch (error) {
+    console.error('Error saving category:', error);
+    throw new Error('Kategori kaydedilirken bir hata oluştu');
+  }
+};
+
+export const getCategories = async (): Promise<CategoryDefinition[]> => {
+  try {
+    const q = query(collection(db, CATEGORIES_COLLECTION), orderBy('sortOrder', 'asc'));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((snapshot) => ({
+      id: snapshot.id,
+      ...snapshot.data(),
+      createdAt: snapshot.data().createdAt?.toDate() || new Date(),
+      updatedAt: snapshot.data().updatedAt?.toDate() || new Date(),
+    })) as CategoryDefinition[];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw new Error('Kategoriler yüklenirken bir hata oluştu');
+  }
+};
+
+export const updateCategory = async (
+  id: string,
+  categoryData: Partial<CategoryDefinition>
+): Promise<void> => {
+  try {
+    const categoryRef = doc(db, CATEGORIES_COLLECTION, id);
+    await setDoc(categoryRef, {
+      ...categoryData,
+      updatedAt: new Date(),
+    }, { merge: true });
+  } catch (error) {
+    console.error('Error updating category:', error);
+    throw new Error('Kategori güncellenirken bir hata oluştu');
+  }
+};
+
+export const deleteCategory = async (id: string): Promise<void> => {
+  try {
+    await deleteDoc(doc(db, CATEGORIES_COLLECTION, id));
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    throw new Error('Kategori silinirken bir hata oluştu');
+  }
+};
 
 export const saveCategoryColor = async (colorData: Omit<CategoryColorSettings, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   try {

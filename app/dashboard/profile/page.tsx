@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +32,14 @@ import {
 import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
 import { User, Lock, Mail, Shield, Palette, Plus, Edit, Trash2, Car, Phone, CreditCard, Bell } from "lucide-react";
-import { DEFAULT_CATEGORIES, getCategoryColors, deleteCategoryColor, CategoryColorSettings, getColorPreview } from "@/lib/categories";
+import {
+  CategoryDefinition,
+  CategoryColorSettings,
+  getCategories,
+  getCategoryColors,
+  getColorPreview,
+  deleteCategory,
+} from "@/lib/categories";
 import {
   saveWhatsAppNumber,
   getWhatsAppNumber,
@@ -40,11 +48,12 @@ import {
   saveWhatsAppNotificationNumber,
   getWhatsAppNotificationNumber
 } from "@/lib/settings";
-import { CategoryColorModal } from "@/components/categories/category-color-modal";
 import { getVehicles, deleteVehicle, VehicleData } from "@/lib/vehicles";
 import { VehicleModal } from "@/components/vehicles/vehicle-modal";
 import { getTransferPrices, deleteTransferPrice, TransferPriceData } from "@/lib/transfer-prices";
 import { TransferPriceModal } from "@/components/transfer-prices/transfer-price-modal";
+import { CategoryModal } from "@/components/categories/category-modal";
+import { getCategoryIcon } from "@/lib/category-icons";
 
 export default function ProfilePage() {
   const { user, updateUserProfile, changePassword } = useAuth();
@@ -62,11 +71,12 @@ export default function ProfilePage() {
   const [isUpdatingWhatsAppNotification, setIsUpdatingWhatsAppNotification] = useState(false);
 
   // Category Colors State
-  const [categoryColors, setCategoryColors] = useState<CategoryColorSettings[]>([]);
-  const [loadingColors, setLoadingColors] = useState(true);
-  const [isColorModalOpen, setIsColorModalOpen] = useState(false);
-  const [editingColor, setEditingColor] = useState<CategoryColorSettings | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<{ id: string, name: string } | null>(null);
+  const [categories, setCategories] = useState<CategoryDefinition[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryDefinition | null>(null);
+  const [categoryDesigns, setCategoryDesigns] = useState<Record<string, CategoryColorSettings>>({});
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   // Vehicle Management State
   const [vehicles, setVehicles] = useState<VehicleData[]>([]);
@@ -101,17 +111,35 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const loadCategoryColors = useCallback(async () => {
+  const loadCategories = useCallback(async () => {
     try {
-      setLoadingColors(true);
-      const colors = await getCategoryColors();
-      setCategoryColors(colors);
+      setLoadingCategories(true);
+      const fetchedCategories = await getCategories();
+      const sorted = [...fetchedCategories].sort((a, b) => a.sortOrder - b.sortOrder);
+      setCategories(sorted);
     } catch (error) {
-      toast({ title: "Hata", description: "Kategori renkleri yüklenirken bir hata oluştu", variant: "destructive" });
+      toast({ title: "Hata", description: "Kategoriler yuklenirken bir hata olustu", variant: "destructive" });
+      setCategories([]);
     } finally {
-      setLoadingColors(false);
+      setLoadingCategories(false);
     }
-  },[toast]);
+  }, [toast]);
+
+  const loadCategoryDesigns = useCallback(async () => {
+    try {
+      const colorRows = await getCategoryColors();
+      const designMap: Record<string, CategoryColorSettings> = {};
+      colorRows.forEach((row) => {
+        if (!row.categoryId) return;
+        if (!designMap[row.categoryId]) {
+          designMap[row.categoryId] = row;
+        }
+      });
+      setCategoryDesigns(designMap);
+    } catch (error) {
+      setCategoryDesigns({});
+    }
+  }, []);
 
   const loadWhatsAppNumber = useCallback(async () => {
     try {
@@ -165,13 +193,41 @@ export default function ProfilePage() {
   },[toast]);
 
   useEffect(() => {
-    loadCategoryColors();
+    loadCategories();
+    loadCategoryDesigns();
     loadWhatsAppNumber();
     loadNotificationEmail();
     loadWhatsAppNotificationNumber();
     loadVehicles();
     loadTransferPrices();
-  }, [loadCategoryColors, loadWhatsAppNumber, loadNotificationEmail, loadWhatsAppNotificationNumber, loadVehicles, loadTransferPrices]);
+  }, [loadCategories, loadCategoryDesigns, loadWhatsAppNumber, loadNotificationEmail, loadWhatsAppNotificationNumber, loadVehicles, loadTransferPrices]);
+
+  const handleAddCategory = () => {
+    setEditingCategory(null);
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleEditCategory = (category: CategoryDefinition) => {
+    setEditingCategory(category);
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      await deleteCategory(id);
+      toast({ title: "Basarili", description: "Kategori silindi" });
+      loadCategories();
+    } catch (error) {
+      toast({ title: "Hata", description: "Kategori silinirken bir hata olustu", variant: "destructive" });
+    }
+  };
+
+  const handleCategoryModalClose = () => {
+    setIsCategoryModalOpen(false);
+    setEditingCategory(null);
+    loadCategories();
+    loadCategoryDesigns();
+  };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,35 +321,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleAddColor = (categoryId: string, categoryName: string) => {
-    setSelectedCategory({ id: categoryId, name: categoryName });
-    setEditingColor(null);
-    setIsColorModalOpen(true);
-  };
-
-  const handleEditColor = (color: CategoryColorSettings) => {
-    setSelectedCategory({ id: color.categoryId, name: color.categoryName });
-    setEditingColor(color);
-    setIsColorModalOpen(true);
-  };
-
-  const handleDeleteColor = async (id: string) => {
-    try {
-      await deleteCategoryColor(id);
-      toast({ title: "Başarılı", description: "Kategori rengi silindi" });
-      loadCategoryColors();
-    } catch (error) {
-      toast({ title: "Hata", description: "Kategori rengi silinirken bir hata oluştu", variant: "destructive" });
-    }
-  };
-
-  const handleColorModalClose = () => {
-    setIsColorModalOpen(false);
-    setEditingColor(null);
-    setSelectedCategory(null);
-    loadCategoryColors();
-  };
-
   const handleAddVehicle = () => {
     setEditingVehicle(null);
     setIsVehicleModalOpen(true);
@@ -344,10 +371,6 @@ export default function ProfilePage() {
     setIsTransferPriceModalOpen(false);
     setEditingTransferPrice(null);
     loadTransferPrices();
-  };
-
-  const getCategoryColorSettings = (categoryId: string) => {
-    return categoryColors.find(color => color.categoryId === categoryId);
   };
 
   return (
@@ -490,100 +513,131 @@ export default function ProfilePage() {
         <TabsContent value="categories" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5" />Kategori Renk Ayarları</CardTitle>
-              <CardDescription>Hizmet kategorileri için renk tanımlamaları yapın. Bu renkler kategori kartlarında ve badgelerde kullanılacak.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5" />Kategori Yönetimi</CardTitle>
+              <CardDescription>Kategorileri, ikonlarini ve gorunum ayarlarini tek bir modaldan yonetin.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div>
-                  <h4 className="font-medium mb-4">Mevcut Kategoriler</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {DEFAULT_CATEGORIES.map((category) => {
-                      const colorSettings = getCategoryColorSettings(category.id);
-                      return (
-                        <Card key={category.id} className="relative">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <h5 className="font-medium">{category.label}</h5>
-                              <Button size="sm" variant="outline" onClick={() => handleAddColor(category.id, category.label)}><Plus className="h-4 w-4" /></Button>
-                            </div>
-                            {colorSettings ? (
-                              <div className="space-y-2">
-                                <div className="w-full h-8 rounded border" style={colorSettings.colorType === "gradient" ? { background: getColorPreview(colorSettings) } : { backgroundColor: getColorPreview(colorSettings) }} />
-                                <div className="flex items-center justify-between">
-                                  <Badge variant="outline" className="text-xs">{colorSettings.colorType === "solid" ? "Düz" : colorSettings.colorType === "gradient" ? "Gradyan" : colorSettings.colorType === "rgb" ? "RGB" : "Hex"}</Badge>
-                                  <div className="flex gap-1">
-                                    <Button size="sm" variant="ghost" onClick={() => handleEditColor(colorSettings)}><Edit className="h-3 w-3" /></Button>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild><Button size="sm" variant="ghost"><Trash2 className="h-3 w-3" /></Button></AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Renk Ayarını Sil</AlertDialogTitle>
-                                          <AlertDialogDescription>Bu kategori için renk ayarını silmek istediğinizden emin misiniz?</AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>İptal</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => colorSettings.id && handleDeleteColor(colorSettings.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Sil</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-center py-4">
-                                <p className="text-sm text-muted-foreground mb-2">Renk tanımlanmamış</p>
-                                <div className="w-full h-8 bg-gray-200 rounded border" />
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-medium">Kategori Yonetimi</h4>
+                    <Button size="sm" onClick={handleAddCategory}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      Yeni Kategori
+                    </Button>
                   </div>
-                </div>
-
-                {categoryColors.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-4">Renk Ayarları</h4>
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ikon</TableHead>
+                          <TableHead>Slug</TableHead>
+                          <TableHead>Ad (TR)</TableHead>
+                          <TableHead>Ad (EN)</TableHead>
+                          <TableHead>Tasarim Tipi</TableHead>
+                          <TableHead>Siralama</TableHead>
+                          <TableHead>Durum</TableHead>
+                          <TableHead className="text-right">Islemler</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {loadingCategories ? (
                           <TableRow>
-                            <TableHead>Kategori</TableHead><TableHead>Renk Tipi</TableHead><TableHead>Görünüm</TableHead><TableHead>Detay</TableHead><TableHead>Önizleme</TableHead><TableHead className="text-right">İşlemler</TableHead>
+                            <TableCell colSpan={8} className="text-center py-8">Yukleniyor...</TableCell>
                           </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {loadingColors ? (
-                            <TableRow><TableCell colSpan={6} className="text-center py-8">Yükleniyor...</TableCell></TableRow>
-                          ) : (
-                            categoryColors.map((color) => (
-                              <TableRow key={color.id}>
-                                <TableCell className="font-medium">{color.categoryName}</TableCell>
-                                <TableCell><Badge variant="outline">{color.useImage ? "Resim" : color.colorType === "solid" ? "Düz" : color.colorType === "gradient" ? "Gradyan" : color.colorType === "rgb" ? "RGB" : "Hex"}</Badge></TableCell>
-                                <TableCell>{color.useImage && color.categoryImage ? (<div className="flex items-center gap-2"><div className="w-6 h-6 rounded border bg-cover bg-center" style={{ backgroundImage: `url(${color.categoryImage})` }} /><span className="text-xs">Resim</span></div>) : (<div className="flex items-center gap-2"><div className="w-6 h-6 rounded border" style={{ backgroundColor: color.primaryColor }} /><code className="text-xs">{color.primaryColor}</code></div>)}</TableCell>
-                                <TableCell>{color.useImage ? (<span className="text-xs text-muted-foreground">{color.categoryImage ? "Yüklendi" : "Seçilmedi"}</span>) : color.secondaryColor ? (<div className="flex items-center gap-2"><div className="w-6 h-6 rounded border" style={{ backgroundColor: color.secondaryColor }} /><code className="text-xs">{color.secondaryColor}</code></div>) : (<span className="text-muted-foreground">-</span>)}</TableCell>
-                                <TableCell><div className="w-16 h-6 rounded border" style={color.useImage && color.categoryImage ? { backgroundImage: `url(${color.categoryImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : (color.colorType === "gradient" ? { background: getColorPreview(color) } : { backgroundColor: getColorPreview(color) })} /></TableCell>
+                        ) : categories.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center py-8">Kategori bulunamadi</TableCell>
+                          </TableRow>
+                        ) : (
+                          categories.map((category) => {
+                            const Icon = getCategoryIcon(category.iconKey);
+                            const design = categoryDesigns[category.slug];
+                            return (
+                              <TableRow key={category.id || category.slug}>
+                                <TableCell><Icon className="h-4 w-4" /></TableCell>
+                                <TableCell className="font-medium">{category.slug}</TableCell>
+                                <TableCell>{category.labels?.tr || "-"}</TableCell>
+                                <TableCell>{category.labels?.en || "-"}</TableCell>
+                                <TableCell>
+                                  {!design ? (
+                                    <Badge variant="secondary">Yok</Badge>
+                                  ) : design.useImage && design.categoryImage ? (
+                                    <div className="flex items-center gap-2">
+                                      <Badge>Resim</Badge>
+                                      <button
+                                        type="button"
+                                        onClick={() => setPreviewImageUrl(design.categoryImage || null)}
+                                        className="w-9 h-9 rounded border overflow-hidden hover:opacity-90"
+                                      >
+                                        <img
+                                          src={design.categoryImage}
+                                          alt={`${category.labels?.tr || category.slug} tasarim resmi`}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline">Renk</Badge>
+                                      <div
+                                        className="w-9 h-9 rounded border"
+                                        style={
+                                          design.colorType === "gradient"
+                                            ? { background: getColorPreview(design) }
+                                            : { backgroundColor: getColorPreview(design) }
+                                        }
+                                      />
+                                    </div>
+                                  )}
+                                </TableCell>
+                                <TableCell>{category.sortOrder}</TableCell>
+                                <TableCell>
+                                  <Badge variant={category.isActive ? "default" : "secondary"}>
+                                    {category.isActive ? "Aktif" : "Pasif"}
+                                  </Badge>
+                                </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-2">
-                                    <Button variant="ghost" size="sm" onClick={() => handleEditColor(color)}><Edit className="h-4 w-4" /></Button>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild><Button variant="ghost" size="sm"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader><AlertDialogTitle>Renk Ayarını Sil</AlertDialogTitle><AlertDialogDescription>Bu renk ayarını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</AlertDialogDescription></AlertDialogHeader>
-                                        <AlertDialogFooter><AlertDialogCancel>İptal</AlertDialogCancel><AlertDialogAction onClick={() => color.id && handleDeleteColor(color.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Sil</AlertDialogAction></AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
+                                    <Button variant="ghost" size="sm" onClick={() => handleEditCategory(category)}>
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    {category.id && (
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button variant="ghost" size="sm">
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Kategoriyi Sil</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              Bu kategoriyi silmek istediginizden emin misiniz? Bu islem geri alinamaz.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Iptal</AlertDialogCancel>
+                                            <AlertDialogAction
+                                              onClick={() => handleDeleteCategory(category.id!)}
+                                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            >
+                                              Sil
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    )}
                                   </div>
                                 </TableCell>
                               </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
-                    </div>
+                            );
+                          })
+                        )}
+                      </TableBody>
+                    </Table>
                   </div>
-                )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -695,9 +749,25 @@ export default function ProfilePage() {
       </Tabs>
 
       {/* Modals */}
-      {isColorModalOpen && selectedCategory && (<CategoryColorModal isOpen={isColorModalOpen} onClose={handleColorModalClose} category={selectedCategory} editingColor={editingColor} />)}
+      {isCategoryModalOpen && (
+        <CategoryModal
+          isOpen={isCategoryModalOpen}
+          onClose={handleCategoryModalClose}
+          editingCategory={editingCategory}
+        />
+      )}
       {isVehicleModalOpen && (<VehicleModal isOpen={isVehicleModalOpen} onClose={handleVehicleModalClose} editingVehicle={editingVehicle} />)}
       {isTransferPriceModalOpen && (<TransferPriceModal isOpen={isTransferPriceModalOpen} onClose={handleTransferPriceModalClose} editingTransferPrice={editingTransferPrice} vehicles={vehicles.filter(v => v.isActive)} />)}
+      <Dialog open={!!previewImageUrl} onOpenChange={(open) => !open && setPreviewImageUrl(null)}>
+        <DialogContent className="max-w-5xl w-[95vw]">
+          <DialogTitle>Kategori Tasarim Resmi</DialogTitle>
+          <div className="w-full h-[70vh] rounded-md border bg-muted/20 flex items-center justify-center">
+            {previewImageUrl ? (
+              <img src={previewImageUrl} alt="Kategori tasarim resmi" className="max-w-full max-h-full object-contain" />
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
