@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Eye, Edit, Trash2, Link as LinkIcon, Building2, MapPin, Users, Calendar, Clock, CreditCard, Settings, Package, Tag, Coins } from "lucide-react";
+import { Plus, Search, Eye, Edit, Trash2, Link as LinkIcon, Building2, MapPin, Users, Calendar, Clock, CreditCard, Settings, Package, Tag, Coins, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -49,7 +49,7 @@ export default function AssignServicesPage() {
   const [serviceSearch, setServiceSearch] = useState("");
   const [locationSearch, setLocationSearch] = useState("");
   const [assignmentSearch, setAssignmentSearch] = useState("");
-  const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
+  const [selectedServices, setSelectedServices] = useState<ServiceData[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [isAssigning, setIsAssigning] = useState(false);
   const [viewingAssignment, setViewingAssignment] = useState<AssignmentData | null>(null);
@@ -104,24 +104,21 @@ export default function AssignServicesPage() {
     loadData();
   }, [loadData]);
 
+  const toggleServiceSelection = (service: ServiceData) => {
+    setSelectedServices(prev => {
+      const isSelected = prev.some(s => s.id === service.id);
+      if (isSelected) {
+        return prev.filter(s => s.id !== service.id);
+      }
+      return [...prev, service];
+    });
+  };
+
   const handleAssign = async () => {
-    if (!selectedService || !selectedLocation) {
+    if (selectedServices.length === 0 || !selectedLocation) {
       toast({
         title: "Eksik Seçim",
-        description: "Lütfen bir hizmet ve bir hizmet noktası seçin.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const alreadyExists = assignments.some(
-      a => a.serviceId === selectedService.id && a.locationId === selectedLocation.id
-    );
-
-    if (alreadyExists) {
-      toast({
-        title: "Mevcut Atama",
-        description: "Bu hizmet bu noktaya zaten atanmış.",
+        description: "Lütfen en az bir hizmet ve bir hizmet noktası seçin.",
         variant: "destructive",
       });
       return;
@@ -129,38 +126,66 @@ export default function AssignServicesPage() {
 
     setIsAssigning(true);
     try {
-      const newAssignment: Omit<AssignmentData, 'id' | 'assignedAt'> = {
-        serviceId: selectedService.id!,
-        serviceName: selectedService.serviceName,
-        companyName: selectedService.companyName,
-        serviceCategory: selectedService.category,
-        locationId: selectedLocation.id!,
-        locationName: selectedLocation.name,
-        locationType: selectedLocation.type,
-        managerName: selectedLocation.managerName || "",
-        isActive: true,
-        pricingSettings: {
+      let successCount = 0;
+      let skippedCount = 0;
+
+      for (const service of selectedServices) {
+        const alreadyExists = assignments.some(
+          a => a.serviceId === service.id && a.locationId === selectedLocation.id
+        );
+
+        if (alreadyExists) {
+          skippedCount++;
+          continue;
+        }
+
+        const newAssignment: Omit<AssignmentData, 'id' | 'assignedAt'> = {
+          serviceId: service.id!,
+          serviceName: service.serviceName,
+          companyName: service.companyName,
+          serviceCategory: service.category,
+          locationId: selectedLocation.id!,
+          locationName: selectedLocation.name,
+          locationType: selectedLocation.type,
+          managerName: selectedLocation.managerName || "",
+          isActive: true,
+          pricingSettings: {
             prepaymentEnabled: false,
             paymentMethods: {
-                fullPayment: true,
-                prePayment: true,
-                fullAtLocation: true,
+              fullPayment: true,
+              prePayment: true,
+              fullAtLocation: true,
             },
             dateRanges: [],
-        },
-      };
-      
-      await saveAssignment(newAssignment);
+          },
+        };
 
-      toast({
-        title: "Başarılı",
-        description: "Hizmet başarıyla atandı.",
-      });
+        await saveAssignment(newAssignment);
+        successCount++;
+      }
 
-      setSelectedService(null);
+      if (successCount > 0 && skippedCount > 0) {
+        toast({
+          title: "Atama Tamamlandı",
+          description: `${successCount} hizmet başarıyla atandı, ${skippedCount} hizmet zaten atanmış olduğu için atlandı.`,
+        });
+      } else if (successCount > 0) {
+        toast({
+          title: "Başarılı",
+          description: `${successCount} hizmet başarıyla atandı.`,
+        });
+      } else {
+        toast({
+          title: "Mevcut Atama",
+          description: "Seçilen tüm hizmetler bu noktaya zaten atanmış.",
+          variant: "destructive",
+        });
+      }
+
+      setSelectedServices([]);
       setSelectedLocation(null);
       await loadData();
-      setActiveTab("manage");
+      if (successCount > 0) setActiveTab("manage");
 
     } catch (error) {
       toast({
@@ -258,8 +283,15 @@ export default function AssignServicesPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Hizmet Seç</CardTitle>
-                <CardDescription>Atamak istediğiniz hizmeti listeden seçin.</CardDescription>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Hizmet Seç</span>
+                  {selectedServices.length > 0 && (
+                    <Badge variant="default" className="text-xs">
+                      {selectedServices.length} hizmet seçildi
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>Atamak istediğiniz hizmetleri listeden seçin. Birden fazla seçebilirsiniz.</CardDescription>
                 <div className="flex items-center gap-2 pt-2">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <Input
@@ -272,22 +304,33 @@ export default function AssignServicesPage() {
               </CardHeader>
               <CardContent className="max-h-[400px] overflow-y-auto">
                 <div className="space-y-2">
-                  {filteredServices.length > 0 ? filteredServices.map((service) => (
-                    <button
-                      key={service.id}
-                      onClick={() => setSelectedService(service)}
-                      className={cn(
-                        "w-full text-left p-3 rounded-lg border transition-colors",
-                        selectedService?.id === service.id
-                          ? "bg-primary/10 border-primary"
-                          : "hover:bg-muted/50"
-                      )}
-                    >
-                      <p className="font-semibold">{service.serviceName}</p>
-                      <p className="text-sm text-muted-foreground">{service.companyName}</p>
-                      <Badge variant="outline" className="mt-1">{getCategoryLabel(service.category)}</Badge>
-                    </button>
-                  )) : <p className="text-sm text-muted-foreground text-center py-4">Aktif hizmet bulunamadı.</p>}
+                  {filteredServices.length > 0 ? filteredServices.map((service) => {
+                    const isSelected = selectedServices.some(s => s.id === service.id);
+                    return (
+                      <button
+                        key={service.id}
+                        onClick={() => toggleServiceSelection(service)}
+                        className={cn(
+                          "w-full text-left p-3 rounded-lg border transition-colors flex items-start gap-3",
+                          isSelected
+                            ? "bg-primary/10 border-primary"
+                            : "hover:bg-muted/50"
+                        )}
+                      >
+                        <div className={cn(
+                          "mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
+                          isSelected ? "bg-primary border-primary" : "border-gray-300"
+                        )}>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold">{service.serviceName}</p>
+                          <p className="text-sm text-muted-foreground">{service.companyName}</p>
+                          <Badge variant="outline" className="mt-1">{getCategoryLabel(service.category)}</Badge>
+                        </div>
+                      </button>
+                    );
+                  }) : <p className="text-sm text-muted-foreground text-center py-4">Aktif hizmet bulunamadı.</p>}
                 </div>
               </CardContent>
             </Card>
@@ -331,23 +374,37 @@ export default function AssignServicesPage() {
           <Card>
             <CardHeader>
               <CardTitle>Atama Özeti</CardTitle>
-              <CardDescription>Seçilen hizmet ve hizmet noktasını kontrol edip atamayı tamamlayın.</CardDescription>
+              <CardDescription>Seçilen hizmetleri ve hizmet noktasını kontrol edip atamayı tamamlayın.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <h4 className="font-semibold mb-1">Seçilen Hizmet</h4>
-                  {selectedService ? (
-                    <div>
-                      <p>{selectedService.serviceName}</p>
-                      <p className="text-muted-foreground">{selectedService.companyName}</p>
+                  <h4 className="font-semibold mb-2">Seçilen Hizmetler ({selectedServices.length})</h4>
+                  {selectedServices.length > 0 ? (
+                    <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
+                      {selectedServices.map((service) => (
+                        <div key={service.id} className="flex items-center justify-between p-2 rounded-md bg-muted/50 border">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm truncate">{service.serviceName}</p>
+                            <p className="text-xs text-muted-foreground truncate">{service.companyName}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => toggleServiceSelection(service)}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <p className="text-muted-foreground">Hizmet seçilmedi</p>
                   )}
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-1">Seçilen Hizmet Noktası</h4>
+                  <h4 className="font-semibold mb-2">Seçilen Hizmet Noktası</h4>
                   {selectedLocation ? (
                     <div>
                       <p>{selectedLocation.name}</p>
@@ -362,9 +419,9 @@ export default function AssignServicesPage() {
                 <AlertDialogTrigger asChild>
                   <Button
                     className="w-full"
-                    disabled={!selectedService || !selectedLocation || isAssigning}
+                    disabled={selectedServices.length === 0 || !selectedLocation || isAssigning}
                   >
-                    {isAssigning ? "Atanıyor..." : "Hizmeti Ata"}
+                    {isAssigning ? "Atanıyor..." : selectedServices.length > 1 ? `${selectedServices.length} Hizmeti Ata` : "Hizmeti Ata"}
                     <LinkIcon className="ml-2 h-4 w-4" />
                   </Button>
                 </AlertDialogTrigger>
@@ -372,7 +429,10 @@ export default function AssignServicesPage() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Atamayı Onayla</AlertDialogTitle>
                     <AlertDialogDescription>
-                      {selectedService?.serviceName} hizmetini {selectedLocation?.name} noktasına atamak istediğinizden emin misiniz?
+                      {selectedServices.length === 1
+                        ? `${selectedServices[0].serviceName} hizmetini ${selectedLocation?.name} noktasına atamak istediğinizden emin misiniz?`
+                        : `${selectedServices.length} hizmeti ${selectedLocation?.name} noktasına atamak istediğinizden emin misiniz?`
+                      }
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
