@@ -41,7 +41,7 @@ import {
   TrainFront,
   TreePalm,
   Trophy,
-  WavesLadder,
+  Waves,
   Mountain,
   PartyPopper,
   Plane,
@@ -52,7 +52,6 @@ import {
   Sparkles,
   Ticket,
   UtensilsCrossed,
-  Waves,
   Wind,
 } from "lucide-react";
 
@@ -170,7 +169,7 @@ const iconMap: Record<string, LucideIcon> = {
   "heart-pulse": HeartPulse,
   dumbbell: Dumbbell,
   lamp: Lamp,
-  "waves-ladder": WavesLadder,
+  "waves-ladder": Waves,
   globe: Globe,
   "more-horizontal": MoreHorizontal,
 };
