@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Eye, Edit, Trash2, Link as LinkIcon, Building2, MapPin, Users, Calendar, Clock, CreditCard, Settings, Package, Tag, Coins, Check, X } from "lucide-react";
+import { Plus, Search, Eye, Edit, Trash2, Link as LinkIcon, Building2, MapPin, Users, Calendar, Clock, CreditCard, Settings, Package, Tag, Coins, Check, X, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { getServices, ServiceData } from "@/lib/services";
 import { getLocations, LocationData } from "@/lib/locations";
 import { saveAssignment, getAssignments, deleteAssignment, AssignmentData } from "@/lib/assignments";
@@ -49,6 +51,11 @@ export default function AssignServicesPage() {
   const [serviceSearch, setServiceSearch] = useState("");
   const [locationSearch, setLocationSearch] = useState("");
   const [assignmentSearch, setAssignmentSearch] = useState("");
+  const [filterService, setFilterService] = useState<string>("all");
+  const [filterLocation, setFilterLocation] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [selectedAssignmentIds, setSelectedAssignmentIds] = useState<Set<string>>(new Set());
   const [selectedServices, setSelectedServices] = useState<ServiceData[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [isAssigning, setIsAssigning] = useState(false);
@@ -202,6 +209,11 @@ export default function AssignServicesPage() {
   const handleDeleteAssignment = async (id: string) => {
     try {
       await deleteAssignment(id);
+      setSelectedAssignmentIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
       toast({
         title: "Başarılı",
         description: "Atama başarıyla silindi",
@@ -214,6 +226,37 @@ export default function AssignServicesPage() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleDeleteSelectedAssignments = async () => {
+    const ids = Array.from(selectedAssignmentIds);
+    if (ids.length === 0) return;
+    try {
+      for (const id of ids) {
+        await deleteAssignment(id);
+      }
+      toast({
+        title: "Başarılı",
+        description: `${ids.length} atama başarıyla silindi`,
+      });
+      setSelectedAssignmentIds(new Set());
+      loadData();
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: "Atamalar silinirken bir hata oluştu",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleAssignmentSelection = (id: string) => {
+    setSelectedAssignmentIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   const handleViewAssignment = (assignment: AssignmentData) => {
@@ -241,11 +284,41 @@ export default function AssignServicesPage() {
     l.name.toLowerCase().includes(locationSearch.toLowerCase())
   );
 
-  const filteredAssignments = assignments.filter(assignment =>
+  const searchFilteredAssignments = assignments.filter(assignment =>
     assignment.serviceName.toLowerCase().includes(assignmentSearch.toLowerCase()) ||
     assignment.locationName.toLowerCase().includes(assignmentSearch.toLowerCase()) ||
     assignment.companyName.toLowerCase().includes(assignmentSearch.toLowerCase())
   );
+
+  const filteredAssignments = searchFilteredAssignments.filter(assignment => {
+    if (filterService !== "all" && assignment.serviceName !== filterService) return false;
+    if (filterLocation !== "all" && assignment.locationName !== filterLocation) return false;
+    if (filterCategory !== "all" && assignment.serviceCategory !== filterCategory) return false;
+    if (filterStatus === "active" && !assignment.isActive) return false;
+    if (filterStatus === "inactive" && assignment.isActive) return false;
+    return true;
+  });
+
+  const uniqueServiceNames = [...new Set(assignments.map(a => a.serviceName))].sort();
+  const uniqueLocationNames = [...new Set(assignments.map(a => a.locationName))].sort();
+  const categoryOptions = [
+    { value: "region-tours", label: "Bölge Turları" },
+    { value: "motor-tours", label: "Aktiviteler" },
+    { value: "balloon", label: "Sıcak Balon" },
+    { value: "transfer", label: "Transfer" },
+    { value: "other", label: "Diğer" },
+  ];
+
+  const toggleAllAssignmentsSelection = (checked: boolean) => {
+    if (checked) {
+      setSelectedAssignmentIds(new Set(filteredAssignments.map(a => a.id!).filter(Boolean)));
+    } else {
+      setSelectedAssignmentIds(new Set());
+    }
+  };
+
+  const isAllFilteredSelected = filteredAssignments.length > 0 && filteredAssignments.every(a => a.id && selectedAssignmentIds.has(a.id));
+  const isSomeFilteredSelected = filteredAssignments.some(a => a.id && selectedAssignmentIds.has(a.id));
 
   if (loading) {
     return (
@@ -452,7 +525,7 @@ export default function AssignServicesPage() {
               <CardDescription>
                 Mevcut hizmet atamalarını görüntüleyin ve yönetin
               </CardDescription>
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2 flex-wrap">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Atama ara..."
@@ -460,6 +533,33 @@ export default function AssignServicesPage() {
                   onChange={(e) => setAssignmentSearch(e.target.value)}
                   className="max-w-sm"
                 />
+                {selectedAssignmentIds.size > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Seçilileri Sil ({selectedAssignmentIds.size})
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Seçili Atamaları Sil</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {selectedAssignmentIds.size} atamayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>İptal</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteSelectedAssignments}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Sil
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </CardHeader>
             <CardContent>
@@ -467,23 +567,110 @@ export default function AssignServicesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Hizmet</TableHead>
-                      <TableHead>Hizmet Noktası</TableHead>
-                      <TableHead>Kategori</TableHead>
-                      <TableHead>Durum</TableHead>
+                      <TableHead className="w-12">
+                        <div className="flex flex-col gap-1.5">
+                          <Checkbox
+                            checked={
+                              isAllFilteredSelected
+                                ? true
+                                : isSomeFilteredSelected
+                                  ? "indeterminate"
+                                  : false
+                            }
+                            onCheckedChange={(checked) => toggleAllAssignmentsSelection(checked === true)}
+                            aria-label="Tümünü seç"
+                          />
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex flex-col gap-1.5">
+                          <span>Hizmet</span>
+                          <Select value={filterService} onValueChange={setFilterService}>
+                            <SelectTrigger className="h-8 w-full max-w-[180px]">
+                              <Filter className="h-3.5 w-3.5 mr-1 opacity-70" />
+                              <SelectValue placeholder="Filtrele" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Tümü</SelectItem>
+                              {uniqueServiceNames.map(name => (
+                                <SelectItem key={name} value={name}>{name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex flex-col gap-1.5">
+                          <span>Hizmet Noktası</span>
+                          <Select value={filterLocation} onValueChange={setFilterLocation}>
+                            <SelectTrigger className="h-8 w-full max-w-[180px]">
+                              <Filter className="h-3.5 w-3.5 mr-1 opacity-70" />
+                              <SelectValue placeholder="Filtrele" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Tümü</SelectItem>
+                              {uniqueLocationNames.map(name => (
+                                <SelectItem key={name} value={name}>{name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex flex-col gap-1.5">
+                          <span>Kategori</span>
+                          <Select value={filterCategory} onValueChange={setFilterCategory}>
+                            <SelectTrigger className="h-8 w-full max-w-[160px]">
+                              <Filter className="h-3.5 w-3.5 mr-1 opacity-70" />
+                              <SelectValue placeholder="Filtrele" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Tümü</SelectItem>
+                              {categoryOptions.map(opt => (
+                                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex flex-col gap-1.5">
+                          <span>Durum</span>
+                          <Select value={filterStatus} onValueChange={setFilterStatus}>
+                            <SelectTrigger className="h-8 w-full max-w-[120px]">
+                              <Filter className="h-3.5 w-3.5 mr-1 opacity-70" />
+                              <SelectValue placeholder="Filtrele" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Tümü</SelectItem>
+                              <SelectItem value="active">Aktif</SelectItem>
+                              <SelectItem value="inactive">Pasif</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableHead>
                       <TableHead className="text-right">İşlemler</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredAssignments.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
-                          {assignmentSearch ? "Arama kriterlerine uygun atama bulunamadı" : "Henüz atama yapılmamış"}
+                        <TableCell colSpan={6} className="text-center py-8">
+                          {assignmentSearch || filterService !== "all" || filterLocation !== "all" || filterCategory !== "all" || filterStatus !== "all"
+                            ? "Arama ve filtre kriterlerine uygun atama bulunamadı"
+                            : "Henüz atama yapılmamış"}
                         </TableCell>
                       </TableRow>
                     ) : (
                       filteredAssignments.map((assignment) => (
                         <TableRow key={assignment.id}>
+                          <TableCell className="w-12">
+                            <Checkbox
+                              checked={assignment.id ? selectedAssignmentIds.has(assignment.id) : false}
+                              onCheckedChange={() => assignment.id && toggleAssignmentSelection(assignment.id)}
+                              aria-label={`${assignment.serviceName} atamasını seç`}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">
                             {assignment.serviceName}
                             <div className="text-xs text-muted-foreground">{assignment.companyName}</div>

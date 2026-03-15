@@ -5,6 +5,7 @@ import { convertTimestampsToDate } from './utils';
 export interface ServiceData {
   id?: string;
   category: string;
+  sortOrder?: number;
   serviceName: string;
   companyName: string;
   companyAddress: string;
@@ -51,20 +52,23 @@ export const getServices = async (): Promise<ServiceData[]> => {
     const q = query(collection(db, SERVICES_COLLECTION), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => {
+    const results = querySnapshot.docs.map(doc => {
       const data = doc.data();
-
-      
       return {
         id: doc.id,
         ...data,
+        sortOrder: data.sortOrder ?? 0,
         createdAt: data.createdAt?.toDate() || new Date(),
         updatedAt: data.updatedAt?.toDate() || new Date(),
-        language: data.language || 'tr', // Default to 'tr' if language is not set
-        // Convert all nested Timestamps in categoryDetails
+        language: data.language || 'tr',
         categoryDetails: convertTimestampsToDate(data.categoryDetails),
       };
     }) as ServiceData[];
+
+    return results.sort((a, b) => {
+      if (a.category !== b.category) return a.category.localeCompare(b.category);
+      return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+    });
   } catch (error) {
     console.error('Error fetching services:', error);
     throw new Error('Hizmetler yüklenirken bir hata oluştu');

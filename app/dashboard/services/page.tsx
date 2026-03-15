@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -15,20 +13,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ServiceModal } from "@/components/services/service-modal";
+import { SortableServiceRow } from "@/components/services/SortableServiceRow";
 import { getServices, deleteService, updateService, ServiceData } from "@/lib/services";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Eye } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 export default function ServicesPage() {
   const [search, setSearch] = useState("");
@@ -37,7 +38,13 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [editingService, setEditingService] = useState<ServiceData | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<{[key: string]: boolean}>({});
+  const [updatingOrder, setUpdatingOrder] = useState(false);
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const loadServices = useCallback(async () => {
     try {
@@ -126,6 +133,51 @@ export default function ServicesPage() {
     service.companyName.toLowerCase().includes(search.toLowerCase())
   );
 
+  const servicesByCategory = useMemo(() => {
+    const map: Record<string, ServiceData[]> = {};
+    filteredServices.forEach(service => {
+      const cat = service.category || "other";
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(service);
+    });
+    const order = ["region-tours", "motor-tours", "balloon", "transfer", "other"];
+    const known = order.filter(c => map[c]).map(cat => ({ category: cat, items: map[cat] }));
+    const unknown = Object.keys(map).filter(c => !order.includes(c)).map(cat => ({ category: cat, items: map[cat] }));
+    return [...known, ...unknown];
+  }, [filteredServices]);
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent, categoryItems: ServiceData[]) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = categoryItems.findIndex(s => s.id === active.id);
+    const newIndex = categoryItems.findIndex(s => s.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = [...categoryItems];
+    const [moved] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    setUpdatingOrder(true);
+    try {
+      await Promise.all(
+        reordered.map((service, index) =>
+          updateService(service.id!, { sortOrder: index })
+        )
+      );
+      toast({ title: "Başarılı", description: "Sıralama güncellendi" });
+      loadServices();
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: "Sıralama güncellenirken bir hata oluştu",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingOrder(false);
+    }
+  }, [loadServices, toast]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -153,6 +205,7 @@ export default function ServicesPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10"></TableHead>
                 <TableHead>Hizmet Adı</TableHead>
                 <TableHead>Firma</TableHead>
                 <TableHead>Kategori</TableHead>
@@ -165,72 +218,41 @@ export default function ServicesPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     Yükleniyor...
                   </TableCell>
                 </TableRow>
               ) : filteredServices.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     {search ? "Arama kriterlerine uygun hizmet bulunamadı" : "Henüz aktif hizmet eklenmemiş"}
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredServices.map((service) => (
-                  <TableRow key={service.id}>
-                    <TableCell className="font-medium">{service.serviceName}</TableCell>
-                    <TableCell>{service.companyName}</TableCell>
-                    <TableCell>{getCategoryLabel(service.category)}</TableCell>
-                    <TableCell>{service.quota}</TableCell>
-                    <TableCell>
-                      <Badge variant={service.isActive ? "default" : "secondary"}>
-                        {service.isActive ? "Aktif" : "Pasif"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={service.isActive}
-                        onCheckedChange={() => handleStatusToggle(service)}
-                        disabled={updatingStatus[service.id!]}
-                        className="data-[state=checked]:bg-green-600"
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleEdit(service)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Hizmeti Sil</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Bu hizmeti silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>İptal</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => service.id && handleDelete(service.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Sil
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                servicesByCategory.map(({ category, items }) => (
+                  <DndContext
+                    key={category}
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(e) => handleDragEnd(e, items)}
+                  >
+                    <SortableContext
+                      items={items.map(s => s.id!)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {items.map((service) => (
+                        <SortableServiceRow
+                          key={service.id}
+                          service={service}
+                          getCategoryLabel={getCategoryLabel}
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          onStatusToggle={handleStatusToggle}
+                          updatingStatus={updatingStatus[service.id!]}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
                 ))
               )}
             </TableBody>

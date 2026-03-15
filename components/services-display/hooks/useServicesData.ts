@@ -51,11 +51,20 @@ export function useServicesData(locationSlug: string, locale: string) { // local
           assignment.serviceDetails && 
           assignment.isActive && 
           assignment.serviceDetails.isActive &&
-          assignment.serviceDetails.language === locale // Dil filtresi eklendi
+          assignment.serviceDetails.language === locale
         );
 
-        setAssignments(enhancedAssignments);
-        setFilteredAssignments(enhancedAssignments);
+        const sorted = [...enhancedAssignments].sort((a, b) => {
+          const orderA = a.serviceDetails?.sortOrder ?? 0;
+          const orderB = b.serviceDetails?.sortOrder ?? 0;
+          if (a.serviceCategory !== b.serviceCategory) {
+            return a.serviceCategory.localeCompare(b.serviceCategory);
+          }
+          return orderA - orderB;
+        });
+
+        setAssignments(sorted);
+        setFilteredAssignments(sorted);
 
         const metaMap: {[key: string]: { label: string; iconKey: string }} = {};
         categoryRows.forEach((category) => {
