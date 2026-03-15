@@ -12,6 +12,7 @@ interface ActivityGridProps {
   assignments: EnhancedAssignmentData[];
   onClearFilter: () => void;
   categoryColors: {[key: string]: any};
+  categoryMetaMap: {[key: string]: { label: string; iconKey: string }};
   currentImageIndex: {[key: string]: number};
   isDragging: {[key: string]: boolean};
   onImageClick: (imageUrl: string) => void;
@@ -27,6 +28,7 @@ export function ActivityGrid({
   assignments,
   onClearFilter,
   categoryColors,
+  categoryMetaMap,
   currentImageIndex,
   isDragging,
   onImageClick,
@@ -45,6 +47,7 @@ export function ActivityGrid({
             key={assignment.id}
             assignment={assignment}
             categoryColors={categoryColors}
+            categoryMetaMap={categoryMetaMap}
             currentImageIndex={currentImageIndex}
             isDragging={isDragging}
             onImageClick={onImageClick}

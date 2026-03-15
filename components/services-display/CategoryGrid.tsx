@@ -5,9 +5,9 @@ import { ChevronRight, ChevronLeft, Banknote } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AssignmentData } from "@/lib/assignments";
 import { ServiceData } from "@/lib/services";
-import { getCategoryLabel, getCategoryIcon, getCategoryColorsSync } from "./utils/categoryUtils";
+import { getCategoryColorsSync } from "./utils/categoryUtils";
+import { getCategoryIcon as getDynamicCategoryIcon } from "@/lib/category-icons";
 import Image from 'next/image';
-import { useTranslation } from 'react-i18next';
 
 interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: ServiceData;
@@ -18,10 +18,10 @@ interface CategoryGridProps {
   onCategorySelect: (categoryId: string) => void;
   onServiceSelect: (assignment: EnhancedAssignmentData) => void;
   categoryColors: {[key: string]: any};
+  categoryMetaMap: {[key: string]: { label: string; iconKey: string }};
 }
 
-export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, categoryColors }: CategoryGridProps) {
-  const { t } = useTranslation();
+export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, categoryColors, categoryMetaMap }: CategoryGridProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sliderAssignments, setSliderAssignments] = useState<EnhancedAssignmentData[]>([]);
 
@@ -67,10 +67,11 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
     const categories = assignments.reduce((acc, assignment) => {
       if (!acc.find(cat => cat.id === assignment.serviceCategory)) {
         const colors = categoryColors[assignment.serviceCategory] || getCategoryColorsSync(assignment.serviceCategory);
+        const categoryMeta = categoryMetaMap[assignment.serviceCategory];
         acc.push({
           id: assignment.serviceCategory,
-          label: t(getCategoryLabel(assignment.serviceCategory)),
-          icon: getCategoryIcon(assignment.serviceCategory),
+          label: categoryMeta?.label || assignment.serviceCategory,
+          icon: getDynamicCategoryIcon(categoryMeta?.iconKey || "more-horizontal"),
           colors: colors,
           count: assignments.filter(a => a.serviceCategory === assignment.serviceCategory).length
         });
@@ -163,7 +164,7 @@ export function CategoryGrid({ assignments, onCategorySelect, onServiceSelect, c
           {currentAssignment && (
             <div className="absolute top-4 left-0 right-0 flex justify-between items-start px-6 z-10">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30 shadow-lg">
-                {t(getCategoryLabel(currentAssignment.serviceCategory))}
+                {categoryMetaMap[currentAssignment.serviceCategory]?.label || currentAssignment.serviceCategory}
               </span>
               
               {currentAssignment.pricingSettings?.displayPrice && currentAssignment.pricingSettings.displayPrice > 0 && (

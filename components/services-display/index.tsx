@@ -47,6 +47,7 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
     loading,
     error,
     categoryColors,
+    categoryMetaMap,
     handleCategorySelect,
     handleClearFilter
   } = useServicesData(locationSlug, locale); 
@@ -96,6 +97,7 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
                   assignments={filteredAssignments}
                   onClearFilter={handleClearFilter}
                   categoryColors={categoryColors}
+                  categoryMetaMap={categoryMetaMap}
                   currentImageIndex={currentImageIndex}
                   isDragging={isDragging}
                   onImageClick={handleImageClick}
@@ -113,6 +115,7 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
                 onCategorySelect={handleCategorySelect}
                 onServiceSelect={handleServiceSelect}
                 categoryColors={categoryColors}
+                categoryMetaMap={categoryMetaMap}
               />
             )}
           </div>

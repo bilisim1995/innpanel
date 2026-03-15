@@ -31,6 +31,12 @@ export interface CategoryColorSettings {
 const CATEGORIES_COLLECTION = 'categories';
 const CATEGORY_COLORS_COLLECTION = 'category_colors';
 
+const removeUndefinedFields = <T extends Record<string, any>>(payload: T): Partial<T> => {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined)
+  ) as Partial<T>;
+};
+
 export const saveCategory = async (
   categoryData: Omit<CategoryDefinition, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<string> => {
@@ -94,8 +100,9 @@ export const deleteCategory = async (id: string): Promise<void> => {
 export const saveCategoryColor = async (colorData: Omit<CategoryColorSettings, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   try {
     const now = new Date();
+    const sanitizedColorData = removeUndefinedFields(colorData);
     const docRef = await addDoc(collection(db, CATEGORY_COLORS_COLLECTION), {
-      ...colorData,
+      ...sanitizedColorData,
       createdAt: now,
       updatedAt: now,
     });
@@ -127,8 +134,9 @@ export const getCategoryColors = async (): Promise<CategoryColorSettings[]> => {
 export const updateCategoryColor = async (id: string, colorData: Partial<CategoryColorSettings>): Promise<void> => {
   try {
     const colorRef = doc(db, CATEGORY_COLORS_COLLECTION, id);
+    const sanitizedColorData = removeUndefinedFields(colorData);
     await updateDoc(colorRef, {
-      ...colorData,
+      ...sanitizedColorData,
       updatedAt: new Date(),
     });
   } catch (error) {

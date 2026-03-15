@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Banknote } from "lucide-react";
 import { AssignmentData } from "@/lib/assignments";
 import { ServiceData } from "@/lib/services";
-import { getCategoryIcon, getCategoryColorsSync } from "./utils/categoryUtils";
+import { getCategoryColorsSync } from "./utils/categoryUtils";
+import { getCategoryIcon as getDynamicCategoryIcon } from "@/lib/category-icons";
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
@@ -16,6 +17,7 @@ interface EnhancedAssignmentData extends AssignmentData {
 interface ServiceCardProps {
   assignment: EnhancedAssignmentData;
   categoryColors: {[key: string]: any};
+  categoryMetaMap: {[key: string]: { label: string; iconKey: string }};
   currentImageIndex: {[key: string]: number};
   isDragging: {[key: string]: boolean};
   onImageClick: (imageUrl: string) => void;
@@ -30,6 +32,7 @@ interface ServiceCardProps {
 export function ServiceCard({
   assignment,
   categoryColors,
+  categoryMetaMap,
   currentImageIndex,
   isDragging,
   onImageClick,
@@ -41,7 +44,9 @@ export function ServiceCard({
   onDragMove
 }: ServiceCardProps) {
   const { t } = useTranslation();
-  const CategoryIcon = getCategoryIcon(assignment.serviceCategory);
+  const CategoryIcon = getDynamicCategoryIcon(
+    categoryMetaMap[assignment.serviceCategory]?.iconKey || "more-horizontal"
+  );
   const colors = categoryColors[assignment.serviceCategory] || getCategoryColorsSync(assignment.serviceCategory);
   
   const backgroundColor = colors.customStyle?.background || colors.customStyle?.backgroundColor || '#dc2626';

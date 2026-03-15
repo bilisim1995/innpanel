@@ -1,21 +1,5 @@
-import { Route, Bike, Wind, Car, MoreHorizontal, Package2, Star, Heart, Sparkles, Award } from "lucide-react";
+import { Star, Heart, Sparkles, Award } from "lucide-react";
 import { getCategoryColors as getLibCategoryColors, getColorPreview, CategoryColorSettings } from "@/lib/categories";
-
-export const getCategoryLabel = (category: string) => {
-  // Directly return the category ID as the translation key
-  return category;
-};
-
-export const getCategoryIcon = (category: string) => {
-  const icons = {
-    "region-tours": Route,
-    "motor-tours": Bike,
-    "balloon": Wind,
-    "transfer": Car,
-    "other": MoreHorizontal,
-  };
-  return icons[category as keyof typeof icons] || Package2;
-};
 
 // Default red colors as fallback
 const getDefaultColors = (category: string) => {

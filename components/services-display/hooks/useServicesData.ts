@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { LocationData, getLocationBySlug } from "@/lib/locations";
 import { ServiceData, getServices } from "@/lib/services";
 import { AssignmentData, getAssignmentsByLocation } from "@/lib/assignments";
-import { getCategoryLabel, getDisplayCategoryColors } from "../utils/categoryUtils";
+import { getCategories } from "@/lib/categories";
+import { getDisplayCategoryColors } from "../utils/categoryUtils";
 
 interface EnhancedAssignmentData extends AssignmentData {
   serviceDetails?: ServiceData;
@@ -14,6 +15,7 @@ export function useServicesData(locationSlug: string, locale: string) { // local
   const [filteredAssignments, setFilteredAssignments] = useState<EnhancedAssignmentData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categoryColors, setCategoryColors] = useState<{[key: string]: any}>({});
+  const [categoryMetaMap, setCategoryMetaMap] = useState<{[key: string]: { label: string; iconKey: string }}>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,9 +35,10 @@ export function useServicesData(locationSlug: string, locale: string) { // local
 
         setLocation(currentLocation);
 
-        const [assignmentsData, servicesData] = await Promise.all([
+        const [assignmentsData, servicesData, categoryRows] = await Promise.all([
           getAssignmentsByLocation(currentLocation.id!),
           getServices(),
+          getCategories(),
         ]);
 
         const enhancedAssignments = assignmentsData.map(assignment => {
@@ -53,6 +56,16 @@ export function useServicesData(locationSlug: string, locale: string) { // local
 
         setAssignments(enhancedAssignments);
         setFilteredAssignments(enhancedAssignments);
+
+        const metaMap: {[key: string]: { label: string; iconKey: string }} = {};
+        categoryRows.forEach((category) => {
+          if (!category.slug) return;
+          metaMap[category.slug] = {
+            label: locale === "en" ? (category.labels?.en || category.slug) : (category.labels?.tr || category.slug),
+            iconKey: category.iconKey || "more-horizontal",
+          };
+        });
+        setCategoryMetaMap(metaMap);
       } catch (err) {
         console.error('Firebase veri yükleme hatası:', err);
         setError("Veriler yüklenirken bir hata oluştu");
@@ -72,21 +85,25 @@ export function useServicesData(locationSlug: string, locale: string) { // local
   useEffect(() => {
     const loadCategoryColors = async () => {
       const colors: {[key: string]: any} = {};
-      const categories = ["region-tours", "motor-tours", "balloon", "transfer", "other"];
+      const categoryIds = Array.from(new Set(assignments.map((assignment) => assignment.serviceCategory)));
       
-      for (const category of categories) {
-        colors[category] = await getDisplayCategoryColors(category);
+      for (const categoryId of categoryIds) {
+        colors[categoryId] = await getDisplayCategoryColors(categoryId);
       }
       
       setCategoryColors(colors);
     };
     
+    if (assignments.length === 0) {
+      setCategoryColors({});
+      return;
+    }
+
     loadCategoryColors();
-  }, []);
+  }, [assignments]);
 
   const handleCategorySelect = (categoryId: string) => {
-    const categoryLabel = getCategoryLabel(categoryId);
-    setSelectedCategory(categoryLabel);
+    setSelectedCategory(categoryId);
     const filtered = assignments.filter(assignment => assignment.serviceCategory === categoryId);
     setFilteredAssignments(filtered);
   };
@@ -102,6 +119,7 @@ export function useServicesData(locationSlug: string, locale: string) { // local
     filteredAssignments,
     selectedCategory,
     categoryColors,
+    categoryMetaMap,
     loading,
     error,
     handleCategorySelect,
