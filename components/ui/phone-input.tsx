@@ -198,7 +198,9 @@ function CountrySelectComponent({
         className="flex h-10 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 hover:bg-accent/50 transition-colors cursor-pointer select-none whitespace-nowrap"
       >
         {FlagComponent && (
-          <FlagComponent title={value} className="h-4 w-5 rounded-sm object-cover" />
+          <span className="h-4 w-5 rounded-sm object-cover inline-block overflow-hidden">
+            <FlagComponent title={value} />
+          </span>
         )}
         <span className="text-sm font-medium text-muted-foreground">
           +{value ? getCountryCallingCode(value) : ""}
@@ -241,7 +243,9 @@ function CountrySelectComponent({
                   )}
                 >
                   {OptionFlag && (
-                    <OptionFlag title={option.value} className="h-4 w-5 rounded-sm object-cover shrink-0" />
+                    <span className="h-4 w-5 rounded-sm object-cover shrink-0 inline-block overflow-hidden">
+                      <OptionFlag title={option.value} />
+                    </span>
                   )}
                   <span className="truncate">{option.label}</span>
                   <span className="ml-auto text-muted-foreground text-xs shrink-0">

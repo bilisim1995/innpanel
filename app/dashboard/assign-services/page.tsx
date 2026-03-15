@@ -299,8 +299,8 @@ export default function AssignServicesPage() {
     return true;
   });
 
-  const uniqueServiceNames = [...new Set(assignments.map(a => a.serviceName))].sort();
-  const uniqueLocationNames = [...new Set(assignments.map(a => a.locationName))].sort();
+  const uniqueServiceNames = Array.from(new Set(assignments.map(a => a.serviceName))).sort();
+  const uniqueLocationNames = Array.from(new Set(assignments.map(a => a.locationName))).sort();
   const categoryOptions = [
     { value: "region-tours", label: "Bölge Turları" },
     { value: "motor-tours", label: "Aktiviteler" },
