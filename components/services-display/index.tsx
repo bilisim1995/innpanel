@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { LocationData, getLocationBySlug } from "@/lib/locations";
 import { ServiceData, getServices } from "@/lib/services";
 import { AssignmentData, getAssignmentsByLocation } from "@/lib/assignments";
@@ -29,6 +29,7 @@ interface ServicesDisplayProps {
 
 export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) {
   const router = useRouter();
+  const serviceModalHistoryPushedRef = useRef(false);
   
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.href.includes('qr_scan=true')) {
@@ -69,6 +70,45 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
     handleDragEnd,
     handleDragMove
   } = useImageSlider();
+
+  const closeServiceModal = useCallback(() => {
+    if (typeof window !== "undefined" && isServiceModalOpen && serviceModalHistoryPushedRef.current) {
+      window.history.back();
+      return;
+    }
+
+    setIsServiceModalOpen(false);
+    serviceModalHistoryPushedRef.current = false;
+  }, [isServiceModalOpen, setIsServiceModalOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isServiceModalOpen || serviceModalHistoryPushedRef.current) return;
+
+    window.history.pushState(
+      { ...(window.history.state || {}), innpanelLayer: "service" },
+      "",
+      window.location.href
+    );
+    serviceModalHistoryPushedRef.current = true;
+  }, [isServiceModalOpen]);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      // Reservation'dan service katmanına dönerken service modalı açık tut.
+      if (
+        isServiceModalOpen &&
+        event.state?.innpanelLayer !== "service" &&
+        event.state?.innpanelLayer !== "reservation"
+      ) {
+        setIsServiceModalOpen(false);
+        serviceModalHistoryPushedRef.current = false;
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isServiceModalOpen, setIsServiceModalOpen]);
 
   if (loading) {
     return <LoadingState />;
@@ -136,7 +176,7 @@ export function ServicesDisplay({ locationSlug, locale }: ServicesDisplayProps) 
 
       <ServiceDetailModal
         isOpen={isServiceModalOpen}
-        onClose={() => setIsServiceModalOpen(false)}
+        onClose={closeServiceModal}
         assignment={selectedService}
         locale={locale} // locale prop'u eklendi
       />

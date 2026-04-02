@@ -236,6 +236,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [fullImageIndex, setFullImageIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const reservationHistoryPushedRef = useRef(false);
 
   const handleScroll = useCallback(() => {
     if (scrollRef.current) {
@@ -282,6 +283,40 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
       loadTheme();
     }
   }, [isOpen, assignment]);
+
+  const closeReservationModal = useCallback(() => {
+    if (typeof window !== "undefined" && isReservationModalOpen && reservationHistoryPushedRef.current) {
+      window.history.back();
+      return;
+    }
+
+    setIsReservationModalOpen(false);
+    reservationHistoryPushedRef.current = false;
+  }, [isReservationModalOpen, setIsReservationModalOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isReservationModalOpen || reservationHistoryPushedRef.current) return;
+
+    window.history.pushState(
+      { ...(window.history.state || {}), innpanelLayer: "reservation" },
+      "",
+      window.location.href
+    );
+    reservationHistoryPushedRef.current = true;
+  }, [isReservationModalOpen]);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (isReservationModalOpen && event.state?.innpanelLayer !== "reservation") {
+        setIsReservationModalOpen(false);
+        reservationHistoryPushedRef.current = false;
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isReservationModalOpen, setIsReservationModalOpen]);
 
   if (!assignment || !assignment.serviceDetails) return null;
 
@@ -373,7 +408,7 @@ export function ServiceDetailModal({ isOpen, onClose, assignment, locale }: Serv
 
         <ReservationModal
           isOpen={isReservationModalOpen}
-          onClose={() => setIsReservationModalOpen(false)}
+          onClose={closeReservationModal}
           assignment={assignment}
           locale={locale} 
         />
