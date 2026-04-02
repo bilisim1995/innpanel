@@ -97,13 +97,17 @@ function FullImageSlider({
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition-colors"
+          className="absolute right-4 z-20 w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 transition-colors"
+          style={{ top: "max(calc(env(safe-area-inset-top, 0px) + 6px), 60px)" }}
         >
           ✕
         </button>
 
         {images.length > 1 && (
-          <div className="absolute top-4 left-4 z-20 text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+          <div
+            className="absolute left-4 z-20 text-white/80 text-sm font-medium bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full"
+            style={{ top: "max(calc(env(safe-area-inset-top, 0px) + 6px), 60px)" }}
+          >
             {currentIndex + 1} / {images.length}
           </div>
         )}
@@ -139,7 +143,7 @@ function FullImageSlider({
         </div>
 
         {images.length > 1 && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2 z-20">
             {images.map((_, index) => (
               <button
                 key={index}
@@ -196,7 +200,8 @@ function GalleryGridModal({
 
         <button
           onClick={onClose}
-          className="absolute top-1.5 left-2 z-20 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors shadow-sm text-xs"
+          className="absolute left-2 z-20 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors shadow-sm text-xs"
+          style={{ top: "calc(env(safe-area-inset-top, 0px) + 8px)" }}
         >
           ✕
         </button>

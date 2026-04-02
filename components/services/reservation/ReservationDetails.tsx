@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ReservationCustomerInfo } from "./ReservationCustomerInfo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -130,10 +130,18 @@ export function ReservationDetails({
 }: ReservationDetailsProps) {
     const { t } = useTranslation();
   const [isTimeExpanded, setIsTimeExpanded] = useState(true);
+  const nextSectionRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (selectedTimeSlot) {
       setIsTimeExpanded(false);
+      // Saat listesi daraldıktan sonra bir alt bölüme kaydır.
+      setTimeout(() => {
+        nextSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 350);
     }
   }, [selectedTimeSlot]);
 
@@ -275,6 +283,7 @@ export function ReservationDetails({
           </Card>
 
           {selectedTimeSlot && (
+            <div ref={nextSectionRef}>
             <Card>
               <CardHeader>
                 <CardTitle 
@@ -492,6 +501,7 @@ export function ReservationDetails({
                 )}
               </CardContent>
             </Card>
+            </div>
           )}
 
           {selectedTimeSlot && assignment.serviceCategory === "transfer" && (
@@ -617,7 +627,7 @@ export function ReservationDetails({
               <CardContent className="p-6">
                 <Button
                   onClick={handleReservation}
-                  className="w-full py-6 text-lg font-bold"
+                  className="w-full py-6 text-base font-bold"
                   style={buttonStyle}
                   disabled={isSubmitting}
                 >

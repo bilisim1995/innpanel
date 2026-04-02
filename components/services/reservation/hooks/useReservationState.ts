@@ -119,7 +119,7 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
       setDisplayPrices({});
       setDisplayPrepaymentAmount(0);
     } else {
-      const defaultCurrency = assignment?.serviceDetails?.categoryDetails?.currency || assignment?.pricingSettings?.dateRanges?.[0]?.timeSlots?.[0]?.currency || 'TRY';
+      const defaultCurrency = assignment?.pricingSettings?.dateRanges?.[0]?.timeSlots?.[0]?.currency || assignment?.serviceDetails?.categoryDetails?.currency || 'TRY';
       setSelectedCurrency(normalizeCurrency(defaultCurrency));
     }
   }, [isOpen, assignment]);
@@ -148,13 +148,13 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
     if (availableTimeSlots.length > 0 && exchangeRates) {
       const newDisplayPrices: { [key: string]: number } = {};
       availableTimeSlots.forEach(slot => {
-        const currencyForSlot = assignment?.serviceDetails?.categoryDetails?.currency || slot.currency;
+        const currencyForSlot = slot.currency || assignment?.serviceDetails?.categoryDetails?.currency;
         newDisplayPrices[slot.id] = parseFloat(convertPrice(slot.price, currencyForSlot, selectedCurrency).toFixed(2));
       });
       setDisplayPrices(newDisplayPrices);
     }
      if (assignment?.pricingSettings?.prepaymentAmount && exchangeRates) {
-        const originalCurrency = assignment?.serviceDetails?.categoryDetails?.currency || assignment?.pricingSettings?.dateRanges?.[0]?.timeSlots?.[0]?.currency || 'EUR';
+        const originalCurrency = assignment?.pricingSettings?.dateRanges?.[0]?.timeSlots?.[0]?.currency || assignment?.serviceDetails?.categoryDetails?.currency || 'EUR';
         setDisplayPrepaymentAmount(parseFloat(convertPrice(assignment.pricingSettings.prepaymentAmount, originalCurrency, selectedCurrency).toFixed(2)));
     }
   }, [availableTimeSlots, selectedCurrency, exchangeRates, assignment, convertPrice]);
@@ -272,7 +272,7 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
     } else {
       setPersonCount(1);
     }
-    const currency = assignment?.serviceDetails?.categoryDetails?.currency || timeSlot.currency || 'TRY';
+    const currency = timeSlot.currency || assignment?.serviceDetails?.categoryDetails?.currency || 'TRY';
     setSelectedCurrency(normalizeCurrency(currency));
   };
   
@@ -323,7 +323,7 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
   const getTotalAmount = () => {
     if (!selectedTimeSlot) return 0;
     
-    const originalCategoryCurrency = assignment?.serviceDetails?.categoryDetails?.currency || selectedTimeSlot.currency;
+    const originalCategoryCurrency = selectedTimeSlot.currency || assignment?.serviceDetails?.categoryDetails?.currency;
     const unitPrice = convertPrice(selectedTimeSlot.price, originalCategoryCurrency, selectedCurrency) || 0; 
 
     let total = 0;
@@ -367,7 +367,7 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
     setIsSubmitting(true);
     try {
         const totalAmountInSelectedCurrency = getTotalAmount();
-        const originalTimeSlotCurrency = assignment?.serviceDetails?.categoryDetails?.currency || selectedTimeSlot.currency;
+        const originalTimeSlotCurrency = selectedTimeSlot.currency || assignment?.serviceDetails?.categoryDetails?.currency;
 
         const totalAmountInTRY = parseFloat(convertPrice(totalAmountInSelectedCurrency, selectedCurrency, 'TRY').toFixed(2));
         const prepaymentAmountInTRY = paymentMethod === 'prepayment' ? parseFloat(convertPrice(displayPrepaymentAmount, selectedCurrency, 'TRY').toFixed(2)) : 0;

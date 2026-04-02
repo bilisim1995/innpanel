@@ -170,9 +170,25 @@ export function PageHeader({ location, showBackButton = false, onBackClick }: Pa
             )}
 
             {location.managerName && (
-              <div className="flex items-center gap-3">
-                <User className="w-4 h-4 text-gray-400 shrink-0" />
-                <p className="text-sm text-gray-700">{location.managerName}</p>
+              <div className="flex items-start gap-3">
+                <User className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-700">{location.managerName}</p>
+                  {location.managerPhone && (
+                    <div className="mt-1 flex items-center gap-2">
+                      <p className="text-xs text-gray-600">{location.managerPhone}</p>
+                      <a href={`tel:${location.managerPhone}`}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                        >
+                          Yetkiliyi Ara
+                        </Button>
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
