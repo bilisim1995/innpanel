@@ -22,6 +22,12 @@ const normalizeCurrency = (currency: string): 'TRY' | 'USD' | 'EUR' => {
     return upperCurrency as 'TRY' | 'USD' | 'EUR';
 };
 
+const FALLBACK_EXCHANGE_RATES: {[key in 'TRY' | 'USD' | 'EUR']: number} = {
+  TRY: 1,
+  USD: 1,
+  EUR: 1,
+};
+
 export function useReservationState(isOpen: boolean, assignment: any, locale: string) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
@@ -70,19 +76,20 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedCurrency, setSelectedCurrency] = useState<'TRY' | 'USD' | 'EUR'>('TRY');
-  const [exchangeRates, setExchangeRates] = useState<{[key in 'TRY' | 'USD' | 'EUR']?: number} | null>(null);
+  const [exchangeRates, setExchangeRates] = useState<{[key in 'TRY' | 'USD' | 'EUR']?: number} | null>(FALLBACK_EXCHANGE_RATES);
   const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
       const fetchRates = async () => {
         try {
-          const response = await fetch('https://api.frankfurter.app/latest?from=EUR&to=TRY,USD');
+          const response = await fetch('https://api.frankfurter.dev/v1/latest?from=EUR&to=TRY,USD');
           if (!response.ok) throw new Error('Network response was not ok');
           const data = await response.json();
           setExchangeRates({ ...data.rates, EUR: 1 });
         } catch (error) {
           console.error("Failed to fetch exchange rates:", error);
+          setExchangeRates(FALLBACK_EXCHANGE_RATES);
           toast({
             title: "Kur Bilgisi Alınamadı",
             description: "Fiyatlar varsayılan kur üzerinden gösterilecektir.",
@@ -330,7 +337,6 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
     if (assignment?.serviceCategory === "motor-tours") {
       total = unitPrice * vehicleCount;
     } else if (assignment?.serviceCategory === "transfer") {
-      if (!exchangeRates) return 0;
       total = selectedVehicles.reduce((sum, sv) => {
           const convertedPrice = convertPrice(sv.price, sv.currency, selectedCurrency);
           return sum + (convertedPrice * sv.count);
@@ -360,7 +366,7 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
   };
 
   const handleReservation = async () => {
-    if (!validateCustomerInfo() || !selectedDate || !selectedTimeSlot || !exchangeRates) {
+    if (!validateCustomerInfo() || !selectedDate || !selectedTimeSlot) {
         toast({ title: "Hata", description: "Lütfen tüm zorunlu alanları doldurun.", variant: "destructive" });
         return;
     }
