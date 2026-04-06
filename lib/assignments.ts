@@ -26,6 +26,8 @@ export interface AssignmentData {
       fullPayment: boolean;
       prePayment: boolean;
       fullAtLocation: boolean;
+      prepaidPayment?: boolean;
+      linkPayment?: boolean;
     };
     commissionAmount?: number;
     commissionAmountCurrency?: 'TL' | 'USD' | 'EUR'; // Eklendi

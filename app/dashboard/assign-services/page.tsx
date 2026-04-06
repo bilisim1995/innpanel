@@ -162,6 +162,8 @@ export default function AssignServicesPage() {
               fullPayment: true,
               prePayment: true,
               fullAtLocation: true,
+              prepaidPayment: false,
+              linkPayment: false,
             },
             dateRanges: [],
           },

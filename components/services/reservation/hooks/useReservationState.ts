@@ -213,6 +213,8 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
         if (paymentMethods.fullPayment) methods.push("full_start");
         if (paymentMethods.prePayment) methods.push("prepayment");
         if (paymentMethods.fullAtLocation) methods.push("full_location");
+        if (paymentMethods.prepaidPayment) methods.push("prepaid_payment");
+        if (paymentMethods.linkPayment) methods.push("link_payment");
       }
       setAvailablePaymentMethods(methods.length > 0 ? methods : ["full_start"]);
       if (methods.length > 0) setPaymentMethod(methods[0]);

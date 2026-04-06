@@ -580,6 +580,12 @@ export function ReservationDetails({
                         {availablePaymentMethods.includes("full_location") && (
                           <SelectItem value="full_location">{t('payment_full_location')}</SelectItem>
                         )}
+                        {availablePaymentMethods.includes("prepaid_payment") && (
+                          <SelectItem value="prepaid_payment">{t('payment_prepaid_payment')}</SelectItem>
+                        )}
+                        {availablePaymentMethods.includes("link_payment") && (
+                          <SelectItem value="link_payment">{t('payment_link_payment')}</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>

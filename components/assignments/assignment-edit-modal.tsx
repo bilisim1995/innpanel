@@ -81,7 +81,9 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
     paymentMethods: {
       fullPayment: true,
       prePayment: false,
-      fullAtLocation: false
+      fullAtLocation: false,
+      prepaidPayment: false,
+      linkPayment: false
     }
   });
 
@@ -95,6 +97,8 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
         fullPayment: boolean;
         prePayment: boolean;
         fullAtLocation: boolean;
+        prepaidPayment: boolean;
+        linkPayment: boolean;
     };
     dateRanges: DateRange[];
   }>({
@@ -106,7 +110,9 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
     paymentMethods: {
       fullPayment: true,
       prePayment: false,
-      fullAtLocation: false
+      fullAtLocation: false,
+      prepaidPayment: false,
+      linkPayment: false
     },
     dateRanges: [],
   });
@@ -154,10 +160,13 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
       setBasicData({
         isActive: assignment.isActive,
         notes: assignment.notes || "",
-        paymentMethods: assignment.pricingSettings?.paymentMethods || {
+        paymentMethods: {
           fullPayment: true,
           prePayment: false,
-          fullAtLocation: false
+          fullAtLocation: false,
+          prepaidPayment: false,
+          linkPayment: false,
+          ...(assignment.pricingSettings?.paymentMethods || {})
         }
       });
 
@@ -167,10 +176,13 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
         displayPrice: assignment.pricingSettings?.displayPrice || 0,
         displayPriceCurrency: assignment.pricingSettings?.displayPriceCurrency || 'TL', // Set from assignment
         commissionAmount: assignment.pricingSettings?.commissionAmount || 0,
-        paymentMethods: assignment.pricingSettings?.paymentMethods || {
+        paymentMethods: {
           fullPayment: true,
           prePayment: false,
-          fullAtLocation: false
+          fullAtLocation: false,
+          prepaidPayment: false,
+          linkPayment: false,
+          ...(assignment.pricingSettings?.paymentMethods || {})
         },
         dateRanges: transformedDateRanges,
       });
@@ -399,12 +411,14 @@ export function AssignmentEditModal({ isOpen, onClose, assignment }: AssignmentE
                       <Label className="flex items-center gap-2"><Wallet className="h-4 w-4" /> Ödeme Yöntemleri</Label>
                     </div>
                     <div className="p-4 border rounded-lg space-y-3">
-                      {['fullPayment', 'prePayment', 'fullAtLocation'].map(method => (
+                      {['fullPayment', 'prePayment', 'fullAtLocation', 'prepaidPayment', 'linkPayment'].map(method => (
                         <div key={method} className="flex items-center justify-between">
                           <Label htmlFor={method} className="text-sm font-normal">
                             {method === 'fullPayment' && 'Başlangıçta Tam Ödeme'}
                             {method === 'prePayment' && 'Resepsiyon Ödeme'}
                             {method === 'fullAtLocation' && 'Araçta Ödeme'}
+                            {method === 'prepaidPayment' && 'Ön Ödemeli Ödeme'}
+                            {method === 'linkPayment' && 'Linkle Ödeme'}
                           </Label>
                           <Switch id={method} checked={basicData.paymentMethods[method as keyof typeof basicData.paymentMethods]} onCheckedChange={(c) => setBasicData(p => ({...p, paymentMethods: {...p.paymentMethods, [method]: c}}))} />
                         </div>

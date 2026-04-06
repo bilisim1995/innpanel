@@ -94,6 +94,8 @@
     "payment_full_start": "Full Payment at Start",
     "payment_prepayment": "Reception Payment",
     "payment_full_location": "Payment in Vehicle",
+    "payment_prepaid_payment": "Prepaid Payment",
+    "payment_link_payment": "Payment by Link",
     "prepayment_amount_label": "Prepayment Amount ({{currency}})",
     "amount_to_pay": "Amount to Pay: {{amount}}",
     "remaining_amount": "Remaining: {{amount}}",
