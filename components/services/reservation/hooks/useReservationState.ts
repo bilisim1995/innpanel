@@ -207,11 +207,11 @@ export function useReservationState(isOpen: boolean, assignment: any, locale: st
 
   useEffect(() => {
     if (isOpen && assignment?.pricingSettings) {
-      const { paymentMethods, prepaymentEnabled, prepaymentAmount } = assignment.pricingSettings;
+      const { paymentMethods, prepaymentAmount } = assignment.pricingSettings;
       const methods: string[] = [];
       if (paymentMethods) {
         if (paymentMethods.fullPayment) methods.push("full_start");
-        if (paymentMethods.prePayment && prepaymentEnabled) methods.push("prepayment");
+        if (paymentMethods.prePayment) methods.push("prepayment");
         if (paymentMethods.fullAtLocation) methods.push("full_location");
       }
       setAvailablePaymentMethods(methods.length > 0 ? methods : ["full_start"]);
